@@ -1050,12 +1050,27 @@ def train(args: argparse.Namespace):
         t_stack = torch.stack(tensions, dim=0)  # (L, B, T)
         mean_tension = t_stack.mean().item()
 
-        # --- Feed mitosis engine (uses mean of input bytes as proxy vector) ---
+        # --- Feed the mitosis engine ---
+        # Default: a character hash of the raw input bytes -- independent of every
+        # model parameter, so the cells never sense anything the transformer
+        # computed, and text_to_vector's 1/(len+1) scaling leaves inputs of norm
+        # ~1e-2, against split_threshold=2.0: the GRUs relax to fixed points, cell
+        # tension sits near 0, and the Phi proxy reads a static population.
+        # --cell-sense feeds them the model's OWN per-layer tension profile
+        # instead. Still detached and still no_grad -- the transformer's gradient
+        # is untouched -- only what the cells sense changes, so their dynamics stay
+        # their own (no setpoint is written; project rule 2 holds).
         with torch.no_grad():
-            proxy_vec = text_to_vector(
-                bytes(x[0, :64].cpu().tolist()).decode("utf-8", errors="replace"),
-                dim=64,
-            )
+            if args.cell_sense:
+                t_prof = torch.log(t_stack.mean(dim=(1, 2)) + 1e-8)
+                t_prof = (t_prof - t_prof.mean()) / (t_prof.std() + 1e-8)
+                reps = 64 // t_prof.numel() + 1
+                proxy_vec = (0.1 * t_prof.repeat(reps)[:64]).unsqueeze(0).cpu()
+            else:
+                proxy_vec = text_to_vector(
+                    bytes(x[0, :64].cpu().tolist()).decode("utf-8", errors="replace"),
+                    dim=64,
+                )
             mitosis_result = mitosis.process(proxy_vec, label=f"step_{step}")
 
         # --- Compute Phi (Predictive Coding — 80x faster) ---
@@ -1731,6 +1746,13 @@ Examples:
                         help="Bytes of the FIXED validation span, same at every eval "
                              "(default: 262144 = 256KB). One random batch is 1,024 bytes "
                              "and made the metric noise -- do not go below ~64KB.")
+    parser.add_argument("--cell-sense", action="store_true",
+                        help="Feed the mitosis cells the model's own per-layer tension "
+                             "profile instead of a character hash of the input bytes "
+                             "(default off). Detached either way; only the cells' sensory "
+                             "stream changes. Targets metric 1: with the byte hash the "
+                             "cell GRUs sit at fixed points and Phi reads a static "
+                             "population.")
     parser.add_argument("--self-loop-weight", type=float, default=0.0,
                         help="Weight of the SL-Phi self-prediction loss (default 0 = off). "
                              "The model must identify its own next-position tension profile "
