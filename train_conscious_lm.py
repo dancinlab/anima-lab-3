@@ -1575,6 +1575,8 @@ def train(args: argparse.Namespace):
         # from step 0 now and LANGUAGE/COMBINED carry the same loss list, so there
         # is no cliff to absorb -- while a x0.1 cut at 70% on top of cosine
         # annealing would have frozen the last third of training.
+        prev_phase = get_phase(step - 1, args.steps, args.phase,
+                               talk5=getattr(args, "talk5", False)) if step > 0 else phase
         if phase != prev_phase:
             print(f"  [phase] {prev_phase} → {phase} (loss list unchanged; no LR/EMA intervention)")
 
