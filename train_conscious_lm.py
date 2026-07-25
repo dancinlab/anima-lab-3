@@ -1061,8 +1061,7 @@ def train(args: argparse.Namespace):
     growth_halted = False
     phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
     phi_calc_history = []        # dicts: step/phi/cells/phi_per_cell/D/complexity_fraction
-    last_growth_step = None      # when the population last increased (gate-1 pivot)
-    judged_growth = set()        # growth steps already judged, so the verdict prints once
+    pending_growth = []          # growth steps awaiting a gate-1 verdict (FIFO)
     skip_count = 0
     best_val_loss = float("inf")
 
@@ -1131,7 +1130,8 @@ def train(args: argparse.Namespace):
                     if not event:
                         break
                     mitosis.event_log.append(event)
-                    last_growth_step = step
+                    if step not in pending_growth:
+                        pending_growth.append(step)
                     print(f"  [fibonacci] Step {step}: cell count -> {len(mitosis.cells)} "
                           f"(target {target_cells}, step time {step_time_ema * 1e3:.0f}ms)")
 
@@ -1245,26 +1245,45 @@ def train(args: argparse.Namespace):
 
                 # PURE gate 1 verdict. Population growth alone proves the scheduler
                 # ran; what has to hold is that differentiation does not DILUTE as
-                # the colony grows. Compare the evals before the last population
-                # change against those after it, with the rule's 1.96-sigma bar.
-                if last_growth_step is not None and last_growth_step not in judged_growth:
-                    before = [h["D"] for h in phi_calc_history if h["step"] < last_growth_step][-5:]
-                    after = [h["D"] for h in phi_calc_history if h["step"] > last_growth_step][:5]
-                    if len(before) >= 3 and len(after) >= 3:
-                        judged_growth.add(last_growth_step)
-                        m_b, m_a = sum(before) / len(before), sum(after) / len(after)
-                        def _se(v, m):
-                            if len(v) < 2:
-                                return 0.0
-                            var = sum((x - m) ** 2 for x in v) / (len(v) - 1)
-                            return (var / len(v)) ** 0.5
-                        bar = 1.96 * ((_se(before, m_b) ** 2 + _se(after, m_a) ** 2) ** 0.5)
-                        delta = m_a - m_b
-                        verdict = "PASS" if delta >= -bar else "FAIL"
-                        print(f"  [gate1:{verdict}] growth at step {last_growth_step}: "
-                              f"D {m_b:.5f} -> {m_a:.5f} (delta {delta:+.5f}, bar -{bar:.5f}, "
-                              f"n={len(before)}/{len(after)}) — "
-                              f"{'differentiation held' if verdict == 'PASS' else 'DILUTED: population without differentiation'}")
+                # the colony grows. Judged per growth event, oldest first, and only
+                # on a window that a LATER growth event did not contaminate -- with
+                # merges the population is not monotone, so a naive "latest event"
+                # pivot never accumulates a window and the gate would stay silent.
+                while pending_growth:
+                    g = pending_growth[0]
+                    later = [x for x in pending_growth[1:] if x > g]
+                    limit = min(later) if later else float("inf")
+                    before = [h["D"] for h in phi_calc_history if h["step"] < g][-5:]
+                    after = [h["D"] for h in phi_calc_history
+                             if g < h["step"] < limit][:5]
+                    if len(after) < 3:
+                        if limit != float("inf") and step > limit:
+                            pending_growth.pop(0)
+                            print(f"  [gate1:SKIP] growth at step {g}: only {len(after)} eval(s) "
+                                  f"before the next growth at {int(limit)} — window contaminated, "
+                                  f"cannot attribute D to this population change")
+                            continue
+                        break
+                    if len(before) < 3:
+                        pending_growth.pop(0)
+                        print(f"  [gate1:SKIP] growth at step {g}: only {len(before)} eval(s) "
+                              f"before it — no baseline to compare against")
+                        continue
+                    pending_growth.pop(0)
+                    m_b, m_a = sum(before) / len(before), sum(after) / len(after)
+
+                    def _se(v, m):
+                        if len(v) < 2:
+                            return 0.0
+                        var = sum((x - m) ** 2 for x in v) / (len(v) - 1)
+                        return (var / len(v)) ** 0.5
+
+                    bar = 1.96 * ((_se(before, m_b) ** 2 + _se(after, m_a) ** 2) ** 0.5)
+                    delta = m_a - m_b
+                    verdict = "PASS" if delta >= -bar else "FAIL"
+                    print(f"  [gate1:{verdict}] growth at step {g}: D {m_b:.5f} -> {m_a:.5f} "
+                          f"(delta {delta:+.5f}, bar -{bar:.5f}, n={len(before)}/{len(after)}) — "
+                          f"{'differentiation held' if verdict == 'PASS' else 'DILUTED: population without differentiation'}")
             except Exception as e:
                 print(f"  [D] unavailable at step {step}: {type(e).__name__}: {e}")
 
