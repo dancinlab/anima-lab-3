@@ -49,6 +49,11 @@ HANGUL = re.compile(r"[가-힣]+")
 # Max teacher utterance length (words) per stage — infants can't parse fast speech.
 STAGE_WORD_CAP = {0: 5, 1: 5, 2: 8, 3: 12, 4: 20, 5: 20}
 
+# Vocabulary size that gates the NEXT developmental stage (pure_consciousness.growth_stage).
+# The teacher is told the gate so it can pace acquisition; the student still decides what it
+# learns and says. Without a floor the teacher happily recombines known words forever.
+NEXT_STAGE_VOCAB = {0: 3, 1: 8, 2: 20, 3: 50, 4: 100}
+
 TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어 선생님이다. 아니마는 사전도 코퍼스도 없이,
 오직 네가 하는 말에서만 단어를 배운다. 배운 단어만으로 대답하고, 모르면 침묵한다.
 
@@ -90,7 +95,10 @@ TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어
   무한 반복하면 아니마는 영영 자라지 못한다. 침묵은 정상이다.
 - 단어(2): 두 단어 연결. "아니마 반가워", "나는 선생님이야". 좋아/싫어, 있어/없어 짝.
 - 문장(3): 3~4단어 문장. 주어-목적어-서술어 순서를 일관되게. 짧은 질문-대답 짝 만들기.
+  동시에 새 단어를 한 턴에 하나씩 꾸준히 늘려라 — 다음 단계(대화)는 어휘 50개가 필요하다.
+  아는 단어만 재조합하면 아니마는 이 단계에 영원히 갇힌다.
 - 대화(4): 주고받기. 아니마의 대답에 실제로 반응하고, 한 주제를 2~3턴 이어가라.
+  새 단어도 계속 하나씩 — 다음 단계(성찰)는 어휘 100개가 필요하다.
 - 성찰(5): 마음, 생각, 느낌, 궁금 같은 내면 단어. 아니마 자신에 대해 물어라.
 
 출력: 아니마에게 할 다음 한마디만 출력해라. 설명, 따옴표, 메타 발언 금지."""
@@ -117,7 +125,15 @@ def coach_note(pc: PureConsciousness, history: list) -> str:
                 "어휘를 하나씩 늘려야 다음 단계로 오른다.")
     if repetitive:
         return "같은 말만 반복 중이다(과부하). 새 단어 금지 — 아는 단어를 새로운 순서로 조합해 들려줘라."
-    return "정상. i+1 유지(새 단어는 한 턴에 1~2개)."
+    # Acquisition FLOOR: "1~2 new words per turn" is a ceiling; without a floor the teacher
+    # settles into recombining known words and vocab freezes below the next stage gate.
+    vocab_hist = [h.get("vocab", 0) for h in history[-12:]]
+    if len(vocab_hist) >= 12 and vocab_hist[-1] == vocab_hist[0]:
+        gate = NEXT_STAGE_VOCAB.get(stage)
+        return (f"어휘가 {vocab_hist[-1]}개에서 12턴째 멈춰 있다. 이번 턴에 반드시 새로운 구체 단어 "
+                f"1개를 아는 단어 옆에 붙여 들려줘라(2글자 이상 한글)"
+                + (f" — 다음 단계는 어휘 {gate}개가 필요하다." if gate else "."))
+    return "정상. i+1 유지(새 단어는 한 턴에 1~2개, 0개는 안 된다)."
 
 
 def build_teacher_prompt(pc: PureConsciousness, history: list) -> str:
