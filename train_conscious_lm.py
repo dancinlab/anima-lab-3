@@ -1049,7 +1049,7 @@ def train(args: argparse.Namespace):
     growth_baseline_s = None     # step time before the population started growing
     growth_halted = False
     phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
-    phi_calc_history = []        # [(step, phi)] for the start-vs-end verdict
+    phi_calc_history = []        # dicts: step/phi/cells/phi_per_cell/D/complexity_fraction
     skip_count = 0
     best_val_loss = float("inf")
 
@@ -1191,9 +1191,32 @@ def train(args: argparse.Namespace):
             try:
                 phi_real, phi_components = phi_calc.compute_phi(mitosis)
                 phi_calc_last = phi_real
-                phi_calc_history.append((step, phi_real))
-            except Exception:
-                pass
+                # Raw Phi cannot certify differentiation: for N identical CLONES
+                # with pairwise MI = M the spatial term is M*(N-2)/2, i.e. linear
+                # in N at ZERO differentiation. Measured Phi/N stayed at 1.05-1.40
+                # from 2 to 16 cells, so the "x10 growth" was the population's
+                # shadow. D normalises it; complexity is the clone detector
+                # (exactly 0 for identical cells, log2(N) at maximum).
+                n_cells_now = max(len(mitosis.cells), 1)
+                phi_per_cell = phi_real / n_cells_now
+                log2n = math.log2(n_cells_now) if n_cells_now > 1 else 1.0
+                complexity_fraction = phi_components.get("complexity", 0.0) / log2n
+                # temporal_phi is ALREADY divided by N inside PhiCalculator
+                differentiation_D = (
+                    phi_components.get("spatial_phi", 0.0) / n_cells_now
+                    + 0.5 * phi_components.get("temporal_phi", 0.0)
+                    + 0.1 * complexity_fraction
+                )
+                phi_calc_history.append({
+                    "step": step, "phi": phi_real, "cells": n_cells_now,
+                    "phi_per_cell": phi_per_cell, "D": differentiation_D,
+                    "complexity_fraction": complexity_fraction,
+                })
+                print(f"  [D] step={step} N={n_cells_now} Phi={phi_real:.4f} "
+                      f"phi_per_cell={phi_per_cell:.4f} D={differentiation_D:.5f} "
+                      f"complexity_frac={complexity_fraction:.4f}")
+            except Exception as e:
+                print(f"  [D] unavailable at step {step}: {type(e).__name__}: {e}")
 
         # --- v5 Φ Ratchet: 고통 감정이 복원 강도를 조절 (SE-8 + PERSIST3) ---
         if phase != TrainingPhase.MITOSIS:
