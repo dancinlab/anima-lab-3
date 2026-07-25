@@ -277,7 +277,20 @@ class LossEnsemble(nn.Module):
         names = ["ce_fwd", "ce_bwd", "tension_var", "phi_diff", "competition", "myelination"]
 
         for i, (loss, name) in enumerate(zip(losses, names)):
+            value = loss.item()
+            details[name] = value
             if i < self.N_LEARNABLE:
+                # A slot that is switched off for this phase arrives as a literal
+                # 0.0 (CE is off for all of mitosis). For L_i = 0 the Kendall term
+                # collapses to 0.5*log_var, which is minimised by log_var -> -inf,
+                # so the weight of a task that is not even running slides to the
+                # clamp: measured -2.29 of composite drift in 3,300 mitosis steps,
+                # heading for log_var = -3, i.e. precision e^3 = 20.1 -- a 20x
+                # gradient spike on the CE path at the exact step language training
+                # starts. An inactive slot must not contribute or accumulate.
+                if value == 0.0:
+                    details[f"w_{name}"] = 0.0
+                    continue
                 precision = torch.exp(-log_vars[i])
                 weighted = precision * loss + log_vars[i] * 0.5
                 details[f"w_{name}"] = precision.item()
@@ -285,7 +298,6 @@ class LossEnsemble(nn.Module):
                 weighted = loss          # phase coefficient already applied by caller
                 details[f"w_{name}"] = 1.0
             total = total + weighted
-            details[name] = loss.item()
 
         return total, details
 
