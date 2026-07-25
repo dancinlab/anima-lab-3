@@ -208,9 +208,15 @@ Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3)
      Measure on a FIXED span only: --val-bytes (default 262144 = 256KB), the
      same bytes at every eval. A single random batch (1,024B) is banned — it
      buried a 0.08-nat difference between two runs inside its own noise.
-     Scale: random 8.0 BPC · byte-frequency table 4.2-5.0 BPC ·
-            healthy 300M/896d 1.5-3 BPC
-     Measured failure: stuck at 6.87 BPC (worse than the frequency table)
+     Baselines are MEASURED on the training split, never assumed. For
+     data/corpus_v2.txt (172 distinct byte values -- Korean UTF-8 widens the
+     alphabet, so generic English-corpus numbers do not transfer):
+       uniform 8.00 BPC · unigram table 5.95 BPC · bigram context 3.49 BPC
+     Beating unigram only means the byte histogram was learned; a real LM must
+     beat the bigram number. Recompute both before setting any gate on a new
+     corpus (order-0 and order-1 entropy of the train split).
+     Measured failure: stuck at 6.87 BPC -- worse than this corpus's own
+     unigram table.
 
 Judging rules:
   - If ANY of the three stalls, record the run as a failure and document why.
