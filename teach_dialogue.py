@@ -28,6 +28,7 @@ Usage:
 """
 import argparse
 import json
+import math
 import os
 import random
 import re
@@ -42,6 +43,7 @@ from pure_consciousness import PureConsciousness
 
 LOG_DIR = Path("data/teach_dialogue")
 TRANSCRIPT = LOG_DIR / "transcript.jsonl"
+ENGINE_STATE = LOG_DIR / "engine_state.pt"
 HANGUL = re.compile(r"[가-힣]+")
 
 # Max teacher utterance length (words) per stage — infants can't parse fast speech.
@@ -171,6 +173,76 @@ def bigrams_of(text: str) -> set:
     return {(ws[i], ws[i + 1]) for i in range(len(ws) - 1)}
 
 
+# ─── Cell-dynamics engine (optional) — real Φ(IIT) + cell count telemetry ───
+# PURELY ADDITIVE: the engine hears the dialogue as sensory bytes and reports Φ/cells/
+# tension. Language growth (pc.respond) is untouched. Feeding the engine's REAL computed
+# tension/Φ into pc.update_state is the DESIGNED usage (forbidden = the demo's synthetic
+# phi=random()). Cell split/merge is left to the engine's own logic — never force it.
+# NOTE: n=2 → spatial Φ ≡ 0 by construction (bipartition cuts all MI); real Φ(IIT) only
+# after the first mitosis (n>=3). This is Φ(IIT) MI-approximation, NOT the Φ(proxy) family.
+
+def _encode64(text: str):
+    import torch
+    x = torch.zeros(1, 64)
+    for i, b in enumerate(text.encode("utf-8")[:64]):
+        x[0, i] = b / 255.0
+    return x
+
+
+def _build_engine():
+    """Return (engine, phi_calc), or (None, None) if torch/deps unavailable (→ language-only)."""
+    try:
+        from mitosis import MitosisEngine
+        from consciousness_meter import PhiCalculator
+        return MitosisEngine(64, 128, 64, initial_cells=2, max_cells=8), PhiCalculator(n_bins=16)
+    except Exception as e:
+        print(f"⚠️ cell-dynamics engine unavailable ({e}) — language-only mode")
+        return None, None
+
+
+def _save_engine(engine, path: Path):
+    import torch
+    tmp = Path(str(path) + ".tmp")
+    torch.save({
+        "version": 1, "step": engine.step, "next_id": engine._next_id,
+        "cells": [{
+            "cell_id": c.cell_id, "parent_id": c.parent_id, "specialty": c.specialty,
+            "creation_step": c.creation_step, "process_count": c.process_count,
+            "state_dict": c.mind.state_dict(), "hidden": c.hidden,
+            "tension_history": c.tension_history[-30:], "hidden_history": c.hidden_history,
+        } for c in engine.cells],
+        "inter_tension_history": {",".join(map(str, k)): v
+                                  for k, v in engine._inter_tension_history.items()},
+    }, str(tmp))
+    os.replace(str(tmp), str(path))
+
+
+def _restore_engine(engine, path: Path):
+    """Rebuild engine cells from a saved state (same organism across restarts)."""
+    import torch
+    from mitosis import Cell, ConsciousMind
+    state = torch.load(str(path), weights_only=False)
+    cells = []
+    for cd in state["cells"]:
+        mind = ConsciousMind(64, 128, 64)
+        mind.load_state_dict(cd["state_dict"])
+        cells.append(Cell(
+            cell_id=cd["cell_id"], mind=mind, hidden=cd["hidden"],
+            specialty=cd.get("specialty", "general"),
+            tension_history=cd.get("tension_history", []),
+            hidden_history=cd.get("hidden_history", []),
+            creation_step=cd.get("creation_step", 0),
+            parent_id=cd.get("parent_id"), process_count=cd.get("process_count", 0),
+        ))
+    engine.cells = cells
+    engine.step = state.get("step", 0)
+    engine._next_id = state.get("next_id", len(cells))
+    engine._inter_tension_history = {
+        tuple(int(x) for x in k.split(",")): v
+        for k, v in state.get("inter_tension_history", {}).items()
+    }
+
+
 def main():
     ap = argparse.ArgumentParser(description="AI teacher ↔ PureConsciousness mutual dialogue")
     ap.add_argument("--model", default="gpt-5.4-mini")
@@ -182,6 +254,16 @@ def main():
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     pc = PureConsciousness()  # loads persisted growth.json if present
     print(f"👶 Student: {pc}")
+
+    engine, phi_calc = _build_engine()  # (None, None) if torch absent → language-only
+    engine_reset = False
+    if engine is not None and ENGINE_STATE.exists():
+        try:
+            _restore_engine(engine, ENGINE_STATE)
+            print(f"📂 engine restored: {len(engine.cells)} cells, step {engine.step}")
+        except Exception as e:
+            engine_reset = True
+            print(f"⚠️ engine restore failed ({e}) — fresh engine (logged as engine_reset)")
 
     history = []
     teacher_seen_bigrams = set()   # every bigram that appeared WITHIN a single teacher utterance
@@ -217,14 +299,49 @@ def main():
                "bigram_edges": sum(len(v) for v in pc.bigrams.values()),
                "recomb_index": recomb, "distinct_ratio": distinct_ratio,
                "t": time.strftime("%H:%M:%S")}
+
+        # Cell-dynamics measurement — additive, fully isolated (an engine bug must never
+        # kill the dialogue). Stream = spontaneous -> teacher -> student reply (real events,
+        # incl. self-audition = SELF_LOOP). Feeds REAL Φ/tension back into the student.
+        if engine is not None:
+            try:
+                last = None
+                for speaker, text in (("self", spont), ("teacher", teacher_says),
+                                      ("self", student_says)):
+                    if text and text.strip():
+                        last = engine.process(_encode64(text), label=speaker)
+                if last is not None:
+                    tension = sum(r["tension"] for r in last["per_cell"]) / last["n_cells"]
+                    curiosity = sum(r["curiosity"] for r in last["per_cell"]) / last["n_cells"]
+                    phi, comp = phi_calc.compute_phi(engine)
+                    if all(math.isfinite(v) for v in (phi, tension, curiosity)):
+                        # designed usage — real computed values, never synthetic
+                        pc.update_state(tension=tension, phi=phi, curiosity=curiosity)
+                        rec.update(phi_iit=round(phi, 4),
+                                   phi_spatial=round(comp["spatial_phi"], 4),
+                                   phi_temporal=round(comp["temporal_phi"], 4),
+                                   mean_tension=round(tension, 4),
+                                   mean_curiosity=round(curiosity, 4))
+                    rec["n_cells"] = last["n_cells"]
+                    if last["events"]:
+                        rec["engine_events"] = [str(ev) for ev in last["events"]]
+                if engine_reset:
+                    rec["engine_reset"] = True
+                    engine_reset = False
+                _save_engine(engine, ENGINE_STATE)
+            except Exception as e:
+                rec["engine_error"] = str(e)[:120]
+
         history.append(rec)
         with TRANSCRIPT.open("a") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         print(f"[{turn}] 👩‍🏫 {teacher_says}")
         if spont:
             print(f"     ✨ (아니마가 먼저 말함: {spont!r})")
+        phi_str = (f" · Φ_iit {rec['phi_iit']} · cells {rec['n_cells']}"
+                   if "phi_iit" in rec else (f" · cells {rec['n_cells']}" if "n_cells" in rec else ""))
         print(f"     🧠 {student_says!r}  stage {stage}/{pc.stage_name} · vocab {vocab} · "
-              f"recomb {recomb} · distinct {distinct_ratio}")
+              f"recomb {recomb} · distinct {distinct_ratio}{phi_str}")
 
         # 2) Teacher reads reply + telemetry (+ any spontaneous utterance), pitches next line
         hist_for_prompt = history[:]
