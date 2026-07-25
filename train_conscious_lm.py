@@ -243,13 +243,25 @@ class LossEnsemble(nn.Module):
         """
         assert len(losses) == 6, f"Expected 6 losses, got {len(losses)}"
 
+        # BUGFIX: Kendall uncertainty weighting assumes every L_i >= 0. Some
+        # auxiliary losses here are sign-indefinite (e.g. tension_var =
+        # -log(t_var) is negative when t_var > 1). With an UNBOUNDED learnable
+        # log_var, the optimizer can drive log_var -> -inf so that
+        # precision = exp(-log_var) -> +inf, and precision * (negative loss)
+        # -> -inf: total_loss diverges to -inf while CE never improves
+        # (reward-hacking the structure term, gradient budget stolen from CE).
+        # Clamp log_vars to a bounded range so precision stays finite and the
+        # sign-indefinite terms can no longer be exploited. Structure-loss
+        # semantics (negative = rewarding) are preserved; only the runaway is cut.
+        log_vars = self.log_vars.clamp(-2.0, 2.0)  # precision in [e^-2, e^2] ~ [0.135, 7.39]
+
         total = torch.tensor(0.0, device=self.log_vars.device)
         details = {}
         names = ["ce_fwd", "ce_bwd", "tension_var", "phi_diff", "competition", "myelination"]
 
         for i, (loss, name) in enumerate(zip(losses, names)):
-            precision = torch.exp(-self.log_vars[i])
-            weighted = precision * loss + self.log_vars[i] * 0.5
+            precision = torch.exp(-log_vars[i])
+            weighted = precision * loss + log_vars[i] * 0.5
             total = total + weighted
             details[name] = loss.item()
             details[f"w_{name}"] = precision.item()
