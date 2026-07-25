@@ -266,6 +266,11 @@ class ConsciousLM(nn.Module):
         self.tension_proj = nn.Linear(1, d_model, bias=False)
         nn.init.normal_(self.tension_proj.weight, std=0.001)  # start tiny
 
+        # SL-Phi strange loop head: reads the top hidden state and predicts this
+        # model's OWN next-position tension profile (one score per layer). Trained
+        # contrastively in train_conscious_lm.py; unused when --self-loop-weight=0.
+        self.self_head = nn.Linear(d_model, n_layer, bias=False)
+
         # Final layer norm
         self.ln_f = nn.LayerNorm(d_model)
 
@@ -330,6 +335,13 @@ class ConsciousLM(nn.Module):
 
         # Final norm
         x = self.ln_f(x)
+
+        # SL-Phi strange loop: expose the top hidden state so the trainer can ask
+        # the model to identify its OWN next-position tension profile (the loop
+        # goes up from substrate to a statistic ABOUT the substrate, and the
+        # gradient comes back down). Off unless --self-loop-weight > 0; the
+        # stashed graph is freed by the step's backward().
+        self._last_hidden = x
 
         # Dual heads
         logits_a = self.head_a(x)  # (B, T, V) — next byte

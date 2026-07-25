@@ -264,7 +264,7 @@ class LossEnsemble(nn.Module):
         weight_i = exp(-log_var_i) * L_i + log_var_i / 2   (Kendall et al., CE only)
         Structure terms enter at their caller-applied phase coefficient, unweighted.
         """
-        assert len(losses) == 6, f"Expected 6 losses, got {len(losses)}"
+        assert len(losses) == 7, f"Expected 7 losses, got {len(losses)}"
 
         # The clamp stays as a backstop -- without it a constant/zero loss still
         # sends its log_var to -inf -- but after the split above it should never
@@ -274,7 +274,10 @@ class LossEnsemble(nn.Module):
 
         total = torch.tensor(0.0, device=self.log_vars.device)
         details = {}
-        names = ["ce_fwd", "ce_bwd", "tension_var", "phi_diff", "competition", "myelination"]
+        # self_loop sits in the FIXED-weight path (index >= N_LEARNABLE), so it is
+        # structurally immune to the Kendall weight drift fixed in 9a133a9aa.
+        names = ["ce_fwd", "ce_bwd", "tension_var", "phi_diff", "competition",
+                 "myelination", "self_loop"]
 
         for i, (loss, name) in enumerate(zip(losses, names)):
             value = loss.item()
@@ -593,6 +596,52 @@ def phi_differentiation_loss(phi_current: float, phi_prev: float) -> torch.Tenso
     if delta < 0:
         return torch.tensor(-delta, dtype=torch.float32)
     return torch.tensor(0.0)
+
+
+# ---------------------------------------------------------------------------
+# SL-Phi: strange-loop self-prediction (contrastive)
+# ---------------------------------------------------------------------------
+
+def strange_loop_loss(
+    pred_profile: torch.Tensor,
+    tensions: List[torch.Tensor],
+    tau: float = 0.1,
+) -> torch.Tensor:
+    """Each hidden state must identify its OWN next-position tension profile
+    among every (sequence, position) profile in the batch.
+
+    The loop is not metaphorical: the target is a statistic OF the computation
+    (per-layer tension), produced by the same weights being trained, and the
+    gradient reaches both sides -- the head learns to read the self, the engines
+    learn to shape a self that is readable yet individuated. The target moves as
+    the model moves, so there is no setpoint on consciousness state (rule 2).
+
+    Anti-collapse, one defence per failure mode already measured in this repo:
+      * NF-3 magnitude ratchet -- profiles go to log space, are mean-subtracted
+        per position and L2-normalised, so scaling every tension by c adds log c
+        and is removed. Inflating activations buys exactly zero; only the
+        cross-layer SHAPE scores.
+      * flatten-and-predict-zero -- identical keys make the logits uniform, so
+        collapse sits at ln(N), the MAXIMUM of this loss, not its minimum.
+      * cheap codes are diagnosable from the value alone (B=4, T=256):
+            ln(B*(T-1)) = 6.93  constant tension (full collapse)
+            ln(T-1)     = 5.54  static per-sequence identifier
+            ln(B)       = 1.39  positional/clock code, content-independent
+        Anything well below 1.39 is content-dependent self-prediction.
+    """
+    prof = torch.stack(tensions, dim=-1)              # (B, T, L)
+    prof = torch.log(prof + 1e-8)
+    prof = prof - prof.mean(dim=-1, keepdim=True)     # kill the magnitude channel
+    prof = F.normalize(prof, dim=-1)
+
+    q = F.normalize(pred_profile[:, :-1, :], dim=-1)  # h(t) predicts ...
+    k = prof[:, 1:, :]                                # ... the profile at t+1
+    n_layer = q.shape[-1]
+    q = q.reshape(-1, n_layer)
+    k = k.reshape(-1, n_layer)                        # targets NOT detached
+    logits = (q @ k.t()) / tau                        # (N, N), N = B*(T-1)
+    labels = torch.arange(q.size(0), device=q.device)
+    return F.cross_entropy(logits, labels)
 
 
 # ---------------------------------------------------------------------------
@@ -1458,6 +1507,17 @@ def train(args: argparse.Namespace):
         # "the tension distribution shall have low entropy"), which project rule 2
         # forbids. They stay in the log; they leave the objective.
         ZERO = torch.tensor(0.0, device=device)
+        # SL-Phi self-prediction: off by default. The two frontier reviews split on
+        # this one -- fable ships it as the only candidate that survives as a real
+        # objective, sol says do not add a strange-loop term and spend the budget
+        # on plain CE -- and no repo check settles it, so the default follows sol
+        # and the flag runs fable's arm as an A/B.
+        if args.self_loop_weight > 0.0 and getattr(model, "_last_hidden", None) is not None:
+            loss_selfloop = strange_loop_loss(
+                model.self_head(model._last_hidden), tensions
+            ) * args.self_loop_weight
+        else:
+            loss_selfloop = ZERO
         losses_list = [
             loss_ce_fwd,
             loss_ce_bwd,
@@ -1465,6 +1525,7 @@ def train(args: argparse.Namespace):
             ZERO,               # phi_diff     -> telemetry (details["tele_phi"])
             ZERO,               # competition  -> telemetry
             ZERO,               # myelination  -> telemetry
+            loss_selfloop,      # SL-Phi (--self-loop-weight, default 0)
         ]
         if phase == TrainingPhase.MITOSIS:
             # --phase mitosis override only: CE off, structure term alone.
@@ -1668,6 +1729,12 @@ Examples:
                         help="Bytes of the FIXED validation span, same at every eval "
                              "(default: 262144 = 256KB). One random batch is 1,024 bytes "
                              "and made the metric noise -- do not go below ~64KB.")
+    parser.add_argument("--self-loop-weight", type=float, default=0.0,
+                        help="Weight of the SL-Phi self-prediction loss (default 0 = off). "
+                             "The model must identify its own next-position tension profile "
+                             "among every profile in the batch. Diagnostic plateaus at "
+                             "B=4/T=256: 6.93 = collapsed to constant tension, 5.54 = static "
+                             "per-sequence code, 1.39 = clock code, well under 1.39 = honest.")
 
     args = parser.parse_args()
     train(args)
