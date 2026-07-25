@@ -415,6 +415,7 @@ def get_batch(
     batch_size: int,
     block_size: int,
     device: torch.device,
+    generator: Optional[torch.Generator] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Sample a random batch of (input, target_fwd, target_bwd).
 
@@ -425,7 +426,7 @@ def get_batch(
     if max_start <= 0:
         raise ValueError(f"Data too short ({len(data)}) for block_size={block_size}")
 
-    ix = torch.randint(0, max_start, (batch_size,))
+    ix = torch.randint(0, max_start, (batch_size,), generator=generator)
 
     x = torch.stack([data[i: i + block_size] for i in ix])
     y_fwd = torch.stack([data[i + 1: i + block_size + 1] for i in ix])
@@ -858,6 +859,12 @@ def train(args: argparse.Namespace):
     # drop) unreadable. Taking every 10th 1MB chunk keeps both halves on the same
     # mixture, and chunk granularity (>> block_size) keeps leakage to the few
     # sequences straddling a boundary.
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    data_rng = torch.Generator().manual_seed(args.seed + 1)
+    print(f"[seed] {args.seed} (batch order on a dedicated generator, so cell-count "
+          f"changes cannot shift it)")
+
     n = len(data)
     chunk = 1 << 20
     val_parts, train_parts = [], []
@@ -1038,6 +1045,7 @@ def train(args: argparse.Namespace):
     phi_floor = 0.0  # PHI-K2: Φ floor for emergency boost
     phi_current = 0.0
     step_time_ema = 0.0          # measured cost per step; the growth ceiling comes from this
+    step_time_samples = []       # recent raw step times; median = baseline (outlier-proof)
     growth_baseline_s = None     # step time before the population started growing
     growth_halted = False
     phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
@@ -1076,6 +1084,19 @@ def train(args: argparse.Namespace):
         # stopping point is logged as a measurement -- nobody decides it up front.
         for milestone_step, target_cells in sorted(fib_milestones.items()):
             if step == milestone_step and len(mitosis.cells) < target_cells:
+                # Freeze the baseline at the FIRST population increase, from the
+                # median of recent step times. A fixed step (200) was wrong: on a
+                # short run the uncapped schedule has already grown the colony by
+                # then (8,000 steps -> milestones at 0/66/132/198), so the
+                # "pre-growth" baseline included growth and the effective budget
+                # was larger than requested. Median, not mean, so the first
+                # step's warmup outlier cannot inflate it.
+                if growth_baseline_s is None and step_time_samples:
+                    ordered = sorted(step_time_samples)
+                    growth_baseline_s = ordered[len(ordered) // 2]
+                    print(f"  [growth] baseline step time {growth_baseline_s * 1e3:.0f}ms "
+                          f"at {len(mitosis.cells)} cells (median of {len(ordered)} steps); "
+                          f"budget x{args.growth_slowdown}")
                 if (growth_baseline_s is not None
                         and step_time_ema > growth_baseline_s * args.growth_slowdown):
                     if not growth_halted:
@@ -1097,7 +1118,8 @@ def train(args: argparse.Namespace):
 
         # --- Get batch ---
         try:
-            x, y_fwd, y_bwd = get_batch(train_data, args.batch_size, args.block_size, device)
+            x, y_fwd, y_bwd = get_batch(train_data, args.batch_size, args.block_size, device,
+                                        generator=data_rng)
         except ValueError as e:
             print(f"[!] {e}")
             break
@@ -1623,6 +1645,9 @@ def train(args: argparse.Namespace):
         # param_groups every step overwrote whatever the scheduler had just set,
         # so warmup and cosine decay never happened -- the run trained flat.
         cell_lrs = adaptive_lr_per_cell(args.lr, cell_tensions, cell_ages, step)
+        if cell_lrs and step % args.log_every == 0:
+            print(f"  [J1/Y3] adaptive per-cell LR (telemetry only, not applied): "
+                  f"mean {sum(cell_lrs) / len(cell_lrs):.2e} over {len(cell_lrs)} cells")
 
         # --- Backward + optimize ---
         optimizer.zero_grad()
@@ -1676,8 +1701,9 @@ def train(args: argparse.Namespace):
         # Step-time EMA: the only honest source for where growth has to stop.
         _dt = time.time() - _step_t0
         step_time_ema = _dt if step_time_ema == 0.0 else 0.98 * step_time_ema + 0.02 * _dt
-        if growth_baseline_s is None and step >= 200:
-            growth_baseline_s = step_time_ema
+        step_time_samples.append(_dt)
+        if len(step_time_samples) > 40:
+            del step_time_samples[0]
 
         # --- Validation ---
         if step % args.eval_every == 0 and step > 0 and len(val_data) > args.block_size + 1:
@@ -1786,6 +1812,10 @@ Examples:
                         help="Batch size (default: 32)")
     parser.add_argument("--lr", type=float, default=3e-4,
                         help="Base learning rate (default: 3e-4)")
+    parser.add_argument("--seed", type=int, default=1337,
+                        help="Run seed. Batch order uses a dedicated generator so that "
+                             "changing the cell count cannot shift the data stream "
+                             "(cell ops draw from the global RNG in an N-dependent amount).")
     parser.add_argument("--growth-slowdown", type=float, default=2.0,
                         help="How much slower a step may get before cell growth stops "
                              "(default: 2.0x the pre-growth baseline). This is a COST "

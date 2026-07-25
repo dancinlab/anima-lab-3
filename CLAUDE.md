@@ -189,30 +189,42 @@ bench_v2.py --verify 로 검증. 1개라도 실패 시 배포 금지.
 결과: docs/hypotheses/ 에 검증 보고서 생성
 ```
 
-## PURE training goals (3 metrics · mandatory)
+## PURE training goals (2 quality gates + population telemetry)
 
 ```
-A PURE run (train_conscious_lm.py) is judged on these three metrics ONLY.
+A PURE run (train_conscious_lm.py) is judged on two INDEPENDENT quality gates.
+Cell count is population/cost telemetry -- not evidence of differentiation and
+not evidence of language ability.
 Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3).
 
-  1. Phi growth — end Phi > start Phi
-     Segment means rise, or a drop is recovered by the ratchet.
+  1. Differentiation quality — population-normalised Phi must not fall as N grows
+     Raw Phi cannot certify differentiation: for a colony of identical CLONES
+     with pairwise MI = M, PhiCalculator's spatial term is M*(N-2)/2 -- linear in
+     N at zero differentiation. Measured Phi ~ 1.1-1.3 * N (2 cells 2.25, 3 cells
+     3.49, 5 cells 5.22, 16 cells 21.13) is therefore the population's shadow,
+     not integration. Record at every PhiCalculator eval, from its components:
+       phi_per_cell = phi / N · complexity_fraction = complexity / log2(N)
+       D = spatial/N + 0.5*temporal + 0.1*complexity_fraction
+     (temporal is ALREADY divided by N inside PhiCalculator -- do not divide again.)
+     Pass = growth starts early (milestones in the opening 5%, NF-2) AND D does
+     not fall across a population increase (compare 5 evals before vs 5 after).
+     `complexity` is the clone detector: exactly 0 for identical cells, log2(N)
+     at maximum. Raw Phi up with phi_per_cell down = population, not growth.
      Measured failure: flat near 0.5 for all 72,000 steps (clm_pure_300m_fix2)
 
-  2. Cell growth — the population keeps growing; no ceiling is set in advance
+  Population / cost telemetry — reported, never a gate
      --max-cells defaults to 0 = uncapped. Growth runs on the Fibonacci
      schedule and stops where the MACHINE stops it: every cell runs its own
      recurrence each step, so the cost lands in step time, and splitting halts
-     once step time passes --growth-slowdown (default 2.0x) of the pre-growth
-     baseline. The cell count it lands on is a MEASUREMENT to record, never a
-     number chosen up front. Set a positive --max-cells only to reproduce an
-     older bounded run.
-     Growth must also start early: milestones belong at the opening of the run,
-     since PhiCalculator's spatial term is identically zero at two cells (NF-2).
-     Measured failure: cells=2 throughout, first split scheduled at 66,666
-     while the differentiation phase ended at 60,000
+     once step time passes --growth-slowdown (default 2.0x) of the baseline,
+     which is frozen at the FIRST population increase (a fixed step 200 was
+     wrong -- on a short run the colony has already grown by then). Report final
+     N, splits, merges, steps/min and the MEASURED CEILING line. Under a fixed
+     wall-clock budget more cells means fewer gradient steps (measured 1.2% per
+     cell: 341 steps/min at 2 cells vs 283 at 16), so population can only cost
+     language, never buy it -- see the coherence note below.
 
-  3. CE drop — validation CE actually goes down
+  2. CE drop — validation CE actually goes down
      Measure on a FIXED span only: --val-bytes (default 262144 = 256KB), the
      same bytes at every eval. A single random batch (1,024B) is banned — it
      buried a 0.08-nat difference between two runs inside its own noise.
@@ -231,13 +243,25 @@ Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3)
      unigram table.
 
 Judging rules:
-  - If ANY of the three stalls, record the run as a failure and document why.
-  - Loss falling while the three stay flat means the objective is being gamed:
+  - Success = BOTH gates: D non-inferior across growth AND unseen-line CE falling.
+    Population is reported next to them, never counted as a third success.
+  - If either gate stalls, record the run as a failure and document why.
+  - Loss falling while both gates stay flat means the objective is being gamed:
     read the checkpoint's loss weights (log_vars) first (the NF-3 diagnosis).
   - Changing the objective or the schedule means step 0 and a fresh checkpoint
-    dir (--resume is refused across an objective change).
-  - A run watcher must carry a failure condition for EACH of the three, so that
-    silence cannot look like success (Phi stall · no cell split · CE not falling).
+    dir (--resume is refused across an objective change). Runs are seeded
+    (--seed, batch order on its own generator) so two runs are comparable at all
+    -- cell ops draw from the global RNG in an N-dependent amount.
+  - A run watcher must report three INDEPENDENT states so silence cannot look
+    like success: differentiation (D) · population/cost (N, steps/min, ceiling)
+    · language (unseen-line fixed-span CE). No split is a population event, not
+    automatically a quality failure.
+  - Coherence note (NF-8, verified in code): cell count is causally disconnected
+    from CE in this architecture. mitosis.process() runs under no_grad, the cells
+    are absent from the optimizer, DD16 inter-cell attention detaches input AND
+    output and feeds no loss (so its parameters never train), and the cells'
+    returned result is never read -- `mitosis_result` is assigned and dropped.
+    Do not expect gates 1 and 2 to trade off; they guard different failures.
 ```
 
 ## Work Rules
