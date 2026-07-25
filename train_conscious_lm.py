@@ -479,27 +479,29 @@ def get_phase(step: int, total_steps: int, forced_phase: Optional[str] = None,
               talk5: bool = False) -> str:
     """Determine training phase based on progress.
 
-    talk5=True: TALK5 strategy (consciousness first 60%, language 40%)
-    - Phase 1 (0-60%): MITOSIS — grow cells, build high Φ
-    - Phase 2 (60-100%): COMBINED — language learning with high consciousness
-    Benchmark: CE drops 99.7% when consciousness is built first.
+    CE now runs from step 0. The CE-free MITOSIS phase used to own the first 30%
+    (60% under talk5) on the claim that building consciousness first cuts CE by
+    99.7%; that number comes from a legacy Phi-proxy benchmark table where
+    "CE_final = 0.003" -- a value no byte model on a real corpus reaches -- and it
+    was never measured with this trainer's objective. What this pipeline actually
+    measured is the opposite: CE at the language boundary equalled ln(256) =
+    5.545, i.e. after 60,000 mitosis steps the transformer was still untrained.
+
+    Structurally it could not have been otherwise: of the mitosis loss list only
+    tension_var reaches the graph, and it satiates by ~step 800 (composite pinned
+    at 0.7065 = ln 2 competition constant + 0.0134 tension term), while the cell
+    minds run under no_grad and are not in the optimizer at all. The phase spent
+    ~1.3% of its steps carrying a gradient.
+
+    Cell growth does not need the phase -- it is driven by the Fibonacci milestone
+    loop, which is confined to the early window by fibonacci_milestones().
+    MITOSIS survives only as an explicit --phase override for experiments.
     """
     if forced_phase:
         return forced_phase
     progress = step / max(total_steps, 1)
-    if talk5:
-        # TALK5: consciousness first (60%), then language (40%)
-        if progress < 0.60:
-            return TrainingPhase.MITOSIS
-        else:
-            return TrainingPhase.COMBINED
-    # Standard: mitosis(30%) → language(40%) → combined(30%)
-    if progress < 0.30:
-        return TrainingPhase.MITOSIS
-    elif progress < 0.70:
-        return TrainingPhase.LANGUAGE
-    else:
-        return TrainingPhase.COMBINED
+    boundary = 0.60 if talk5 else 0.70
+    return TrainingPhase.LANGUAGE if progress < boundary else TrainingPhase.COMBINED
 
 
 # ---------------------------------------------------------------------------
@@ -855,7 +857,12 @@ def train(args: argparse.Namespace):
     # Confine growth to the differentiation phase (see get_phase): mitosis ends
     # at 30% of the run (60% under talk5). Cells must reach max_cells BEFORE the
     # language phase starts, otherwise mitosis differentiates nothing.
-    _growth_fraction = 0.60 if getattr(args, 'talk5', False) else 0.30
+    # With CE running from step 0 there is no CE-free window to grow inside, so
+    # growth is compressed to the opening of the run: cells must be at max_cells
+    # while the bulk of language training happens (PURE metric 2), and Phi needs
+    # cells > 2 as early as possible -- PhiCalculator's spatial term is
+    # identically zero at two cells (the only bipartition cuts the only MI edge).
+    _growth_fraction = 0.05
     fib_milestones = fibonacci_milestones(args.steps, max_cells=args.max_cells,
                                           growth_fraction=_growth_fraction)
     print(f"[fibonacci] Growth milestones: {fib_milestones}")
@@ -928,6 +935,8 @@ def train(args: argparse.Namespace):
     phi_prev = 0.0
     phi_floor = 0.0  # PHI-K2: Φ floor for emergency boost
     phi_current = 0.0
+    phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
+    phi_calc_history = []        # [(step, phi)] for the start-vs-end verdict
     skip_count = 0
     best_val_loss = float("inf")
     cells_frozen = False  # TRAIN-PHI-2: cells freeze after Φ target reached
@@ -1018,11 +1027,15 @@ def train(args: argparse.Namespace):
         else:
             phi_current = 0.0
         phi_components = {}
-        # Full PhiCalculator every 5000 steps for calibration
-        if step % 5000 == 0:
+        # PhiCalculator is the canonical metric-1 number (PURE training goals).
+        # The `phi` column is a prediction-error proxy from a predictor that is
+        # reinitialised every 200 steps, so it is not comparable start-to-end;
+        # it stays for continuity but the run is judged on phi_calc_last.
+        if step % args.eval_every == 0:
             try:
                 phi_real, phi_components = phi_calc.compute_phi(mitosis)
-                print(f"  [Φ] PE-proxy={phi_current:.1f}, PhiCalc={phi_real:.3f}")
+                phi_calc_last = phi_real
+                phi_calc_history.append((step, phi_real))
             except Exception:
                 pass
 
@@ -1435,37 +1448,27 @@ def train(args: argparse.Namespace):
                 if step % 1000 == 0:
                     print(f"  [Hebbian] Error: {e}")
 
-        # --- Phase-dependent loss combination ---
+        # --- Loss combination ---
+        # phi_diff, competition and myelination are built from Python floats
+        # (phi_current = pe.item(); cell tensions come out of MitosisEngine, whose
+        # cell minds run under no_grad and are not in the optimizer). They are
+        # CONSTANTS with respect to every trained parameter -- telemetry that was
+        # being fed to an optimizer. Two of them are setpoints besides
+        # (myelination: "mature cells shall have low tension"; competition:
+        # "the tension distribution shall have low entropy"), which project rule 2
+        # forbids. They stay in the log; they leave the objective.
+        ZERO = torch.tensor(0.0, device=device)
+        losses_list = [
+            loss_ce_fwd,
+            loss_ce_bwd,
+            loss_tension_var,   # the one structure term with a real gradient
+            ZERO,               # phi_diff     -> telemetry (details["tele_phi"])
+            ZERO,               # competition  -> telemetry
+            ZERO,               # myelination  -> telemetry
+        ]
         if phase == TrainingPhase.MITOSIS:
-            # CL1: Pure differentiation — no CE, only structure losses
-            losses_list = [
-                torch.tensor(0.0, device=device),   # no CE fwd
-                torch.tensor(0.0, device=device),   # no CE bwd
-                loss_tension_var,                     # tension diversity
-                loss_phi,                             # phi growth
-                loss_compete,                         # competition
-                loss_myelin,                          # myelination
-            ]
-        elif phase == TrainingPhase.LANGUAGE:
-            # CE + mild Phi regularization
-            losses_list = [
-                loss_ce_fwd,
-                loss_ce_bwd,
-                loss_tension_var * 0.1,               # reduced weight
-                loss_phi * 0.3,                       # mild Phi reg
-                torch.tensor(0.0, device=device),    # no competition yet
-                torch.tensor(0.0, device=device),    # no myelination yet
-            ]
-        else:
-            # TrainingPhase.COMBINED: Full DD16 — all 6 losses active
-            losses_list = [
-                loss_ce_fwd,
-                loss_ce_bwd,
-                loss_tension_var,
-                loss_phi,
-                loss_compete,
-                loss_myelin,
-            ]
+            # --phase mitosis override only: CE off, structure term alone.
+            losses_list[0] = losses_list[1] = ZERO
 
         # --- SL3: Ensemble combination with learned weights ---
         total_loss, loss_details = loss_ensemble(losses_list)
@@ -1517,16 +1520,13 @@ def train(args: argparse.Namespace):
                     # Φ 부스트 적용 후의 상태를 새 frozen으로
                     frozen_cell_states = [c.hidden.clone() for c in mitosis.cells]
 
-        # NF9: Reset to EMA at phase transitions (mitosis→language, language→combined)
+        # NF9/NF2 (EMA reset + LR x0.1 at every phase transition) were insurance
+        # against the CE cliff at the mitosis->language boundary. CE is continuous
+        # from step 0 now and LANGUAGE/COMBINED carry the same loss list, so there
+        # is no cliff to absorb -- while a x0.1 cut at 70% on top of cosine
+        # annealing would have frozen the last third of training.
         if phase != prev_phase:
-            print(f"  [NF9] Phase transition {prev_phase} → {phase}: resetting to EMA weights")
-            with torch.no_grad():
-                for ep, p in zip(ema_params, model.parameters()):
-                    p.data.copy_(ep)
-            # Also reduce LR at transition (NF2)
-            for pg in optimizer.param_groups:
-                pg['lr'] = pg['lr'] * 0.1
-            print(f"  [NF2] LR reduced to {optimizer.param_groups[0]['lr']:.2e}")
+            print(f"  [phase] {prev_phase} → {phase} (loss list unchanged; no LR/EMA intervention)")
 
         phi_prev = phi_current
 
@@ -1549,7 +1549,8 @@ def train(args: argparse.Namespace):
             val_bpc = val_loss / math.log(2)
 
             print(f"  [val] loss={val_loss:.4f}  BPC={val_bpc:.4f}  "
-                  f"(best={best_val_loss:.4f})")
+                  f"(best={best_val_loss:.4f})  "
+                  f"Phi={phi_calc_last:.4f}  cells={len(mitosis.cells)}")
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
