@@ -878,9 +878,15 @@ def train(args: argparse.Namespace):
     # in the training split -- measured at step 20,000, that inflated the reported
     # score 2.4x: 0.594 BPC on the raw held-out span versus 1.401 BPC on lines the
     # model had never seen. Keep only the lines that are genuinely unseen.
-    train_lines = set(bytes(train_data.numpy()).split(b"\n"))
+    # bytes() reads a numpy array's RAW BUFFER, so an int64 tensor yields 8 bytes
+    # per element -- the real byte followed by seven zeros. Splitting that on b"\n"
+    # compares garbage, and the "unseen" join came back 8x larger than the span it
+    # was filtered from (16,683,944 bytes out of a 2,085,493-byte held-out split,
+    # ratio exactly 8.00), so validation was scoring the model on a mostly-zero
+    # stream it had never seen. Cast to uint8 first.
+    train_lines = set(bytes(train_data.to(torch.uint8).numpy()).split(b"\n"))
     unseen = b"\n".join(
-        ln for ln in bytes(val_raw.numpy()).split(b"\n")
+        ln for ln in bytes(val_raw.to(torch.uint8).numpy()).split(b"\n")
         if len(ln) > 8 and ln not in train_lines
     )
     if len(unseen) > (1 << 18):        # keep the fallback honest, not silent
