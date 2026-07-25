@@ -1130,8 +1130,16 @@ def train(args: argparse.Namespace):
             break
 
         # --- DD5: Φ self-reference (EX24) — feed previous Φ as input bias ---
-        # Applied before forward pass using phi_prev (available from last step)
-        if phase == TrainingPhase.COMBINED and phi_prev > 0:
+        # Off by default. Measured (NF-8 §6-b): this is the ONLY path by which the
+        # cell population reaches the LM, and it is a perturbation rather than a
+        # signal -- the value is constant across batch, position AND all d_model
+        # dimensions, so it carries exactly zero per-token information, while
+        # `evaluate_fixed_span` never sees it (cleared before eval), i.e. the model
+        # trains with a bias validation does not have. In a bit-exact 2-cell vs
+        # 4-cell comparison the arms were identical for every language-phase step
+        # and diverged only here, by 0.0009 nats. Kept behind a flag so the DD5
+        # hypothesis stays testable on purpose instead of running by accident.
+        if args.phi_self_ref and phase == TrainingPhase.COMBINED and phi_prev > 0:
             phi_signal = torch.full_like(x.float(), phi_prev * 0.05)
             # x is long (byte indices); phi_signal modulates the embedding inside model
             # We store it for the model to pick up via a temporary attribute
@@ -1817,6 +1825,13 @@ Examples:
                         help="Batch size (default: 32)")
     parser.add_argument("--lr", type=float, default=3e-4,
                         help="Base learning rate (default: 3e-4)")
+    parser.add_argument("--phi-self-ref", action="store_true",
+                        help="DD5/EX24: add phi_prev*0.05 to the embeddings during the "
+                             "COMBINED phase. Off by default -- it is constant across "
+                             "batch, position and every dimension (zero per-token "
+                             "information) and validation never sees it, so it is a "
+                             "train/eval mismatch, and it is the only measured path from "
+                             "the cell population to the LM (NF-8).")
     parser.add_argument("--seed", type=int, default=1337,
                         help="Run seed. Batch order uses a dedicated generator so that "
                              "changing the cell count cannot shift the data stream "
