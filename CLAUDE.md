@@ -199,10 +199,18 @@ Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3)
      Segment means rise, or a drop is recovered by the ratchet.
      Measured failure: flat near 0.5 for all 72,000 steps (clm_pure_300m_fix2)
 
-  2. Cell growth — reach max_cells BEFORE the language phase starts
-     Every Fibonacci milestone must land inside the mitosis phase (NF-2).
+  2. Cell growth — the population keeps growing; no ceiling is set in advance
+     --max-cells defaults to 0 = uncapped. Growth runs on the Fibonacci
+     schedule and stops where the MACHINE stops it: every cell runs its own
+     recurrence each step, so the cost lands in step time, and splitting halts
+     once step time passes --growth-slowdown (default 2.0x) of the pre-growth
+     baseline. The cell count it lands on is a MEASUREMENT to record, never a
+     number chosen up front. Set a positive --max-cells only to reproduce an
+     older bounded run.
+     Growth must also start early: milestones belong at the opening of the run,
+     since PhiCalculator's spatial term is identically zero at two cells (NF-2).
      Measured failure: cells=2 throughout, first split scheduled at 66,666
-     while mitosis ended at 60,000
+     while the differentiation phase ended at 60,000
 
   3. CE drop — validation CE actually goes down
      Measure on a FIXED span only: --val-bytes (default 262144 = 256KB), the

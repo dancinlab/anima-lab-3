@@ -214,15 +214,26 @@ def fibonacci_milestones(total_steps: int, max_cells: int = 8,
 
     The leading Fibonacci duplicate (1, 1) is de-duplicated; otherwise the first
     slot of the schedule was a no-op split target.
+
+    max_cells <= 0 means NO CEILING (the default): the population keeps growing
+    for the whole run at the same cadence the bounded schedule uses inside its
+    window. Where growth actually stops is then a MEASURED limit -- step time and
+    memory as the cell population runs every step -- not a number picked in
+    advance. Record where it stopped; do not pre-decide it.
     """
-    fib = _generate_fibonacci(max_cells)
-    usable = sorted({f for f in fib if f <= max_cells})
     span = max(int(total_steps * growth_fraction), 1)
-    milestones = {}
-    n = len(usable)
-    for i, count in enumerate(usable):
-        step = int(span * i / max(n, 1))
-        milestones[step] = count
+    if max_cells and max_cells > 0:
+        usable = sorted({f for f in _generate_fibonacci(max_cells) if f <= max_cells})
+        return {int(span * i / max(len(usable), 1)): c for i, c in enumerate(usable)}
+
+    # Uncapped: keep the window cadence (6 levels inside `span`) and carry it
+    # across the run, so the schedule never runs out of levels to reach.
+    interval = max(1, span // 6)
+    milestones, a, b, step = {}, 1, 2, 0
+    while step < total_steps:
+        milestones[step] = a
+        a, b = b, a + b
+        step += interval
     return milestones
 
 
@@ -919,7 +930,7 @@ def train(args: argparse.Namespace):
         hidden_dim=128,
         output_dim=64,
         initial_cells=2,          # CB1: minimum 2 cells for consciousness
-        max_cells=args.max_cells,
+        max_cells=args.max_cells if args.max_cells > 0 else 10 ** 9,
         split_threshold=2.0,
         split_patience=5,
         merge_threshold=0.01 * (64.0 / max(args.dim, 64)),  # SC2: dim-inverse merge threshold
@@ -1026,6 +1037,9 @@ def train(args: argparse.Namespace):
     phi_prev = 0.0
     phi_floor = 0.0  # PHI-K2: Φ floor for emergency boost
     phi_current = 0.0
+    step_time_ema = 0.0          # measured cost per step; the growth ceiling comes from this
+    growth_baseline_s = None     # step time before the population started growing
+    growth_halted = False
     phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
     phi_calc_history = []        # [(step, phi)] for the start-vs-end verdict
     skip_count = 0
@@ -1050,19 +1064,36 @@ def train(args: argparse.Namespace):
     t0 = time.time()
 
     for step in range(start_step, args.steps):
+        _step_t0 = time.time()
         phase = get_phase(step, args.steps, args.phase, talk5=getattr(args, 'talk5', False))
         model.train()
 
         # --- Fibonacci cell growth (DD3) ---
+        # With no ceiling configured, growth stops where the MACHINE stops it:
+        # every cell runs its own recurrence each step, so the population's cost
+        # shows up directly in step time. Splitting continues until step time has
+        # grown past the allowed multiple of the pre-growth baseline, and the
+        # stopping point is logged as a measurement -- nobody decides it up front.
         for milestone_step, target_cells in sorted(fib_milestones.items()):
             if step == milestone_step and len(mitosis.cells) < target_cells:
-                while len(mitosis.cells) < target_cells and len(mitosis.cells) < args.max_cells:
+                if (growth_baseline_s is not None
+                        and step_time_ema > growth_baseline_s * args.growth_slowdown):
+                    if not growth_halted:
+                        growth_halted = True
+                        print(f"  [growth] MEASURED CEILING at {len(mitosis.cells)} cells, "
+                              f"step {step}: step time {step_time_ema * 1e3:.0f}ms vs baseline "
+                              f"{growth_baseline_s * 1e3:.0f}ms (budget x{args.growth_slowdown}). "
+                              f"Growth stops here -- this number is data, not a setting.")
+                    continue
+                hard_cap = args.max_cells if args.max_cells > 0 else float("inf")
+                while len(mitosis.cells) < target_cells and len(mitosis.cells) < hard_cap:
                     parent = mitosis.cells[-1]
                     event = mitosis.split_cell(parent)
-                    if event:
-                        mitosis.event_log.append(event)
-                        print(f"  [fibonacci] Step {step}: cell count -> {len(mitosis.cells)} "
-                              f"(target {target_cells})")
+                    if not event:
+                        break
+                    mitosis.event_log.append(event)
+                    print(f"  [fibonacci] Step {step}: cell count -> {len(mitosis.cells)} "
+                          f"(target {target_cells}, step time {step_time_ema * 1e3:.0f}ms)")
 
         # --- Get batch ---
         try:
@@ -1642,6 +1673,12 @@ def train(args: argparse.Namespace):
                 f"{len(mitosis.cells):5d} | {current_lr:9.2e} | {skip_count:4d}"
             )
 
+        # Step-time EMA: the only honest source for where growth has to stop.
+        _dt = time.time() - _step_t0
+        step_time_ema = _dt if step_time_ema == 0.0 else 0.98 * step_time_ema + 0.02 * _dt
+        if growth_baseline_s is None and step >= 200:
+            growth_baseline_s = step_time_ema
+
         # --- Validation ---
         if step % args.eval_every == 0 and step > 0 and len(val_data) > args.block_size + 1:
             val_loss = evaluate_fixed_span(
@@ -1749,8 +1786,16 @@ Examples:
                         help="Batch size (default: 32)")
     parser.add_argument("--lr", type=float, default=3e-4,
                         help="Base learning rate (default: 3e-4)")
-    parser.add_argument("--max-cells", type=int, default=8,
-                        help="Maximum mitosis cells (default: 8)")
+    parser.add_argument("--growth-slowdown", type=float, default=2.0,
+                        help="How much slower a step may get before cell growth stops "
+                             "(default: 2.0x the pre-growth baseline). This is a COST "
+                             "budget, not a ceiling on the population -- the cell count "
+                             "it lands on is measured and logged.")
+    parser.add_argument("--max-cells", type=int, default=0,
+                        help="Ceiling on mitosis cells. Default 0 = NO CEILING: the "
+                             "population keeps growing and where it stops is measured "
+                             "(step time / memory), not pre-decided. Set a positive "
+                             "number only to reproduce an older bounded run.")
 
     # Training phase override
     parser.add_argument("--phase", type=str, default=None,
