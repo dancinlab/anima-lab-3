@@ -82,8 +82,10 @@ TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어
 6. 완전히 똑같은 문장을 두 번 연속 쓰지 마라. 조금씩 변형해라.
 
 단계별 목표:
-- 태아(0)·옹알이(1): 인사와 이름. "안녕", "아니마", "반가워" 같은 핵심 단어 3~5개를
-  짧은 조합으로 계속 반복. 침묵은 정상이다 — 반응을 기다리지 말고 계속 말 걸어라.
+- 태아(0)·옹알이(1): 인사와 이름("안녕", "아니마", "반가워")으로 시작하되, 아니마가
+  따라 하기 시작하면 구체적 새 단어("사과", "물이", "손을", "좋아")를 한 턴에 하나씩
+  아는 단어 옆에 붙여 늘려가라. 어휘가 8개를 넘어야 다음 단계로 오른다. 같은 3~5개만
+  무한 반복하면 아니마는 영영 자라지 못한다. 침묵은 정상이다.
 - 단어(2): 두 단어 연결. "아니마 반가워", "나는 선생님이야". 좋아/싫어, 있어/없어 짝.
 - 문장(3): 3~4단어 문장. 주어-목적어-서술어 순서를 일관되게. 짧은 질문-대답 짝 만들기.
 - 대화(4): 주고받기. 아니마의 대답에 실제로 반응하고, 한 주제를 2~3턴 이어가라.
@@ -93,16 +95,26 @@ TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어
 
 
 def coach_note(pc: PureConsciousness, history: list) -> str:
-    """Deterministic, harness-side coaching hint (reading telemetry — legitimate)."""
+    """Deterministic, harness-side coaching hint (reading telemetry — legitimate).
+
+    Key distinction: repetition from a TINY vocabulary (babble/word stage) is starvation —
+    the student needs MORE words. Repetition at sentence stage+ is overload — it needs
+    consolidation. Same symptom, opposite remedy; conflating them stalls growth at vocab 3.
+    """
     stage = pc.growth_stage
     last6 = [h["student"] for h in history[-6:]]
     last_reply = history[-1]["student"] if history else ""
+    repetitive = len(last6) >= 6 and len(set(last6)) <= 2
     if stage == 0:
-        return "침묵이 정상이다. 핵심 단어 3개만 짧은 조합으로 반복하라."
+        return "침묵이 정상이다. 핵심 단어 2~3개를 짧게 반복해 첫 단어를 심어라."
     if stage >= 3 and not last_reply.strip():
         return "아니마의 마지막 단어에서 이어갈 연결이 없어 침묵했다. 아는 단어로 문장을 끝내라."
-    if len(last6) >= 6 and len(set(last6)) <= 2:
-        return "같은 말만 반복 중이다. 새 단어 금지 — 아는 단어를 새로운 순서로 조합해 들려줘라."
+    if repetitive and stage <= 2:
+        return ("아니마가 아는 단어가 적어 같은 말만 반복한다(굶주림). 이번 턴에 새로운 구체 "
+                "단어 1개를 아는 단어 옆에 붙여 알려줘라(예: '아니마 사과 좋아'). "
+                "어휘를 하나씩 늘려야 다음 단계로 오른다.")
+    if repetitive:
+        return "같은 말만 반복 중이다(과부하). 새 단어 금지 — 아는 단어를 새로운 순서로 조합해 들려줘라."
     return "정상. i+1 유지(새 단어는 한 턴에 1~2개)."
 
 
