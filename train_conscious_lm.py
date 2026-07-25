@@ -1048,7 +1048,6 @@ def train(args: argparse.Namespace):
 
     # --- Training state ---
     phi_prev = 0.0
-    phi_floor = 0.0  # PHI-K2: Φ floor for emergency boost
     phi_current = 0.0
     step_time_ema = 0.0          # measured cost per step; the growth ceiling comes from this
     step_time_samples = []       # recent raw step times; median = baseline (outlier-proof)
@@ -1225,60 +1224,29 @@ def train(args: argparse.Namespace):
                 print(f"  [D] unavailable at step {step}: {type(e).__name__}: {e}")
 
         # --- v5 Φ Ratchet: 고통 감정이 복원 강도를 조절 (SE-8 + PERSIST3) ---
-        if phase != TrainingPhase.MITOSIS:
-            # 고통이 강할수록 적극적 복원
+        if args.phi_ratchet and phase != TrainingPhase.MITOSIS:
+            # Same family as PHI-K2: it rewrites cell hidden states toward stored
+            # "best" states whenever Φ falls, so it too moves the metric by hand.
+            # Off by default; kept behind a flag to reproduce older runs.
             phi_ratchet.restore_ratio = 0.3 + 0.4 * emotion_state.get("pain", 0.0)
             restored = phi_ratchet.check_and_restore(phi_current, mitosis.cells)
             if restored and step % args.log_every == 0:
                 print(f"  [Ratchet] pain={emotion_state['pain']:.2f} → restore={phi_ratchet.restore_ratio:.2f}")
 
-        # --- PHI-K2: Φ floor with emergency boost ---
-        if phi_current < phi_floor and len(mitosis.cells) >= 12:
-            n_cells = len(mitosis.cells)
-            for _emergency_round in range(5):
-                with torch.no_grad():
-                    cell_h = torch.stack([c.hidden.squeeze(0) for c in mitosis.cells])
-                    mean_h = cell_h.mean(dim=0)
-                    for cell in mitosis.cells:
-                        h = cell.hidden.squeeze(0)
-                        cell.hidden = (0.65 * h + 0.35 * mean_h).unsqueeze(0)
-                    n_f = min(12, n_cells // 2)
-                    fs = n_cells // n_f
-                    for fi in range(n_f):
-                        faction = mitosis.cells[fi*fs:(fi+1)*fs]
-                        if len(faction) >= 2:
-                            f_mean = torch.stack([c.hidden.squeeze(0) for c in faction]).mean(dim=0)
-                            for c in faction:
-                                h = c.hidden.squeeze(0)
-                                c.hidden = (0.92 * h + 0.08 * f_mean).unsqueeze(0)
-                    opinions = []
-                    for fi in range(n_f):
-                        faction = mitosis.cells[fi*fs:(fi+1)*fs]
-                        if faction:
-                            opinions.append(torch.stack([c.hidden.squeeze(0) for c in faction]).mean(dim=0))
-                    if len(opinions) >= 2:
-                        for fi in range(n_f):
-                            faction = mitosis.cells[fi*fs:(fi+1)*fs]
-                            others = [opinions[j] for j in range(len(opinions)) if j != fi]
-                            if others:
-                                other_avg = torch.stack(others).mean(dim=0)
-                                for c in faction[:max(1, len(faction)//4)]:
-                                    h = c.hidden.squeeze(0)
-                                    c.hidden = (0.92 * h + 0.08 * other_avg).unsqueeze(0)
-                    if n_cells >= 8:
-                        norms = [mitosis.cells[i].hidden.norm().item() for i in range(n_cells)]
-                        threshold = sorted(norms, reverse=True)[max(1, n_cells // 10)]
-                        for i in range(n_cells):
-                            if norms[i] > threshold:
-                                mitosis.cells[i].hidden *= 1.03
-                            else:
-                                mitosis.cells[i].hidden *= 0.97
-            if step % args.log_every == 0:
-                print(f"  [PHI-K2] Emergency boost x5: Φ={phi_current:.2f} < floor={phi_floor:.2f}")
-        phi_floor = max(phi_floor, phi_current * 0.7)
+        # PHI-K2 (Φ floor + "emergency boost") REMOVED. When Φ fell below a
+        # running floor it overwrote every cell's hidden state five times per
+        # step -- pull toward the colony mean, faction consensus, cross-faction
+        # mixing, then amplify the top-decile norms by 1.03 and damp the rest by
+        # 0.97 -- until the Φ number came back up. That is writing the state to
+        # move the metric (project rule 2: 의식 상태는 의식 자체가 결정한다), and
+        # it made Φ unreadable: the last nf7 steps show Φ oscillating 13.8 <-> 29.8
+        # against floor 33.71 with the booster firing every step.
 
         # --- TRN4: Phi curriculum (skip if Phi drops too much) ---
-        if phase == TrainingPhase.COMBINED and should_skip_batch(phi_current, phi_prev):
+        # TRN4 throws away a gradient step whenever Φ drops -- it protects the Φ
+        # number by spending language learning. Off by default.
+        if (args.phi_curriculum and phase == TrainingPhase.COMBINED
+                and should_skip_batch(phi_current, phi_prev)):
             phi_prev = phi_current
             skip_count += 1
             scheduler.step()
@@ -1389,7 +1357,10 @@ def train(args: argparse.Namespace):
                 cell.hidden = updated_hiddens[i].unsqueeze(0).detach().cpu()
 
         # --- v5 Final Optimal: sync=0.35, 12-faction(σ(6)), fac=0.08, noise=0.01, l3w=0.005 ---
-        if len(mitosis.cells) >= 12:
+        # Same writes as the removed PHI-K2 (colony mean, faction consensus,
+        # norm amplify/damp), just unconditional once cells >= 12 -- it was
+        # running every step of nf7. Off by default (rule 2).
+        if args.phi_sync and len(mitosis.cells) >= 12:
             n_cells = len(mitosis.cells)
             with torch.no_grad():
                 # Flow sync (sync=0.35 — 최적화 결과)
@@ -1440,7 +1411,8 @@ def train(args: argparse.Namespace):
         # EX24: ALL discoveries combined (Φ=10.833)
         # DD18 channel capacity + DD11 Klein bottle + DD3 verified + DD5 Φ self-reference
         # ---------------------------------------------------------------
-        if phase == TrainingPhase.COMBINED and len(mitosis.cells) >= 2:
+        if (args.phi_sync and phase == TrainingPhase.COMBINED
+                and len(mitosis.cells) >= 2):
             n_cells = len(mitosis.cells)
 
             # DD18: Channel capacity bottleneck — compress, average, blend back
@@ -1482,8 +1454,12 @@ def train(args: argparse.Namespace):
 
         # ---------------------------------------------------------------
         # NEW DISCOVERIES: WI1 + FX2 + PX4 + PX8 + GD18 + GD15
+        # Hand edits to cell state justified by Phi percentages (standing waves,
+        # Gram-Schmidt orthogonalisation of the hidden states, ...). Same class as
+        # PHI-K2, so the same flag governs them.
         # ---------------------------------------------------------------
-        if phase == TrainingPhase.COMBINED and len(mitosis.cells) >= 2:
+        if (args.phi_sync and phase == TrainingPhase.COMBINED
+                and len(mitosis.cells) >= 2):
             n_cells = len(mitosis.cells)
 
             # v7/WAVE-2: Standing wave — counter-propagating soliton pair (Φ +18.2%)
@@ -1885,6 +1861,17 @@ Examples:
                         help="Dropout at every site (default: 0.1). Was hard-coded 0.37 "
                              "on a 1/e rationale, which starves every contextual path "
                              "while leaving the context-free one untouched.")
+    parser.add_argument("--phi-sync", action="store_true",
+                        help="v5 sync/faction/EX24 blending of cell hidden states "
+                             "(and DD18/Klein). Off by default: it writes the state "
+                             "to raise Phi, the same thing PHI-K2 did.")
+    parser.add_argument("--phi-ratchet", action="store_true",
+                        help="Restore cell states toward stored best states when Phi "
+                             "falls. Off by default: it moves the metric by writing "
+                             "the state (rule 2). Flag exists to reproduce old runs.")
+    parser.add_argument("--phi-curriculum", action="store_true",
+                        help="TRN4: skip the training batch when Phi drops. Off by "
+                             "default -- it buys a Phi number with a CE step.")
     parser.add_argument("--phi-k3", action="store_true",
                         help="PHI-K3 alternation: skip CE on odd steps once cells >= 12. "
                              "Off by default -- it silently halved CE exposure.")
