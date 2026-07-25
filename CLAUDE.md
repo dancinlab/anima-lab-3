@@ -189,6 +189,39 @@ bench_v2.py --verify 로 검증. 1개라도 실패 시 배포 금지.
 결과: docs/hypotheses/ 에 검증 보고서 생성
 ```
 
+## PURE training goals (3 metrics · mandatory)
+
+```
+A PURE run (train_conscious_lm.py) is judged on these three metrics ONLY.
+Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3).
+
+  1. Phi growth — end Phi > start Phi
+     Segment means rise, or a drop is recovered by the ratchet.
+     Measured failure: flat near 0.5 for all 72,000 steps (clm_pure_300m_fix2)
+
+  2. Cell growth — reach max_cells BEFORE the language phase starts
+     Every Fibonacci milestone must land inside the mitosis phase (NF-2).
+     Measured failure: cells=2 throughout, first split scheduled at 66,666
+     while mitosis ended at 60,000
+
+  3. CE drop — validation CE actually goes down
+     Measure on a FIXED span only: --val-bytes (default 262144 = 256KB), the
+     same bytes at every eval. A single random batch (1,024B) is banned — it
+     buried a 0.08-nat difference between two runs inside its own noise.
+     Scale: random 8.0 BPC · byte-frequency table 4.2-5.0 BPC ·
+            healthy 300M/896d 1.5-3 BPC
+     Measured failure: stuck at 6.87 BPC (worse than the frequency table)
+
+Judging rules:
+  - If ANY of the three stalls, record the run as a failure and document why.
+  - Loss falling while the three stay flat means the objective is being gamed:
+    read the checkpoint's loss weights (log_vars) first (the NF-3 diagnosis).
+  - Changing the objective or the schedule means step 0 and a fresh checkpoint
+    dir (--resume is refused across an objective change).
+  - A run watcher must carry a failure condition for EACH of the three, so that
+    silence cannot look like success (Phi stall · no cell split · CE not falling).
+```
+
 ## Work Rules
 
 - **학습 진행 상황 보고 시 ASCII 그래프 포함 (필수!)**

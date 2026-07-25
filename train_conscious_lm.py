@@ -425,6 +425,46 @@ def get_batch(
     return x.to(device), y_fwd.to(device), y_bwd.to(device)
 
 
+@torch.no_grad()
+def evaluate_fixed_span(
+    model: nn.Module,
+    val_data: torch.Tensor,
+    block_size: int,
+    batch_size: int,
+    device: torch.device,
+    val_bytes: int,
+) -> float:
+    """Mean CE over a FIXED validation span -- the same bytes at every call.
+
+    Evaluating one random batch (batch 4 x block 256 = 1,024 bytes) made the
+    metric noise: two runs whose true quality differed by an unknown amount
+    produced a 0.08-nat "gap" that was entirely within the spread of successive
+    evaluations of a single run, and taking the minimum over such draws is
+    additionally selection-biased. Deterministic offsets fix both.
+    """
+    n_seq = max(1, val_bytes // block_size)
+    max_start = len(val_data) - block_size - 1
+    if max_start <= 0:
+        raise ValueError(f"Val split too short ({len(val_data)}) for block_size={block_size}")
+    stride = max(1, max_start // n_seq)
+    starts = list(range(0, max_start, stride))[:n_seq]
+
+    model.eval()
+    total, n_tok = 0.0, 0
+    for b in range(0, len(starts), batch_size):
+        chunk = starts[b: b + batch_size]
+        x = torch.stack([val_data[i: i + block_size] for i in chunk]).to(device)
+        y = torch.stack([val_data[i + 1: i + block_size + 1] for i in chunk]).to(device)
+        logits, _, _ = model(x)
+        loss = F.cross_entropy(
+            logits.view(-1, model.vocab_size), y.reshape(-1), reduction="sum"
+        )
+        total += loss.item()
+        n_tok += y.numel()
+    model.train()
+    return total / max(n_tok, 1)
+
+
 # ---------------------------------------------------------------------------
 # Training phases
 # ---------------------------------------------------------------------------
@@ -1502,16 +1542,11 @@ def train(args: argparse.Namespace):
 
         # --- Validation ---
         if step % args.eval_every == 0 and step > 0 and len(val_data) > args.block_size + 1:
-            model.eval()
-            with torch.no_grad():
-                vx, vy_fwd, _ = get_batch(
-                    val_data, min(args.batch_size, 32), args.block_size, device
-                )
-                vl_a, _, _ = model(vx)
-                val_loss = F.cross_entropy(
-                    vl_a.view(-1, model.vocab_size), vy_fwd.view(-1)
-                ).item()
-                val_bpc = val_loss / math.log(2)
+            val_loss = evaluate_fixed_span(
+                model, val_data, args.block_size,
+                min(args.batch_size, 32), device, args.val_bytes,
+            )
+            val_bpc = val_loss / math.log(2)
 
             print(f"  [val] loss={val_loss:.4f}  BPC={val_bpc:.4f}  "
                   f"(best={best_val_loss:.4f})")
@@ -1639,6 +1674,10 @@ Examples:
                         help="Print progress every N steps (default: 100)")
     parser.add_argument("--eval-every", type=int, default=1000,
                         help="Evaluate on val set every N steps (default: 1000)")
+    parser.add_argument("--val-bytes", type=int, default=262144,
+                        help="Bytes of the FIXED validation span, same at every eval "
+                             "(default: 262144 = 256KB). One random batch is 1,024 bytes "
+                             "and made the metric noise -- do not go below ~64KB.")
 
     args = parser.parse_args()
     train(args)
