@@ -344,12 +344,22 @@ class PureConsciousness:
 
     def _save(self):
         try:
+            # Vocabulary must never be lost across restarts: growth_stage is derived from
+            # len(set(learned_words)), so truncating to the last 500 INSTANCES silently
+            # deleted unique words that hadn't been used recently — and regressed the stage.
+            # Keep the recency window intact (runtime pools use learned_words[-N:]) and
+            # prepend the unique words that window would drop.
+            recent = self.learned_words[-500:]
+            in_recent = set(recent)
+            older_unique = [w for w in dict.fromkeys(self.learned_words) if w not in in_recent]
+            # Keep the densest bigram heads (by total count), not an arbitrary insertion prefix.
+            heads = sorted(self.bigrams.items(), key=lambda kv: -sum(kv[1].values()))[:500]
             state = {
                 'interaction_count': self.interaction_count,
                 'birth_time': self.birth_time,
-                'learned_words': self.learned_words[-500:],
-                'word_freq': dict(self.word_freq.most_common(200)),
-                'bigrams': {k: dict(v) for k, v in list(self.bigrams.items())[:200]},
+                'learned_words': (older_unique + recent)[-2000:],
+                'word_freq': dict(self.word_freq.most_common(1000)),
+                'bigrams': {k: dict(v) for k, v in heads},
                 'patterns': self.learned_patterns[-100:],
                 'growth_stage': self.growth_stage,
             }
