@@ -1084,6 +1084,7 @@ def train(args: argparse.Namespace):
     t0 = time.time()
 
     step_times = deque(maxlen=50)   # throughput guard (see MAX_STEP_SECONDS)
+    _growth_halted = False          # so a hardware halt is announced once, not silently
     _last_step_t = time.time()
     for step in range(start_step, args.steps):
         _now = time.time()
@@ -1131,10 +1132,23 @@ def train(args: argparse.Namespace):
             # GPU 0%. Allowing a couple of divisions per step keeps growth open-ended while
             # letting the hardware guards see the cost before it is paid. (Cells dividing a
             # few at a time rather than all at once is also the honest biology.)
+            _fast = _throughput_ok(step_times)
+            _room = _gpu_has_headroom(device)
             mitosis.max_cells = (len(mitosis.cells) + CELL_GROWTH_PER_STEP
-                                 if (_throughput_ok(step_times)
-                                     and _gpu_has_headroom(device))
-                                 else len(mitosis.cells))
+                                 if (_fast and _room) else len(mitosis.cells))
+            # Say so when the hardware stops growth. A silently frozen population is
+            # indistinguishable in the log from a population that finished growing, and
+            # "silence must not look like success" is the whole point of the run gates.
+            if not (_fast and _room):
+                if not _growth_halted:
+                    _growth_halted = True
+                    _why = "throughput" if not _fast else "GPU memory"
+                    _avg = sum(list(step_times)[-20:]) / max(len(list(step_times)[-20:]), 1)
+                    print(f"  [cells] GROWTH HALTED by {_why} at {len(mitosis.cells)} cells "
+                          f"({_avg:.2f}s/step) — hardware limit, not a designed cap")
+            elif _growth_halted:
+                _growth_halted = False
+                print(f"  [cells] growth resumed at {len(mitosis.cells)} cells")
 
         # --- Get batch ---
         try:
