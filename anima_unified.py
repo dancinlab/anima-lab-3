@@ -3076,7 +3076,11 @@ class AnimaUnified:
     async def _ws_broadcast(self, msg):
         data = json.dumps(msg, ensure_ascii=False)
         dead = set()
-        for ws in self.web_clients:
+        # Iterate a SNAPSHOT: each send awaits, and a client connecting or dropping during
+        # that await mutates web_clients — which raised "Set changed size during iteration"
+        # and killed the handler, so the very first user message disconnected the client and
+        # no conversation could ever proceed.
+        for ws in tuple(self.web_clients):
             try: await ws.send(data)
             except Exception: dead.add(ws)
         self.web_clients -= dead
