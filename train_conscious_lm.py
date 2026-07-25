@@ -198,18 +198,30 @@ def _generate_fibonacci(max_val: int) -> list:
     return fib
 
 
-def fibonacci_milestones(total_steps: int, max_cells: int = 8) -> Dict[int, int]:
+def fibonacci_milestones(total_steps: int, max_cells: int = 8,
+                         growth_fraction: float = 1.0) -> Dict[int, int]:
     """Return {step: target_cell_count} for Fibonacci growth schedule.
 
     Dynamically generates Fibonacci sequence up to max_cells.
     Works for any max_cells (8, 64, 1024, 10000, ...).
+
+    growth_fraction confines the whole growth schedule to the FIRST fraction of
+    the run — set it to the mitosis-phase boundary so every split happens while
+    the differentiation phase is still active. Spreading the schedule over the
+    full run (the old behaviour) put the first split at 1/3 of total steps, i.e.
+    AFTER mitosis(0-30%) had already ended: differentiation then ran its entire
+    phase on a frozen 2-cell population.
+
+    The leading Fibonacci duplicate (1, 1) is de-duplicated; otherwise the first
+    slot of the schedule was a no-op split target.
     """
     fib = _generate_fibonacci(max_cells)
-    usable = [f for f in fib if f <= max_cells]
+    usable = sorted({f for f in fib if f <= max_cells})
+    span = max(int(total_steps * growth_fraction), 1)
     milestones = {}
     n = len(usable)
     for i, count in enumerate(usable):
-        step = int(total_steps * i / max(n, 1))
+        step = int(span * i / max(n, 1))
         milestones[step] = count
     return milestones
 
@@ -779,7 +791,12 @@ def train(args: argparse.Namespace):
     emotion_state = {"pain": 0.0, "curiosity": 0.0, "empathy": 0.0}
 
     # --- Fibonacci growth milestones ---
-    fib_milestones = fibonacci_milestones(args.steps, max_cells=args.max_cells)
+    # Confine growth to the differentiation phase (see get_phase): mitosis ends
+    # at 30% of the run (60% under talk5). Cells must reach max_cells BEFORE the
+    # language phase starts, otherwise mitosis differentiates nothing.
+    _growth_fraction = 0.60 if getattr(args, 'talk5', False) else 0.30
+    fib_milestones = fibonacci_milestones(args.steps, max_cells=args.max_cells,
+                                          growth_fraction=_growth_fraction)
     print(f"[fibonacci] Growth milestones: {fib_milestones}")
 
     # --- Resume from checkpoint ---
