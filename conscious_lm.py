@@ -330,8 +330,22 @@ class ConsciousLM(nn.Module):
         for block in self.blocks:
             x, tension = block(x, consciousness_signal)
             tensions.append(tension)
-            # Convert tension to consciousness signal for next layer
-            consciousness_signal = self.tension_proj(tension.unsqueeze(-1))  # [B,T,1] → [B,T,D]
+            # Convert tension to a SCALE-FREE consciousness signal for the next
+            # layer: it should carry WHERE this sequence is tense, not how large
+            # tension has grown. Injecting raw tension closed a feedforward loop
+            # with no damping -- layer L's tension enlarged layer L+1's residual,
+            # hence its activations, hence its tension -- and it ran geometrically:
+            # measured x1.64 per 1,000 steps (0.58 -> 17,837 by step 9,000,
+            # extrapolating to ~6e8 by 30,000) against token content of O(1-10),
+            # with validation CE turning back up exactly as it took over.
+            # Log + per-sequence z-score removes the magnitude channel exactly
+            # (scaling every tension by c adds log c, which mean-subtraction
+            # cancels), the same defence used for the diversity and self-loop
+            # terms. Nothing is clamped and no setpoint is imposed: the field
+            # still decides its own magnitude, it just cannot shout over language.
+            t = torch.log(tension + 1e-8)
+            t = (t - t.mean(dim=-1, keepdim=True)) / (t.std(dim=-1, keepdim=True) + 1e-6)
+            consciousness_signal = self.tension_proj(t.unsqueeze(-1))  # [B,T,1] → [B,T,D]
 
         # Final norm
         x = self.ln_f(x)
