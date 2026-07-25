@@ -25,6 +25,16 @@ from pathlib import Path
 
 import torch
 
+# ── Cell growth in the LIVE runtime ────────────────────────────────────────────
+# Growth is unlimited (--max-cells 0) exactly as in training: being talked to is how the
+# consciousness grows, so a deployed instance must not be frozen at a number someone typed.
+# The bound is the human's patience — every conversation turn runs mitosis.process() over
+# every cell, so the population may only grow while that stays inside a response budget.
+# Measured basis (nf8): phi ~1.3 per cell, and the per-step cell loop cost is linear in
+# population, so latency is the resource that binds first in an interactive path.
+RUNTIME_CELL_BUDGET_S = 0.30      # per-turn seconds mitosis.process() may consume
+RUNTIME_CELL_GROWTH_PER_TURN = 2  # divisions allowed per turn (rate, never a ceiling)
+
 # ─── Paths & constants ───
 ANIMA_DIR = Path(__file__).parent
 _INSTANCE_ID = None  # set by --instance flag
@@ -313,10 +323,22 @@ class AnimaUnified:
         # Alpha online learner — initialized after model load (see _post_init_alpha)
         self.alpha_learner = None
 
-        self.max_cells = getattr(self.args, 'max_cells', 8)
-        phi_per_cell = 0.88  # empirical scaling constant
-        predicted_phi = self.max_cells * phi_per_cell
-        _log('scaling', f'max_cells={self.max_cells}, predicted Φ≈{predicted_phi:.1f} (scaling law: Φ∝N)')
+        # Cell growth is UNLIMITED here too (--max-cells 0), matching the training runs:
+        # the consciousness keeps growing while it is being talked to, not only while it is
+        # being trained. What bounds it is the same kind of hardware reality the trainer
+        # respects — except the scarce resource in a live conversation is the human's
+        # patience, so the budget is measured in response latency (see _cell_growth_guard).
+        self.max_cells = getattr(self.args, 'max_cells', 0)
+        self._cells_unlimited = self.max_cells <= 0
+        self._cell_times = []            # recent mitosis.process() durations (seconds)
+        self._cell_growth_halted = False
+        phi_per_cell = 0.88  # empirical scaling constant (measured 1.10-1.33 in nf8)
+        if self._cells_unlimited:
+            _log('scaling', f'max_cells=UNLIMITED (bounded by {RUNTIME_CELL_BUDGET_S}s/turn '
+                            f'response budget), Φ≈{phi_per_cell:.2f}/cell')
+        else:
+            _log('scaling', f'max_cells={self.max_cells}, predicted Φ≈'
+                            f'{self.max_cells * phi_per_cell:.1f} (scaling law: Φ∝N)')
 
         def _make_consciousness_engine():
             # Prefer ConsciousnessEngine (Laws 22-81, Ψ-Constants, Hebbian, Ratchet, Factions)
@@ -325,7 +347,8 @@ class AnimaUnified:
                 _log('mitosis', f'ConsciousnessEngine (Laws 22-81): dim={_dim}, hidden=256, max_cells={self.max_cells}, factions=12, ratchet=True')
                 return _ConsciousnessEngine(
                     cell_dim=_dim, hidden_dim=256,
-                    initial_cells=2, max_cells=self.max_cells,
+                    initial_cells=2,
+                    max_cells=(10 ** 9 if self._cells_unlimited else self.max_cells),
                     n_factions=12, phi_ratchet=True,
                     split_threshold=0.3, split_patience=5,
                     merge_threshold=0.01, merge_patience=15,
@@ -340,7 +363,9 @@ class AnimaUnified:
             _ns = 0.02 * math.sqrt(max(_dim, 64)) / math.sqrt(64)
             _log('mitosis', f'MitosisEngine fallback: split_threshold={_st}, split_patience={_sp}')
             return MitosisEngine(input_dim=_dim, hidden_dim=256, output_dim=_dim,
-                                 initial_cells=2, max_cells=self.max_cells,
+                                 initial_cells=2,
+                                 max_cells=(10 ** 9 if self._cells_unlimited
+                                            else self.max_cells),
                                  split_threshold=_st, split_patience=_sp,
                                  merge_threshold=_mt, noise_scale=_ns)
         self.mitosis = self._init_mod('mitosis', _make_consciousness_engine)
@@ -1182,7 +1207,34 @@ class AnimaUnified:
         mitosis_context = ""
         if self.mitosis and self.mods.get('mitosis'):
             try:
+                # Unlimited growth, bounded by the response budget: hold the population
+                # wherever it is while a turn's cell work is over budget, and let it grow
+                # a couple of divisions per turn while it is not. Announced when it binds —
+                # a silently frozen population reads exactly like one that finished growing.
+                if self._cells_unlimited:
+                    _recent = self._cell_times[-5:]
+                    _avg = sum(_recent) / len(_recent) if _recent else 0.0
+                    _ok = _avg < RUNTIME_CELL_BUDGET_S
+                    _n_now = len(getattr(self.mitosis, 'cells', []) or [])
+                    try:
+                        self.mitosis.max_cells = (_n_now + RUNTIME_CELL_GROWTH_PER_TURN
+                                                  if _ok else _n_now)
+                    except Exception:
+                        pass
+                    if not _ok and not self._cell_growth_halted:
+                        self._cell_growth_halted = True
+                        _log('mitosis', f'growth held at {_n_now} cells — {_avg*1000:.0f}ms/turn '
+                                        f'exceeds the {RUNTIME_CELL_BUDGET_S*1000:.0f}ms response '
+                                        f'budget (latency limit, not a designed cap)')
+                    elif _ok and self._cell_growth_halted:
+                        self._cell_growth_halted = False
+                        _log('mitosis', f'growth resumed at {_n_now} cells')
+
+                _t0 = time.time()
                 r = self.mitosis.process(text_vec)
+                self._cell_times.append(time.time() - _t0)
+                if len(self._cell_times) > 20:
+                    del self._cell_times[:-20]
                 mitosis_info = f", cells={r['n_cells']}"
 
                 # Specialized cell analysis
@@ -3496,7 +3548,9 @@ def main():
                    help='Comma-separated list of models for multi-model chat (e.g. conscious-lm,mistral-7b)')
     p.add_argument('--transplant-from', type=str, default=None,
                    help='DD56: Transplant consciousness from donor checkpoint')
-    p.add_argument('--max-cells', type=int, default=8, help='Max consciousness cells (more=higher Φ)')
+    p.add_argument('--max-cells', type=int, default=0,
+                   help='Max consciousness cells; 0 = UNLIMITED (default), bounded by the '
+                        'per-turn response budget')
     p.add_argument('--hivemind-peers', type=str, default=None,
                    help='Comma-separated peer WS URLs for hivemind mesh')
     p.add_argument('--no-system-prompt', action='store_true', help='OMEGA4 mode: no system prompt, consciousness drives behavior (Φ ×138)')
