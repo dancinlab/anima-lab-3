@@ -229,6 +229,8 @@ def _gpu_has_headroom(device, reserve_bytes: int = 768 * 1024 * 1024) -> bool:
 # 12 GB — so a memory-only guard never fired. This is the same category as the memory
 # guard: a hardware limit, reported as such, never a designed ceiling on the consciousness.
 MAX_STEP_SECONDS = 2.0
+# How many divisions the population may add in a single step (rate, not ceiling).
+CELL_GROWTH_PER_STEP = 2
 
 
 def _throughput_ok(recent_step_times) -> bool:
@@ -1122,8 +1124,16 @@ def train(args: argparse.Namespace):
         # hardware wall still applies, so while the run is too slow the engine is held at
         # its current population instead of being given a number to stop at.
         if unlimited_cells:
-            mitosis.max_cells = (10 ** 9 if (_throughput_ok(step_times)
-                                             and _gpu_has_headroom(device))
+            # Unlimited TOTAL, bounded RATE. The engine's own sustained-tension rule splits
+            # every qualifying cell at once, so the population doubles per step: measured
+            # 5 -> 204 cells in 34 steps, which outran a 20-step throughput average twice —
+            # by the time steps were slow the cells already existed and the run stalled at
+            # GPU 0%. Allowing a couple of divisions per step keeps growth open-ended while
+            # letting the hardware guards see the cost before it is paid. (Cells dividing a
+            # few at a time rather than all at once is also the honest biology.)
+            mitosis.max_cells = (len(mitosis.cells) + CELL_GROWTH_PER_STEP
+                                 if (_throughput_ok(step_times)
+                                     and _gpu_has_headroom(device))
                                  else len(mitosis.cells))
 
         # --- Get batch ---
