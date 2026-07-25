@@ -839,11 +839,23 @@ def train(args: argparse.Namespace):
             print("    python prepare_corpus.py --size 50")
             sys.exit(1)
 
+    # Interleaved chunk split. The corpus is a concatenation of sources, so
+    # holding out the TAIL held out a different distribution: measured on
+    # corpus_v2.txt, the first 90% is 56.5% ASCII with 14.3% Hangul lead bytes
+    # while the last 10% is 95.3% ASCII with ZERO Hangul. Validation was scoring
+    # the model on material it was barely trained on, which makes metric 3 (CE
+    # drop) unreadable. Taking every 10th 1MB chunk keeps both halves on the same
+    # mixture, and chunk granularity (>> block_size) keeps leakage to the few
+    # sequences straddling a boundary.
     n = len(data)
-    split_idx = int(0.9 * n)
-    train_data = data[:split_idx]
-    val_data = data[split_idx:]
-    print(f"[data] train={len(train_data):,} val={len(val_data):,} bytes")
+    chunk = 1 << 20
+    val_parts, train_parts = [], []
+    for i, start in enumerate(range(0, n, chunk)):
+        (val_parts if i % 10 == 9 else train_parts).append(data[start: start + chunk])
+    train_data = torch.cat(train_parts)
+    val_data = torch.cat(val_parts)
+    print(f"[data] train={len(train_data):,} val={len(val_data):,} bytes "
+          f"(interleaved 1MB chunks, every 10th held out)")
 
     # --- Model ---
     model = ConsciousLM(
