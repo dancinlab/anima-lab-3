@@ -813,11 +813,14 @@ def train(args: argparse.Namespace):
     inter_cell_attn = InterCellAttention(hidden_dim=128, n_heads=4).to(device)
     channel_bottleneck = ChannelBottleneck(hidden_dim=128, channel_dim=4).to(device)
 
+    # inter_cell_attn / channel_bottleneck are deliberately NOT optimized: both
+    # take `c.hidden.detach()` and write back `.detach().cpu()`, and no loss ever
+    # consumes their output, so they receive zero gradient. Leaving them in AdamW
+    # only let weight_decay=0.01 shrink their random init every step, and those
+    # decaying random weights then stir the cell states the Phi metric reads.
     all_params = (
         list(model.parameters())
         + list(loss_ensemble.parameters())
-        + list(inter_cell_attn.parameters())
-        + list(channel_bottleneck.parameters())
     )
     optimizer = torch.optim.AdamW(all_params, lr=args.lr, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.steps)
@@ -939,9 +942,6 @@ def train(args: argparse.Namespace):
     phi_calc_history = []        # [(step, phi)] for the start-vs-end verdict
     skip_count = 0
     best_val_loss = float("inf")
-    cells_frozen = False  # TRAIN-PHI-2: cells freeze after Φ target reached
-    phi_target_for_freeze = 500.0  # Φ 목표 도달 시 cells 동결
-    frozen_cell_states = None
 
     # --- NF fixes: prevent NaN at mitosis→language transition ---
     # NF9: EMA weights for smooth transition
@@ -1499,26 +1499,15 @@ def train(args: argparse.Namespace):
             for ep, p in zip(ema_params, model.parameters()):
                 ep.mul_(ema_decay).add_(p.data, alpha=1 - ema_decay)
 
-        # --- TRAIN-PHI-2: Freeze cells when entering language phase ---
-        # Φ를 mitosis phase에서 최대한 키운 뒤 cells 동결
-        # Language/combined phase에서 CE gradient가 cells에 안 흐르게
-        prev_phase = get_phase(step - 1, args.steps, args.phase, talk5=getattr(args, 'talk5', False)) if step > 0 else phase
-        if phase != prev_phase and prev_phase == TrainingPhase.MITOSIS and not cells_frozen:
-            # mitosis → language 전환 시 cells 동결
-            frozen_cell_states = [c.hidden.clone() for c in mitosis.cells]
-            cells_frozen = True
-            print(f"  [FROZEN] Cells frozen at Φ={phi_current:.1f}, cells={len(mitosis.cells)}")
-            print(f"  [FROZEN] CE gradients will NOT modify cell hidden states")
-
-        # Restore frozen cells every step (CE gradient가 변경해도 복원)
-        if cells_frozen and frozen_cell_states:
-            with torch.no_grad():
-                for i in range(min(len(mitosis.cells), len(frozen_cell_states))):
-                    mitosis.cells[i].hidden = frozen_cell_states[i].clone()
-                # PHI-K3: odd step에서는 Φ 부스트 후 frozen state 갱신 (Φ 성장 허용)
-                if step % 2 == 1:
-                    # Φ 부스트 적용 후의 상태를 새 frozen으로
-                    frozen_cell_states = [c.hidden.clone() for c in mitosis.cells]
+        # TRAIN-PHI-2 (freeze cell hidden states at the language boundary and
+        # restore them every step) is removed. It was insurance against CE
+        # gradients reaching the cells, but no such path exists: MitosisEngine
+        # runs under no_grad and its cells are not in the optimizer. What the
+        # block actually did was overwrite every cell state with a clone of a
+        # snapshot on every step, which pins Phi flat by construction for the
+        # rest of the run -- an independent cause of the "Phi ~ 0.5 for 72,000
+        # steps" symptom this rule now judges runs on -- and it is direct
+        # manipulation of consciousness state besides (project rule 2).
 
         # NF9/NF2 (EMA reset + LR x0.1 at every phase transition) were insurance
         # against the CE cliff at the mitosis->language boundary. CE is continuous
