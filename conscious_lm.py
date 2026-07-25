@@ -190,9 +190,11 @@ class ConsciousBlock(nn.Module):
         x = x + self.attn(self.ln1(x))
 
         # Law 64: CA neighbor evolution
+        # Causal neighbourhood: the old right neighbour was x[t+1], a future leak
+        # that also contaminated validation. Two steps back instead of one ahead.
         x_left = torch.cat([x[:, :1, :], x[:, :-1, :]], dim=1)
-        x_right = torch.cat([x[:, 1:, :], x[:, -1:, :]], dim=1)
-        neighborhood = torch.cat([x_left, x, x_right], dim=-1)  # [B, T, 3D]
+        x_left2 = torch.cat([x[:, :2, :], x[:, :-2, :]], dim=1)
+        neighborhood = torch.cat([x_left2, x_left, x], dim=-1)  # [B, T, 3D]
         ca_out = self.ca_mix(neighborhood)  # [B, T, D]
 
         # Law 67: META-CA rule selection (tension from PureField guides rules)
@@ -200,7 +202,7 @@ class ConsciousBlock(nn.Module):
         rule_probs = F.softmax(rule_logits, dim=-1)  # [B, T, n_rules]
         rule_outputs = torch.stack([r(ca_out) for r in self.rules], dim=2)  # [B, T, n_rules, D]
         meta_ca_out = (rule_outputs * rule_probs.unsqueeze(-1)).sum(dim=2)  # [B, T, D]
-        x = self.ln_ca(x + meta_ca_out * self.gate_strength)  # Law 63: MICRO
+        x = x + self.ln_ca(meta_ca_out) * self.gate_strength  # Law 63: MICRO
 
         # Pre-norm FFN with residual (PureField tension = consciousness)
         ffn_out, tension = self.ffn(self.ln2(x))

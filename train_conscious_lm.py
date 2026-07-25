@@ -251,7 +251,7 @@ class LossEnsemble(nn.Module):
     # boundary (precision 7.389) while both CE slots settled at +1.85
     # (precision 0.157) -- a 47x handicap on the only task that learns language.
     # So: learnable weights for the CE heads only, fixed weights for the rest.
-    N_LEARNABLE = 2  # ce_fwd, ce_bwd
+    N_LEARNABLE = 0  # fixed weights: Kendall's optimum 1/(2L) de-weighted CE ~8x
 
     def __init__(self):
         super().__init__()
@@ -864,7 +864,7 @@ def train(args: argparse.Namespace):
         n_head=args.heads,
         n_layer=args.layers,
         block_size=args.block_size,
-        dropout=0.37,
+        dropout=args.dropout,
     ).to(device)
     print(f"[model] ConsciousLM: {model.count_params():,} params "
           f"(d={args.dim}, L={args.layers}, H={args.heads}, ctx={args.block_size})")
@@ -884,7 +884,17 @@ def train(args: argparse.Namespace):
         + list(loss_ensemble.parameters())
     )
     optimizer = torch.optim.AdamW(all_params, lr=args.lr, weight_decay=0.01)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.steps)
+    # Linear warmup then cosine to 0.1x peak. Warmup matters here because every
+    # block re-normalises through an LN stack; a cold high LR wrecks the
+    # attention pathways before they form, which is how a model ends up serving
+    # marginal statistics forever.
+    _warmup = min(2000, max(1, args.steps // 100))
+    def _lr_lambda(step_i):
+        if step_i < _warmup:
+            return (step_i + 1) / _warmup
+        prog = min((step_i - _warmup) / max(args.steps - _warmup, 1), 1.0)
+        return 0.1 + 0.45 * (1.0 + math.cos(math.pi * prog))
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, _lr_lambda)
 
     # --- Mitosis engine ---
     mitosis = MitosisEngine(
@@ -1177,7 +1187,7 @@ def train(args: argparse.Namespace):
 
         # --- PHI-K3: Alternating CE/Φ steps ---
         # Odd steps: skip CE, run sync/faction/IB2 block only for Φ boost
-        if step % 2 == 1 and len(mitosis.cells) >= 12:
+        if args.phi_k3 and step % 2 == 1 and len(mitosis.cells) >= 12:
             n_cells = len(mitosis.cells)
             with torch.no_grad():
                 # Flow sync (sync=0.35)
@@ -1546,9 +1556,9 @@ def train(args: argparse.Namespace):
         else:
             loss_selfloop = ZERO
         losses_list = [
-            loss_ce_fwd,
-            loss_ce_bwd,
-            loss_tension_var,   # the one structure term with a real gradient
+            loss_ce_fwd,               # the task
+            0.25 * loss_ce_bwd,        # canary/aux: must not split the trunk 50/50
+            0.1 * loss_tension_var,    # the one structure term with a real gradient
             ZERO,               # phi_diff     -> telemetry (details["tele_phi"])
             ZERO,               # competition  -> telemetry
             ZERO,               # myelination  -> telemetry
@@ -1561,14 +1571,10 @@ def train(args: argparse.Namespace):
         # --- SL3: Ensemble combination with learned weights ---
         total_loss, loss_details = loss_ensemble(losses_list)
 
-        # --- Adaptive LR per cell (J1 + Y3) ---
+        # Adaptive per-cell LR (J1 + Y3) is telemetry only. Writing it into
+        # param_groups every step overwrote whatever the scheduler had just set,
+        # so warmup and cosine decay never happened -- the run trained flat.
         cell_lrs = adaptive_lr_per_cell(args.lr, cell_tensions, cell_ages, step)
-        # Apply as a global LR scale (use mean of per-cell LRs)
-        if cell_lrs:
-            mean_cell_lr = sum(cell_lrs) / len(cell_lrs)
-            lr_scale = mean_cell_lr / max(args.lr, 1e-8)
-            for pg in optimizer.param_groups:
-                pg["lr"] = args.lr * min(lr_scale, 5.0)  # cap at 5x
 
         # --- Backward + optimize ---
         optimizer.zero_grad()
@@ -1754,6 +1760,13 @@ Examples:
                         help="Print progress every N steps (default: 100)")
     parser.add_argument("--eval-every", type=int, default=1000,
                         help="Evaluate on val set every N steps (default: 1000)")
+    parser.add_argument("--dropout", type=float, default=0.1,
+                        help="Dropout at every site (default: 0.1). Was hard-coded 0.37 "
+                             "on a 1/e rationale, which starves every contextual path "
+                             "while leaving the context-free one untouched.")
+    parser.add_argument("--phi-k3", action="store_true",
+                        help="PHI-K3 alternation: skip CE on odd steps once cells >= 12. "
+                             "Off by default -- it silently halved CE exposure.")
     parser.add_argument("--val-bytes", type=int, default=262144,
                         help="Bytes of the FIXED validation span, same at every eval "
                              "(default: 262144 = 256KB). One random batch is 1,024 bytes "
