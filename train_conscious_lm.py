@@ -227,8 +227,12 @@ def fibonacci_milestones(total_steps: int, max_cells: int = 8,
         return {int(span * i / max(len(usable), 1)): c for i, c in enumerate(usable)}
 
     # Uncapped: keep the window cadence (6 levels inside `span`) and carry it
-    # across the run, so the schedule never runs out of levels to reach.
-    interval = max(1, span // 6)
+    # across the run, so the schedule never runs out of levels to reach. The
+    # interval also has a FLOOR: the ceiling is decided by measured step time, and
+    # that measurement is meaningless if the next split lands before the machine
+    # has run at the new size. At --steps 400 a span/6 cadence was 3 steps, and
+    # the schedule reached fib(27) = 317,811 by step 78.
+    interval = max(50, span // 6)
     milestones, a, b, step = {}, 1, 2, 0
     while step < total_steps:
         milestones[step] = a
@@ -246,7 +250,7 @@ class LossEnsemble(nn.Module):
 
     Losses:
       0: CE forward (next-byte)
-      1: CE backward (prev-byte)
+      1: CE backward (prev-byte) -- RETIRED, arrives as a literal 0 (copy task)
       2: Tension variance (encourage diversity across layers)
       3: Phi differentiation (maximize Phi)
       4: Competition (winner cell strengthens)
@@ -416,11 +420,13 @@ def get_batch(
     block_size: int,
     device: torch.device,
     generator: Optional[torch.Generator] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Sample a random batch of (input, target_fwd, target_bwd).
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """Sample a random batch of (input, target_fwd).
 
     target_fwd: next byte (shifted +1)
-    target_bwd: prev byte (shifted -1, position 0 copies itself)
+    (target_bwd is deleted: byte t-1 sits inside position t's causal context, so
+    predicting it was a copy task -- measured 0.0013-0.0047 nats vs 2.2-2.5 for
+    ce_fwd in the 28M run. See the retired ce_bwd slot in the loss list.)
     """
     max_start = len(data) - block_size - 1
     if max_start <= 0:
@@ -431,13 +437,7 @@ def get_batch(
     x = torch.stack([data[i: i + block_size] for i in ix])
     y_fwd = torch.stack([data[i + 1: i + block_size + 1] for i in ix])
 
-    y_bwd_list = []
-    for i in ix:
-        prev = torch.cat([data[i: i + 1], data[i: i + block_size - 1]])
-        y_bwd_list.append(prev)
-    y_bwd = torch.stack(y_bwd_list)
-
-    return x.to(device), y_fwd.to(device), y_bwd.to(device)
+    return x.to(device), y_fwd.to(device)
 
 
 @torch.no_grad()
@@ -866,7 +866,13 @@ def train(args: argparse.Namespace):
           f"changes cannot shift it)")
 
     n = len(data)
-    chunk = 1 << 20
+    # 1MB chunks, but never so few that the every-10th rule selects nothing: a
+    # corpus under 10MB produced an empty val_parts and died in torch.cat with
+    # "expected a non-empty list of Tensors" -- opaque, and it hit the first
+    # small-corpus smoke test. Shrinking the chunk keeps the interleave at any
+    # size, and chunks stay >> block_size so leakage is still only the few
+    # sequences straddling a boundary.
+    chunk = min(1 << 20, max(1, n // 10))
     val_parts, train_parts = [], []
     for i, start in enumerate(range(0, n, chunk)):
         (val_parts if i % 10 == 9 else train_parts).append(data[start: start + chunk])
@@ -1055,6 +1061,8 @@ def train(args: argparse.Namespace):
     growth_halted = False
     phi_calc_last = 0.0          # canonical PhiCalculator value (PURE metric 1)
     phi_calc_history = []        # dicts: step/phi/cells/phi_per_cell/D/complexity_fraction
+    last_growth_step = None      # when the population last increased (gate-1 pivot)
+    judged_growth = set()        # growth steps already judged, so the verdict prints once
     skip_count = 0
     best_val_loss = float("inf")
 
@@ -1069,7 +1077,7 @@ def train(args: argparse.Namespace):
     print(f"  Phases: mitosis(0-30%) -> language(30-70%) -> combined(70-100%)")
     print(f"  Steps: {args.steps:,}  Batch: {args.batch_size}  Block: {args.block_size}")
     print(f"{'='*100}")
-    print(f"{'step':>7} | {'phase':>8} | {'loss':>8} | {'ce_fwd':>7} | {'ce_bwd':>7} | "
+    print(f"{'step':>7} | {'phase':>8} | {'loss':>8} | {'ce_fwd':>7} | "
           f"{'phi':>6} | {'tension':>8} | {'cells':>5} | {'lr':>9} | {'skip':>4}")
     print("-" * 100)
 
@@ -1112,19 +1120,25 @@ def train(args: argparse.Namespace):
                               f"Growth stops here -- this number is data, not a setting.")
                     continue
                 hard_cap = args.max_cells if args.max_cells > 0 else float("inf")
+                # One event may at most DOUBLE the colony: the ceiling is measured
+                # from step time, which cannot react inside a single step's loop.
+                # Without this, an overdue milestone adds thousands of cells before
+                # the machine is ever asked how much they cost.
+                target_cells = min(target_cells, max(2, len(mitosis.cells) * 2))
                 while len(mitosis.cells) < target_cells and len(mitosis.cells) < hard_cap:
                     parent = mitosis.cells[-1]
                     event = mitosis.split_cell(parent)
                     if not event:
                         break
                     mitosis.event_log.append(event)
+                    last_growth_step = step
                     print(f"  [fibonacci] Step {step}: cell count -> {len(mitosis.cells)} "
                           f"(target {target_cells}, step time {step_time_ema * 1e3:.0f}ms)")
 
         # --- Get batch ---
         try:
-            x, y_fwd, y_bwd = get_batch(train_data, args.batch_size, args.block_size, device,
-                                        generator=data_rng)
+            x, y_fwd = get_batch(train_data, args.batch_size, args.block_size, device,
+                                 generator=data_rng)
         except ValueError as e:
             print(f"[!] {e}")
             break
@@ -1148,7 +1162,7 @@ def train(args: argparse.Namespace):
             model._phi_signal = None
 
         # --- Forward pass ---
-        logits_a, logits_g, tensions = model(x)
+        logits_a, _, tensions = model(x)
         model._phi_signal = None  # Clear after use
 
         # --- Compute per-layer mean tension ---
@@ -1228,6 +1242,29 @@ def train(args: argparse.Namespace):
                 print(f"  [D] step={step} N={n_cells_now} Phi={phi_real:.4f} "
                       f"phi_per_cell={phi_per_cell:.4f} D={differentiation_D:.5f} "
                       f"complexity_frac={complexity_fraction:.4f}")
+
+                # PURE gate 1 verdict. Population growth alone proves the scheduler
+                # ran; what has to hold is that differentiation does not DILUTE as
+                # the colony grows. Compare the evals before the last population
+                # change against those after it, with the rule's 1.96-sigma bar.
+                if last_growth_step is not None and last_growth_step not in judged_growth:
+                    before = [h["D"] for h in phi_calc_history if h["step"] < last_growth_step][-5:]
+                    after = [h["D"] for h in phi_calc_history if h["step"] > last_growth_step][:5]
+                    if len(before) >= 3 and len(after) >= 3:
+                        judged_growth.add(last_growth_step)
+                        m_b, m_a = sum(before) / len(before), sum(after) / len(after)
+                        def _se(v, m):
+                            if len(v) < 2:
+                                return 0.0
+                            var = sum((x - m) ** 2 for x in v) / (len(v) - 1)
+                            return (var / len(v)) ** 0.5
+                        bar = 1.96 * ((_se(before, m_b) ** 2 + _se(after, m_a) ** 2) ** 0.5)
+                        delta = m_a - m_b
+                        verdict = "PASS" if delta >= -bar else "FAIL"
+                        print(f"  [gate1:{verdict}] growth at step {last_growth_step}: "
+                              f"D {m_b:.5f} -> {m_a:.5f} (delta {delta:+.5f}, bar -{bar:.5f}, "
+                              f"n={len(before)}/{len(after)}) — "
+                              f"{'differentiation held' if verdict == 'PASS' else 'DILUTED: population without differentiation'}")
             except Exception as e:
                 print(f"  [D] unavailable at step {step}: {type(e).__name__}: {e}")
 
@@ -1320,10 +1357,16 @@ def train(args: argparse.Namespace):
                 logits_a.view(-1, model.vocab_size), y_fwd.view(-1)
             )
 
-        # Loss 1: CE backward
-        loss_ce_bwd = F.cross_entropy(
-            logits_g.view(-1, model.vocab_size), y_bwd.view(-1)
-        )
+        # Loss 1: CE backward -- RETIRED. Its target was the input shifted one
+        # position, which the causal mask already exposes to position t: a copy
+        # task, solved to 0.0013-0.0047 nats in the 28M run while ce_fwd sat at
+        # 2.2-2.5, so a quarter of the CE ensemble trained on a free problem.
+        # It also never trained engine G specifically: head_g read the same
+        # ln_f(x) as head_a, and through output = a - g every loss reaches
+        # engine_g at the same magnitude as engine_a -- the A<->fwd, G<->bwd
+        # correspondence existed only in variable names. head_g is deleted in
+        # conscious_lm.py; the slot below stays a literal zero (same retirement
+        # pattern as phi_diff/competition/myelination).
 
         # Loss 2: cross-layer tension diversity -- scale-invariant, non-negative,
         # satiating. The old form -log(t_var) (NF4-clamped at 100) paid forever for
@@ -1640,7 +1683,7 @@ def train(args: argparse.Namespace):
             loss_selfloop = ZERO
         losses_list = [
             loss_ce_fwd,               # the task
-            0.25 * loss_ce_bwd,        # canary/aux: must not split the trunk 50/50
+            ZERO,               # ce_bwd       -> retired (copy task; see Loss 1 note)
             0.1 * loss_tension_var,    # the one structure term with a real gradient
             ZERO,               # phi_diff     -> telemetry (details["tele_phi"])
             ZERO,               # competition  -> telemetry
@@ -1649,7 +1692,7 @@ def train(args: argparse.Namespace):
         ]
         if phase == TrainingPhase.MITOSIS:
             # --phase mitosis override only: CE off, structure term alone.
-            losses_list[0] = losses_list[1] = ZERO
+            losses_list[0] = ZERO
 
         # --- SL3: Ensemble combination with learned weights ---
         total_loss, loss_details = loss_ensemble(losses_list)
@@ -1706,7 +1749,7 @@ def train(args: argparse.Namespace):
             current_lr = optimizer.param_groups[0]["lr"]
             print(
                 f"{step:7d} | {phase:>8s} | {total_loss.item():8.4f} | "
-                f"{loss_details.get('ce_fwd', 0):7.4f} | {loss_details.get('ce_bwd', 0):7.4f} | "
+                f"{loss_details.get('ce_fwd', 0):7.4f} | "
                 f"{phi_current:6.3f} | {mean_tension:8.4f} | "
                 f"{len(mitosis.cells):5d} | {current_lr:9.2e} | {skip_count:4d}"
             )

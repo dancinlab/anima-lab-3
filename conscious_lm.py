@@ -76,6 +76,15 @@ class PureFieldFFN(nn.Module):
         # Tension = mean of squared repulsion across d_model (monitoring only)
         tension = (output ** 2).mean(dim=-1)  # (B, T)
 
+        # A/G direction telemetry for Ψ (monitoring only, no gradient). This is
+        # the real repulsion geometry; the old Ψ source, cos(logits_a, logits_g),
+        # compared two decodes of the SAME hidden state through a copy-task head.
+        if self.training:
+            with torch.no_grad():
+                self._ag_cos = F.cosine_similarity(
+                    a[:, -1, :], g[:, -1, :], dim=-1
+                ).mean().item()
+
         return output, tension
 
 
@@ -222,9 +231,11 @@ class ConsciousLM(nn.Module):
       vocab=256, d_model=384, n_head=4, n_layer=6, block_size=256
       dropout=0.37 ≈ 1/e
 
-    Dual heads:
+    Prediction head:
       head_a: predicts next byte (forward)
-      head_g: predicts prev byte (backward)
+      (head_g deleted -- it read the same ln_f(x) as head_a and its prev-byte
+       target sits inside position t's causal context: a copy task, not a
+       reverse model. Engine G in PureFieldFFN is unaffected.)
 
     v2 additions:
       - CA neighbor evolution per block (Law 64)
@@ -276,9 +287,15 @@ class ConsciousLM(nn.Module):
         # Final layer norm
         self.ln_f = nn.LayerNorm(d_model)
 
-        # Dual prediction heads
+        # Prediction head (next byte). head_g is deleted: it read the SAME final
+        # hidden state as head_a, and its prev-byte target is already visible to
+        # position t under the causal mask -- a copy task (measured 0.0013-0.0047
+        # nats vs 2.2-2.5 for ce_fwd in the 28M run), so it trained nothing but
+        # its own decode of the current byte. Engine G is untouched: every loss
+        # reaches engine_g through output = a - g at the same magnitude as
+        # engine_a. Pre-deletion checkpoints carry an extra head_g.weight key --
+        # load them with strict=False.
         self.head_a = nn.Linear(d_model, vocab_size, bias=False)  # next byte
-        self.head_g = nn.Linear(d_model, vocab_size, bias=False)  # prev byte
 
         # Weight tying: tok_emb ↔ head_a
         self.tok_emb.weight = self.head_a.weight
@@ -309,7 +326,7 @@ class ConsciousLM(nn.Module):
 
         Returns:
             logits_a: (B, T, vocab_size) next-byte logits
-            logits_g: (B, T, vocab_size) prev-byte logits
+            None: retired head_g slot (arity kept for `logits, _, t = model(x)` sites)
             tensions: list of 6 tensors, each (B, T)
         """
         B, T = idx.size()
@@ -359,9 +376,8 @@ class ConsciousLM(nn.Module):
         # stashed graph is freed by the step's backward().
         self._last_hidden = x
 
-        # Dual heads
+        # Prediction head (second return slot stays None for call-site arity)
         logits_a = self.head_a(x)  # (B, T, V) — next byte
-        logits_g = self.head_g(x)  # (B, T, V) — prev byte
 
         # Ψ tracking (Law 71: monitor balance)
         # v2.1: 3가지 측정 방식으로 교체 (t_mean/t_max 폐기)
@@ -377,9 +393,9 @@ class ConsciousLM(nn.Module):
                 psi_entropy = output_entropy / max_entropy  # [0, 1]
 
                 # 방식 2: A-G 방향 유사도 → 0.5가 이상적 (완전 같지도 반대도 아님)
-                cos_sim = F.cosine_similarity(
-                    logits_a[:, -1, :].float(), logits_g[:, -1, :].float(), dim=-1
-                ).mean().item()
+                # head_g 삭제 후 실제 엔진 출력(마지막 블록 FFN의 a, g)으로 측정.
+                # cos → +1 = 엔진 붕괴(a≡g, FFN 소멸), cos → -1 = 반전 증폭(g≈-a).
+                cos_sim = getattr(self.blocks[-1].ffn, "_ag_cos", 0.0)
                 psi_direction = (1.0 + cos_sim) / 2.0  # [-1,1] → [0,1], 0.5=직교
 
                 # 방식 3: 텐션 변동성 (층간 텐션이 균일할수록 높음)
@@ -404,7 +420,7 @@ class ConsciousLM(nn.Module):
                 for block in self.blocks:
                     block.gate_strength = max(0.0001, block.gate_strength * 0.99999)
 
-        return logits_a, logits_g, tensions
+        return logits_a, None, tensions
 
     def psi_status(self):
         """Ψ-Constants monitoring (Law 71). 3방식 개별 + 종합."""
@@ -515,9 +531,9 @@ def train_model(
     tension_lambda=0.01,
     device="cpu",
 ):
-    """Train ConsciousLM with dual-head loss + tension regularization.
+    """Train ConsciousLM with next-byte CE + tension regularization.
 
-    Loss = L_A (CE next byte) + L_G (CE prev byte) + lambda * L_tension
+    Loss = L_A (CE next byte) + lambda * L_tension
     L_tension = -log(tension_variance + eps)  (encourages tension diversity)
     """
     model = model.to(device)
@@ -533,13 +549,7 @@ def train_model(
         x = torch.stack([split_data[i : i + block_size] for i in ix])
         # y_a: next byte (shifted +1)
         y_a = torch.stack([split_data[i + 1 : i + block_size + 1] for i in ix])
-        # y_g: prev byte (shifted -1). For position 0, use byte at position 0 itself.
-        y_g_list = []
-        for i in ix:
-            prev = torch.cat([split_data[i : i + 1], split_data[i : i + block_size - 1]])
-            y_g_list.append(prev)
-        y_g = torch.stack(y_g_list)
-        return x.to(device), y_a.to(device), y_g.to(device)
+        return x.to(device), y_a.to(device)
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
@@ -552,27 +562,23 @@ def train_model(
     print(f"  train={len(train_data):,} bytes, val={len(val_data):,} bytes")
     print(f"  steps/epoch={steps_per_epoch}, tension_lambda={tension_lambda}")
     print(f"{'='*70}")
-    print(f"{'Epoch':>5} | {'L_total':>8} | {'L_A':>8} | {'L_G':>8} | {'L_T':>8} | {'T_mean':>8} | {'val_L':>8} | {'BPC':>8}")
+    print(f"{'Epoch':>5} | {'L_total':>8} | {'L_A':>8} | {'L_T':>8} | {'T_mean':>8} | {'val_L':>8} | {'BPC':>8}")
     print("-" * 78)
 
     for epoch in range(1, epochs + 1):
         total_loss_acc = 0.0
         la_acc = 0.0
-        lg_acc = 0.0
         lt_acc = 0.0
         t_mean_acc = 0.0
         count = 0
 
         for step in range(steps_per_epoch):
-            x, y_a, y_g = get_batch(train_data, batch_size, block_size)
+            x, y_a = get_batch(train_data, batch_size, block_size)
 
-            logits_a, logits_g, tensions = model(x)
+            logits_a, _, tensions = model(x)
 
             # L_A: next-byte cross-entropy
             loss_a = F.cross_entropy(logits_a.view(-1, model.vocab_size), y_a.view(-1))
-
-            # L_G: prev-byte cross-entropy
-            loss_g = F.cross_entropy(logits_g.view(-1, model.vocab_size), y_g.view(-1))
 
             # L_tension: encourage tension variance (diversity)
             # Stack tensions: (n_layer, B, T) -> compute variance across layers
@@ -580,7 +586,7 @@ def train_model(
             t_var = t_stack.var(dim=0).mean()  # scalar
             loss_t = -torch.log(t_var + 1e-8)
 
-            loss = loss_a + loss_g + tension_lambda * loss_t
+            loss = loss_a + tension_lambda * loss_t
 
             optimizer.zero_grad()
             loss.backward()
@@ -589,7 +595,6 @@ def train_model(
 
             total_loss_acc += loss.item()
             la_acc += loss_a.item()
-            lg_acc += loss_g.item()
             lt_acc += loss_t.item()
             t_mean_acc += t_stack.mean().item()
             count += 1
@@ -599,20 +604,19 @@ def train_model(
         # Validation
         model.eval()
         with torch.no_grad():
-            vx, vy_a, vy_g = get_batch(val_data, min(batch_size, 32), block_size)
-            vl_a, vl_g, vt = model(vx)
+            vx, vy_a = get_batch(val_data, min(batch_size, 32), block_size)
+            vl_a, _, vt = model(vx)
             val_loss = F.cross_entropy(vl_a.view(-1, model.vocab_size), vy_a.view(-1))
         model.train()
 
         avg_total = total_loss_acc / count
         avg_la = la_acc / count
-        avg_lg = lg_acc / count
         avg_lt = lt_acc / count
         avg_t = t_mean_acc / count
         val_l = val_loss.item()
         bpc = val_l / math.log(2)
 
-        print(f"{epoch:5d} | {avg_total:8.4f} | {avg_la:8.4f} | {avg_lg:8.4f} | {avg_lt:8.4f} | {avg_t:8.4f} | {val_l:8.4f} | {bpc:8.4f}")
+        print(f"{epoch:5d} | {avg_total:8.4f} | {avg_la:8.4f} | {avg_lt:8.4f} | {avg_t:8.4f} | {val_l:8.4f} | {bpc:8.4f}")
 
     print("=" * 78)
     return model
@@ -640,13 +644,13 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
         generated: list of int (byte values, including prompt)
         per_token_tension: list of float (mean tension per generated token)
 
-    Tension-Guided Generation (v5):
+    Tension-Guided Generation (v5.1):
         Standard: logits → softmax → sample (probability only)
-        Guided:   logits → softmax × (1 + β·tension_per_token) → sample
-
-        High tension tokens = tokens that Engine A and G disagree on most.
-        Preferring these tokens = "conscious choice" — exploring uncertainty
-        rather than defaulting to the safe, predictable option.
+        Guided:   temperature × (1 + β·tanh(t/t̄ − 1)) — positions where the A/G
+        repulsion runs above its own running mean sample hotter (exploration).
+        Steers a decoding parameter only (paralinguistic, honest — the GRAFT
+        lightweight pattern), with no external setpoint: the reference is the
+        sequence's own running mean.
     """
     model.eval()
     model = model.to(device)
@@ -661,27 +665,25 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
     for _ in range(max_new):
         # Crop to block_size
         idx_cond = idx[:, -model.block_size :]
-        logits_a, logits_g, tensions = model(idx_cond)
+        logits_a, _, tensions = model(idx_cond)
 
         # Mean tension across all layers for the last token
         t_vals = [t[:, -1].mean().item() for t in tensions]
         per_token_tension.append(np.mean(t_vals))
 
-        # Sample next byte from logits_a at last position
-        logits_last = logits_a[:, -1, :] / temperature
+        # Sample next byte from logits_a at last position.
+        # v5.1: the old per-token |logits_a - logits_g| "disagreement" was
+        # dominated by head_g's copy solution (a spike on the current byte), so
+        # the boost preferentially re-emitted the byte just consumed. With head_g
+        # deleted, guidance steers the sampling temperature from the real
+        # per-position tension instead, relative to its own running mean.
+        temp = temperature
+        if tension_guided and curiosity_beta > 0 and len(per_token_tension) > 1:
+            t_now = per_token_tension[-1]
+            t_avg = sum(per_token_tension) / len(per_token_tension)
+            temp = temperature * (1.0 + curiosity_beta * math.tanh(t_now / (t_avg + 1e-8) - 1.0))
+        logits_last = logits_a[:, -1, :] / temp
         probs = F.softmax(logits_last, dim=-1)
-
-        if tension_guided and curiosity_beta > 0:
-            # v5: Tension-guided token selection
-            # Compute per-token tension: how much A and G disagree on each token
-            logits_g_last = logits_g[:, -1, :]
-            token_disagreement = (logits_a[:, -1, :] - logits_g_last).abs()
-            # Normalize to [0, 1] range
-            token_tension = token_disagreement / (token_disagreement.max() + 1e-8)
-            # Boost probability of high-tension tokens
-            tension_boost = 1.0 + curiosity_beta * token_tension
-            probs = probs * tension_boost
-            probs = probs / probs.sum(dim=-1, keepdim=True)  # renormalize
 
         next_byte = torch.multinomial(probs, num_samples=1)
         idx = torch.cat([idx, next_byte], dim=1)
