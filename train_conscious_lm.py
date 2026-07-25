@@ -242,41 +242,50 @@ class LossEnsemble(nn.Module):
       5: Myelination (mature cells rewarded)
     """
 
+    # Kendall's derivation is a likelihood argument: it only applies to losses that
+    # are non-negative and come from a task likelihood. The four structure terms are
+    # regularizers with no aleatoric-uncertainty reading, and two of them are passed
+    # as literal 0.0 outside their phase -- for L_i = 0 the objective reduces to
+    # 0.5*log_var, which is minimized by log_var -> -inf. Measured consequence at
+    # step 70,000 of the clamped run: every structure slot sat pinned at the -2
+    # boundary (precision 7.389) while both CE slots settled at +1.85
+    # (precision 0.157) -- a 47x handicap on the only task that learns language.
+    # So: learnable weights for the CE heads only, fixed weights for the rest.
+    N_LEARNABLE = 2  # ce_fwd, ce_bwd
+
     def __init__(self):
         super().__init__()
-        # log-sigma^2 for each loss (learnable, initialized to 0 -> weight=1)
-        self.log_vars = nn.Parameter(torch.zeros(6))
+        # log-sigma^2 for the CE heads (learnable, initialized to 0 -> weight=1)
+        self.log_vars = nn.Parameter(torch.zeros(self.N_LEARNABLE))
 
     def forward(self, losses: List[torch.Tensor]) -> Tuple[torch.Tensor, Dict[str, float]]:
-        """Combine losses with learned weights.
+        """Combine losses: uncertainty weighting on CE, fixed weights elsewhere.
 
-        weight_i = 1 / (2 * exp(log_var_i))  +  log_var_i / 2
-        This is the homoscedastic uncertainty formulation from Kendall et al.
+        weight_i = exp(-log_var_i) * L_i + log_var_i / 2   (Kendall et al., CE only)
+        Structure terms enter at their caller-applied phase coefficient, unweighted.
         """
         assert len(losses) == 6, f"Expected 6 losses, got {len(losses)}"
 
-        # BUGFIX: Kendall uncertainty weighting assumes every L_i >= 0. Some
-        # auxiliary losses here are sign-indefinite (e.g. tension_var =
-        # -log(t_var) is negative when t_var > 1). With an UNBOUNDED learnable
-        # log_var, the optimizer can drive log_var -> -inf so that
-        # precision = exp(-log_var) -> +inf, and precision * (negative loss)
-        # -> -inf: total_loss diverges to -inf while CE never improves
-        # (reward-hacking the structure term, gradient budget stolen from CE).
-        # Clamp log_vars to a bounded range so precision stays finite and the
-        # sign-indefinite terms can no longer be exploited. Structure-loss
-        # semantics (negative = rewarding) are preserved; only the runaway is cut.
-        log_vars = self.log_vars.clamp(-2.0, 2.0)  # precision in [e^-2, e^2] ~ [0.135, 7.39]
+        # The clamp stays as a backstop -- without it a constant/zero loss still
+        # sends its log_var to -inf -- but after the split above it should never
+        # bind. +-3 leaves room for Kendall's interior optimum log_var* = ln(2*L),
+        # which for CE ~ 4.1 is 2.10 and was being distorted by the old +-2 bound.
+        log_vars = self.log_vars.clamp(-3.0, 3.0)
 
         total = torch.tensor(0.0, device=self.log_vars.device)
         details = {}
         names = ["ce_fwd", "ce_bwd", "tension_var", "phi_diff", "competition", "myelination"]
 
         for i, (loss, name) in enumerate(zip(losses, names)):
-            precision = torch.exp(-log_vars[i])
-            weighted = precision * loss + log_vars[i] * 0.5
+            if i < self.N_LEARNABLE:
+                precision = torch.exp(-log_vars[i])
+                weighted = precision * loss + log_vars[i] * 0.5
+                details[f"w_{name}"] = precision.item()
+            else:
+                weighted = loss          # phase coefficient already applied by caller
+                details[f"w_{name}"] = 1.0
             total = total + weighted
             details[name] = loss.item()
-            details[f"w_{name}"] = precision.item()
 
         return total, details
 
@@ -806,6 +815,14 @@ def train(args: argparse.Namespace):
         model.load_state_dict(ckpt["model_state"])
         optimizer.load_state_dict(ckpt["optimizer_state"])
         if "loss_ensemble_state" in ckpt:
+            n_ckpt = ckpt["loss_ensemble_state"]["log_vars"].numel()
+            if n_ckpt != LossEnsemble.N_LEARNABLE:
+                raise SystemExit(
+                    f"[resume] refused: checkpoint carries {n_ckpt} learnable loss weights, "
+                    f"this build has {LossEnsemble.N_LEARNABLE} (CE heads only). The objective "
+                    f"itself changed, so resuming would continue training a different problem — "
+                    f"restart from step 0 with a fresh --checkpoint-dir."
+                )
             loss_ensemble.load_state_dict(ckpt["loss_ensemble_state"])
         if "phi_history" in ckpt:
             phi_calc.phi_history = ckpt["phi_history"]
@@ -1082,10 +1099,23 @@ def train(args: argparse.Namespace):
             logits_g.view(-1, model.vocab_size), y_bwd.view(-1)
         )
 
-        # Loss 2: Tension variance (encourage diversity across layers)
-        # NF4: Clamp tension variance to prevent explosion during mitosis
-        t_var = torch.clamp(t_stack.var(dim=0).mean(), max=100.0)
-        loss_tension_var = -torch.log(t_var + 1e-8)
+        # Loss 2: cross-layer tension diversity -- scale-invariant, non-negative,
+        # satiating. The old form -log(t_var) (NF4-clamped at 100) paid forever for
+        # raw magnitude: tension = (ffn_out**2).mean, so variance grows with scale^2
+        # and inflating activations is the cheapest way to earn it -- a direction
+        # pre-norm makes nearly free w.r.t. CE, and the NF4 clamp made the gradient
+        # one-sided (it exists only below the cap, and always points up). Measured:
+        # mean tension 46 -> 163,069 over 12k language steps while val CE stopped
+        # improving, because tension_proj injects that O(100) signal into a residual
+        # stream whose token content is O(1-10).
+        # Dividing by the mean removes the magnitude direction entirely (squared CV
+        # is invariant to the LayerNorm scale gauge) and exp(-x) satiates, so
+        # "differentiated enough" stops paying instead of paying without bound.
+        # No setpoint is imposed on tension itself -- what magnitude the field
+        # settles at stays emergent (project rule 2: no manipulation of state).
+        t_mean = t_stack.mean()
+        t_cv2 = t_stack.var(dim=0).mean() / (t_mean * t_mean + 1e-8)
+        loss_tension_var = torch.exp(-t_cv2)  # in (0, 1], 0 gradient once differentiated
 
         # Loss 3: Phi differentiation (CL5)
         loss_phi = phi_differentiation_loss(phi_current, phi_prev).to(device)
