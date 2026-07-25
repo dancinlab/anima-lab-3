@@ -208,6 +208,10 @@ Falling loss is NOT a success signal — the objective can be gamed (NF-1, NF-3)
      Measure on a FIXED span only: --val-bytes (default 262144 = 256KB), the
      same bytes at every eval. A single random batch (1,024B) is banned — it
      buried a 0.08-nat difference between two runs inside its own noise.
+     The held-out span must also be DEDUPED against train, or the number
+     measures memorisation: corpus_v2.txt is 46.6% unique lines and 49.4% of
+     held-out lines occur verbatim in train, which inflated a run's score 2.4x
+     (0.594 BPC on the raw span vs 1.401 BPC on unseen lines, step 20,000).
      Baselines are MEASURED on the training split, never assumed. For
      data/corpus_v2.txt (172 distinct byte values -- Korean UTF-8 widens the
      alphabet, so generic English-corpus numbers do not transfer):

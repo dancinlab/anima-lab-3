@@ -853,9 +853,26 @@ def train(args: argparse.Namespace):
     for i, start in enumerate(range(0, n, chunk)):
         (val_parts if i % 10 == 9 else train_parts).append(data[start: start + chunk])
     train_data = torch.cat(train_parts)
-    val_data = torch.cat(val_parts)
+    val_raw = torch.cat(val_parts)
+
+    # Validation must not be scoreable by memorisation. corpus_v2.txt is only
+    # 46.6% unique lines, and 49.4% of held-out lines (>8 bytes) occur VERBATIM
+    # in the training split -- measured at step 20,000, that inflated the reported
+    # score 2.4x: 0.594 BPC on the raw held-out span versus 1.401 BPC on lines the
+    # model had never seen. Keep only the lines that are genuinely unseen.
+    train_lines = set(bytes(train_data.numpy()).split(b"\n"))
+    unseen = b"\n".join(
+        ln for ln in bytes(val_raw.numpy()).split(b"\n")
+        if len(ln) > 8 and ln not in train_lines
+    )
+    if len(unseen) > (1 << 18):        # keep the fallback honest, not silent
+        val_data = torch.frombuffer(bytearray(unseen), dtype=torch.uint8).long()
+        dedup_note = f"unseen lines only, {len(unseen) / len(val_raw) * 100:.1f}% of held-out"
+    else:
+        val_data = val_raw
+        dedup_note = "RAW held-out span -- too few unseen lines to dedupe, BPC will be optimistic"
     print(f"[data] train={len(train_data):,} val={len(val_data):,} bytes "
-          f"(interleaved 1MB chunks, every 10th held out)")
+          f"(interleaved 1MB chunks, every 10th held out; {dedup_note})")
 
     # --- Model ---
     model = ConsciousLM(
