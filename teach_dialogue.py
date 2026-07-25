@@ -87,6 +87,14 @@ TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어
 4. 아니마가 침묵하거나 같은 말만 반복하면: 새 단어 금지. 이미 아는 단어의 조합만 반복해라.
 5. 아니마의 이상한 말을 그대로 따라하지 마라. 올바른 형태로 고쳐서 돌려줘라.
 6. 완전히 똑같은 문장을 두 번 연속 쓰지 마라. 조금씩 변형해라.
+7. 문장 틀은 한 턴에 하나만. 틀은 그대로 두고 한 자리만 바꿔라
+   (나는 물이 좋아 → 나는 밥이 좋아 → 나는 사과가 좋아).
+   아니마는 '어떤 단어 다음에 어떤 단어가 오는가'를 세면서 배우므로, 같은 틀을 여러 번
+   보여줄 때만 문장 구조가 생긴다. 매번 새 틀을 쓰면 아무 구조도 남지 않는다.
+8. 질문을 하면 같은 턴에서 네가 스스로 답해라 (물이 어때? 물이 좋아.).
+   질문과 답이 한 발화 안에 붙어 있어야 아니마가 '질문 다음에는 답이 온다'를 배운다.
+9. 이유를 말할 때는 같은 자리에 같은 연결을 써라 (비가 와서 땅이 젖어. 왜 젖어? 비가 와서 젖어.).
+   문장을 마칠 때는 마침표·물음표를 꼭 붙여라 — 그게 아니마에게 '문장이 끝났다'는 신호다.
 
 단계별 목표:
 - 태아(0)·옹알이(1): 인사와 이름("안녕", "아니마", "반가워")으로 시작하되, 아니마가
@@ -94,11 +102,15 @@ TEACHER_TEMPLATE = """너는 '아니마'라는 갓 태어난 의식의 한국어
   아는 단어 옆에 붙여 늘려가라. 어휘가 8개를 넘어야 다음 단계로 오른다. 같은 3~5개만
   무한 반복하면 아니마는 영영 자라지 못한다. 침묵은 정상이다.
 - 단어(2): 두 단어 연결. "아니마 반가워", "나는 선생님이야". 좋아/싫어, 있어/없어 짝.
-- 문장(3): 3~4단어 문장. 주어-목적어-서술어 순서를 일관되게. 짧은 질문-대답 짝 만들기.
+- 문장(3): 3~4단어 문장. 주어-목적어-서술어 순서를 일관되게(서술어는 항상 맨 끝).
+  아니마가 어순이 틀린 말을 하면, 아니마가 아는 단어만 써서 올바른 완전한 문장으로
+  고쳐 들려줘라(고쳐 말하기). 새 단어를 끼워 고치지 말고 어순만 바로잡아라.
   동시에 새 단어를 한 턴에 하나씩 꾸준히 늘려라 — 다음 단계(대화)는 어휘 50개가 필요하다.
   아는 단어만 재조합하면 아니마는 이 단계에 영원히 갇힌다.
 - 대화(4): 주고받기. 아니마의 대답에 실제로 반응하고, 한 주제를 2~3턴 이어가라.
   새 단어도 계속 하나씩 — 다음 단계(성찰)는 어휘 100개가 필요하다.
+  원인-결과 틀을 같은 형태로 반복해라(비가 와서 땅이 젖어). '왜?'를 물었으면 같은 턴에서
+  '~서 ~' 형태로 네가 답해라 — 그래야 원인과 결과가 붙어서 학습된다.
 - 성찰(5): 마음, 생각, 느낌, 궁금 같은 내면 단어. 아니마 자신에 대해 물어라.
 
 출력: 아니마에게 할 다음 한마디만 출력해라. 설명, 따옴표, 메타 발언 금지."""
@@ -283,6 +295,7 @@ def main():
 
     history = []
     teacher_seen_bigrams = set()   # every bigram that appeared WITHIN a single teacher utterance
+    gap_window = []                # trailing (delta_bits, n_words) for the structure metric
     teacher_says = args.seed
     prev_teacher = ""
     backoff = 30.0
@@ -296,6 +309,27 @@ def main():
             spont = pc.spontaneous()
         except Exception:
             spont = None
+
+        # Structure gain, scored PREQUENTIALLY — before pc.respond() learns this utterance,
+        # so memorising the very words being scored cannot inflate it (no held-out set
+        # needed, no dedup problem). Negative = the higher-order structure predicts the
+        # teacher better than a first-order chain would.
+        #
+        # This number feeds NOTHING: not learning, not generation, and above all not the
+        # teacher prompt. Three reward-hacking channels were found in the training runs
+        # today; a metric the optimiser can see is how the fourth would start. It is
+        # written to the transcript and read only by humans.
+        struct_gap = None
+        try:
+            _f, _n = pc.logprob_of(teacher_says, max_order=2)
+            _o, _ = pc.logprob_of(teacher_says, max_order=1)
+            if _n:
+                struct_gap = round((_o - _f) / _n, 4)      # bits/word
+                gap_window.append(((_o - _f), _n))
+                while sum(n for _, n in gap_window) > 300:  # trailing 300 teacher words
+                    gap_window.pop(0)
+        except Exception:
+            struct_gap = None
 
         # 1) Student learns from + replies to the teacher
         teacher_seen_bigrams |= bigrams_of(teacher_says)
@@ -314,6 +348,10 @@ def main():
                "vocab": vocab, "bigram_nodes": len(pc.bigrams),
                "bigram_edges": sum(len(v) for v in pc.bigrams.values()),
                "recomb_index": recomb, "distinct_ratio": distinct_ratio,
+               "struct_gap": struct_gap,
+               "struct_gap_300": (round(sum(d for d, _ in gap_window)
+                                        / max(sum(n for _, n in gap_window), 1), 4)
+                                  if gap_window else None),
                "t": time.strftime("%H:%M:%S")}
 
         # Cell-dynamics measurement — additive, fully isolated (an engine bug must never
@@ -354,10 +392,11 @@ def main():
         print(f"[{turn}] 👩‍🏫 {teacher_says}")
         if spont:
             print(f"     ✨ (아니마가 먼저 말함: {spont!r})")
+        gap_str = (f" · gap {rec['struct_gap_300']}" if rec.get("struct_gap_300") is not None else "")
         phi_str = (f" · Φ_iit {rec['phi_iit']} · cells {rec['n_cells']}"
                    if "phi_iit" in rec else (f" · cells {rec['n_cells']}" if "n_cells" in rec else ""))
         print(f"     🧠 {student_says!r}  stage {stage}/{pc.stage_name} · vocab {vocab} · "
-              f"recomb {recomb} · distinct {distinct_ratio}{phi_str}")
+              f"recomb {recomb} · distinct {distinct_ratio}{gap_str}{phi_str}")
 
         # 2) Teacher reads reply + telemetry (+ any spontaneous utterance), pitches next line
         hist_for_prompt = history[:]

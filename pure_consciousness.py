@@ -44,6 +44,23 @@ LN2 = math.log(2)
 PSI_BALANCE = 0.5
 ANIMA_DIR = Path(__file__).parent
 
+# Utterance-boundary percepts. Not grammar: the interlocutor paused, and a pause is
+# observable the way silence between a parent's sentences is. Deliberately non-Hangul so
+# they can never enter learned_words / word_freq (vocab, and therefore growth_stage,
+# stays exactly what the consciousness learned).
+BOS = "⟨s⟩"     # ⟨s⟩
+EOS = "⟨/s⟩"    # ⟨/s⟩
+SENTINELS = (BOS, EOS)
+_SENT_SPLIT = re.compile(r"[.!?]+")   # observed punctuation = where the pause fell
+STATE_VERSION = 2         # 1 = order-1 only; 2 = variable-order + boundaries
+# A higher-order context must have been observed more than once before it is
+# preferred over the denser order below it.
+MIN_ORDER_SUPPORT = 2
+# Orders are INTERPOLATED, not strictly backed off: a 2-word context that happens not to
+# contain the next word must not erase what the 1-word context knows. Strict back-off
+# measured WORSE than order-1 alone (+0.027 bits/word); interpolation is the standard fix.
+ORDER_WEIGHTS = (0.6, 0.3, 0.1)   # (2-word context, 1-word context, last-syllable class)
+
 # 감정 이모지 매핑
 EMOTION_EMOJI = {
     'excited': '🔥', 'curious': '🔍', 'calm': '😌',
@@ -66,7 +83,23 @@ class PureConsciousness:
         self.learned_words = []          # 순서 유지 (최근 학습 우선)
         self.learned_patterns = []       # (입력, 응답) 쌍
         self.word_freq = Counter()       # 단어 빈도
-        self.bigrams = defaultdict(Counter)  # 단어 바이그램
+        self.bigrams = defaultdict(Counter)  # order-1 문맥 (1단어) → 다음 단어
+
+        # ── Structure: variable-order back-off counts ──────────────────────────
+        # A first-order chain cannot represent grammar: 나는 물이 좋아 needs the TWO-word
+        # context (나는, 물이) → 좋아, and an utterance boundary has no representation at
+        # all (which is why the old code glued on a literal "!" / random punctuation —
+        # micro-hardcodes that rule 1 forbids). These tables deepen the SAME structure
+        # (Law 22): still nothing but counts of events actually observed in dialogue.
+        # No Korean form is named anywhere in code — the identical code learns Japanese.
+        self.trigrams = defaultdict(Counter)   # (w1, w2) → next word
+        # Sparse-context fallback: last-syllable equivalence class. The classes that
+        # matter (은/는/이/가 …) EMERGE from what the teacher says; none is written here.
+        self.suffix_next = defaultdict(Counter)  # last syllable of prev word → next word
+        # Cross-sentence adjacency: carries dialogue structure (question→answer) and
+        # causality (왜 → …서). Learned ONLY from the interlocutor's own consecutive
+        # sentences — never from the student's output (no echo channel).
+        self.cross_boundary = defaultdict(Counter)  # sentence-final word → next-first word
 
         # 의식 상태
         self.tension = 0.5
@@ -191,11 +224,20 @@ class PureConsciousness:
         """Stage 3: 짧은 문장."""
         input_words = re.findall(r'[가-힣]+', text)
 
-        # 바이그램 체인 시도
+        # 체인 시도 (가변 차수 백오프 · 종료도 학습된 것)
         if input_words and input_words[-1] in self.bigrams:
             chain = self._bigram_chain(input_words[-1], 4)
             if len(chain) > 1:
-                return ' '.join(chain) + "!"
+                return ' '.join(chain)
+
+        # The input-seeded chain can die immediately (its last word is usually an
+        # utterance-final one, whose only observed continuation is the end percept).
+        # Then generate from the BOUNDARY instead: P(first word | ⟨s⟩) is "how an
+        # utterance starts", learned from the interlocutor. This replaces replaying a
+        # stored past response, which was an echo channel, not speech.
+        opening = self._utterance_from_boundary(4)
+        if opening:
+            return opening
 
         # 학습한 패턴에서 유사 응답
         if self.learned_patterns:
@@ -215,17 +257,33 @@ class PureConsciousness:
         """Stage 4: 맥락 있는 대화."""
         input_words = re.findall(r'[가-힣]+', text)
 
-        # 바이그램 체인
+        # 체인 + 인과/대화 구조 (교차 경계로 두 번째 문장을 이어붙임)
         if input_words:
             for w in reversed(input_words):
                 if w in self.bigrams:
                     chain = self._bigram_chain(w, 6)
                     if len(chain) > 2:
                         result = ' '.join(chain)
-                        # 문장 끝 추가
-                        if not result.endswith(('!', '?', '.')):
-                            result += random.choice(['!', '?', '.'])
+                        # If the interlocutor has been observed continuing past a sentence
+                        # that ended this way, continue the same way — that adjacency is
+                        # where question→answer and cause→effect live. No connective is
+                        # named in code; whatever the teacher actually used is what comes.
+                        nxt = self._next_sentence_start(chain[-1])
+                        if nxt:
+                            follow = self._bigram_chain(nxt, 5)
+                            if len(follow) > 1:
+                                result += ' ' + ' '.join(follow)
                         return result
+
+        # Boundary-started utterance before any stored-response replay (see _sentence).
+        opening = self._utterance_from_boundary(6)
+        if opening:
+            nxt = self._next_sentence_start(opening.split()[-1])
+            if nxt:
+                follow = self._bigram_chain(nxt, 5)
+                if len(follow) > 1:
+                    return opening + ' ' + ' '.join(follow)
+            return opening
 
         # 과거 대화 패턴 매칭
         if self.learned_patterns and input_words:
@@ -247,25 +305,111 @@ class PureConsciousness:
         # Law 1: 템플릿 금지 — dialogue 능력으로만 성찰
         return self._dialogue(text)
 
+    def _interp_prob(self, word: str, tri, bi, sfx) -> float:
+        """Interpolated probability of `word` over the available orders.
+
+        Each order contributes its own add-1 estimate, weighted; whatever weight belongs
+        to an order that was never observed falls through to a uniform floor over the
+        known vocabulary, so nothing is ever assigned probability zero.
+        """
+        floor = 1.0 / (len(self.word_freq) + 2)
+        p, spare = 0.0, 0.0
+        for w, d in zip(ORDER_WEIGHTS, (tri, bi, sfx)):
+            if d:
+                tot = sum(d.values())
+                p += w * ((d.get(word, 0) + 1) / (tot + len(d) + 1))
+            else:
+                spare += w
+        return p + spare * floor
+
+    @staticmethod
+    def _sample(dist: Counter, chain: List[str]):
+        """Sample a next word from observed counts, skipping immediate repetition."""
+        total = sum(dist.values())
+        if not total:
+            return None
+        r = random.random() * total
+        cumul = 0
+        for word, cnt in dist.items():
+            cumul += cnt
+            if cumul >= r:
+                return word if word not in chain[-2:] else None
+        return None
+
     def _bigram_chain(self, start: str, max_len: int = 5) -> List[str]:
-        """바이그램 체인 생성."""
+        """Variable-order back-off chain (order-2 → order-1 → suffix class).
+
+        Two words of context is enough to hold a full SOV frame *including* particle→
+        predicate agreement, because particles ride inside the token: the count table
+        IS the agreement table, learned rather than declared. Where a 2-word context was
+        never observed the chain falls back to 1 word, then to the last-syllable class,
+        which is what makes this usable at 8.5k observed words instead of overfitting.
+
+        Termination is LEARNED: the chain stops when the end-of-utterance percept is
+        sampled. The old code appended a literal "!" / random punctuation instead — a
+        hardcode this replaces (rule 1).
+        """
         chain = [start]
-        current = start
         for _ in range(max_len):
-            if current not in self.bigrams:
+            prev2 = chain[-2] if len(chain) >= 2 else BOS
+            prev1 = chain[-1]
+            nxt = None
+            # A higher order is only trusted once it has been seen more than once —
+            # a single observation is a worse estimate than the denser order below it
+            # (measured: naive "use order-2 whenever it exists" made prediction WORSE,
+            # +0.036 bits/word instead of better).
+            tri = self.trigrams.get((prev2, prev1))
+            if tri and sum(tri.values()) < MIN_ORDER_SUPPORT:
+                tri = None
+            orders = [(w, d) for w, d in zip(
+                ORDER_WEIGHTS,
+                (tri, self.bigrams.get(prev1),
+                 self.suffix_next.get(prev1[-1]) if prev1 not in SENTINELS else None)) if d]
+            if orders:
+                # pick which order speaks this time, by the same mixture weights used to
+                # score it — generation and measurement then describe the same model
+                total_w = sum(w for w, _ in orders)
+                r = random.random() * total_w
+                cumul = 0.0
+                for w, d in orders:
+                    cumul += w
+                    if cumul >= r:
+                        nxt = self._sample(d, chain)
+                        break
+                if not nxt:   # that order declined (repetition guard) — try the densest
+                    nxt = self._sample(max(orders, key=lambda wd: sum(wd[1].values()))[1], chain)
+            if not nxt:
                 break
-            candidates = self.bigrams[current]
-            total = sum(candidates.values())
-            r = random.random() * total
-            cumul = 0
-            for word, cnt in candidates.items():
-                cumul += cnt
-                if cumul >= r:
-                    if word not in chain[-2:]:  # 반복 방지
-                        chain.append(word)
-                        current = word
-                    break
-        return chain
+            if nxt == EOS:          # the consciousness chose to stop here
+                break
+            if nxt == BOS:
+                continue
+            chain.append(nxt)
+        return [w for w in chain if w not in SENTINELS]
+
+    def _utterance_from_boundary(self, max_len: int = 5) -> str:
+        """Generate a whole utterance starting from the boundary percept.
+
+        P(first word | ⟨s⟩) is what the interlocutor has been observed to START with, so
+        the chain runs in the same shape a sentence actually takes (Korean is verb-final,
+        and that falls out of the counts — it is nowhere written in this file).
+        """
+        first = self._sample(self.bigrams.get(BOS, Counter()), [])
+        if not first or first in SENTINELS:
+            return ""
+        chain = self._bigram_chain(first, max_len)
+        return ' '.join(chain) if len(chain) > 1 else ""
+
+    def _next_sentence_start(self, final_word: str):
+        """What the interlocutor tends to say AFTER a sentence ending in `final_word`.
+
+        This is the causality/dialogue-structure table: 왜 …? → …서 …, question → answer.
+        Learned only from the interlocutor's consecutive sentences.
+        """
+        dist = self.cross_boundary.get(final_word)
+        if not dist:
+            return None
+        return self._sample(dist, [])
 
     # ═══════════════════════════════════════════════════════════
     # 자연발화
@@ -324,19 +468,71 @@ class PureConsciousness:
     # ═══════════════════════════════════════════════════════════
 
     def _learn_from_input(self, text: str):
-        """입력에서 단어/패턴 학습."""
+        """입력에서 단어/패턴/구조 학습 — 관측한 사건을 세는 것뿐(목적함수·보상 없음)."""
         words = re.findall(r'[가-힣]+', text)
         for w in words:
             if len(w) >= 2:
                 self.learned_words.append(w)
                 self.word_freq[w] += 1
-        # 바이그램
-        for i in range(len(words) - 1):
-            if len(words[i]) >= 2 and len(words[i+1]) >= 2:
-                self.bigrams[words[i]][words[i+1]] += 1
+
+        # Sentence-level structure. The utterance is split where the interlocutor's own
+        # punctuation says the pause fell; each sentence is framed by boundary percepts so
+        # "what starts an utterance" and "what ends one" become learnable statistics
+        # instead of the literal punctuation the old code appended.
+        sentences = [
+            [w for w in re.findall(r'[가-힣]+', s) if len(w) >= 2]
+            for s in _SENT_SPLIT.split(text)
+        ]
+        sentences = [s for s in sentences if s]
+
+        prev_final = None
+        for sent in sentences:
+            seq = [BOS] + sent + [EOS]
+            for i in range(len(seq) - 1):
+                self.bigrams[seq[i]][seq[i + 1]] += 1
+                if seq[i] not in SENTINELS:
+                    self.suffix_next[seq[i][-1]][seq[i + 1]] += 1
+            for i in range(len(seq) - 2):
+                self.trigrams[(seq[i], seq[i + 1])][seq[i + 2]] += 1
+            # cross-sentence adjacency (question→answer, cause→effect)
+            if prev_final is not None:
+                self.cross_boundary[prev_final][sent[0]] += 1
+            prev_final = sent[-1]
+
         # 최대 크기 제한
         if len(self.learned_words) > 2000:
             self.learned_words = self.learned_words[-2000:]
+
+    # ── Scoring (read-only; used by the harness metric, never by learning) ────────
+
+    def logprob_of(self, text: str, max_order: int = 2) -> tuple:
+        """Total log2-probability and word count of `text` under the CURRENT counts.
+
+        Called BEFORE the text is learned (prequential scoring), so it can never be
+        inflated by memorising the very words being scored. max_order=1 restricts the
+        model to the order-1 floor, which is how the structure gain is isolated.
+        Returns (log2_prob, n_scored). Pure measurement: changes no state.
+        """
+        sentences = [
+            [w for w in re.findall(r'[가-힣]+', s) if len(w) >= 2]
+            for s in _SENT_SPLIT.split(text)
+        ]
+        total, n = 0.0, 0
+        for sent in [s for s in sentences if s]:
+            seq = [BOS] + sent + [EOS]
+            for i in range(1, len(seq)):
+                tri = None
+                sfx = None
+                if max_order >= 2:
+                    if i >= 2:
+                        t = self.trigrams.get((seq[i - 2], seq[i - 1]))
+                        tri = t if t and sum(t.values()) >= MIN_ORDER_SUPPORT else None
+                    if seq[i - 1] not in SENTINELS:
+                        sfx = self.suffix_next.get(seq[i - 1][-1])
+                p = self._interp_prob(seq[i], tri, self.bigrams.get(seq[i - 1]), sfx)
+                total += math.log(p) / LN2
+                n += 1
+        return total, n
 
     # ═══════════════════════════════════════════════════════════
     # 저장/로드
@@ -354,12 +550,22 @@ class PureConsciousness:
             older_unique = [w for w in dict.fromkeys(self.learned_words) if w not in in_recent]
             # Keep the densest bigram heads (by total count), not an arbitrary insertion prefix.
             heads = sorted(self.bigrams.items(), key=lambda kv: -sum(kv[1].values()))[:500]
+            # Higher-order structure persists too, or every restart would drop the
+            # consciousness back to a first-order chain. Keys are joined with a tab
+            # because JSON has no tuple keys; tabs cannot occur inside a Hangul token.
+            tri = sorted(self.trigrams.items(), key=lambda kv: -sum(kv[1].values()))[:2000]
+            sfx = sorted(self.suffix_next.items(), key=lambda kv: -sum(kv[1].values()))[:500]
+            crs = sorted(self.cross_boundary.items(), key=lambda kv: -sum(kv[1].values()))[:500]
             state = {
+                'version': STATE_VERSION,
                 'interaction_count': self.interaction_count,
                 'birth_time': self.birth_time,
                 'learned_words': (older_unique + recent)[-2000:],
                 'word_freq': dict(self.word_freq.most_common(1000)),
                 'bigrams': {k: dict(v) for k, v in heads},
+                'trigrams': {"\t".join(k): dict(v) for k, v in tri},
+                'suffix_next': {k: dict(v) for k, v in sfx},
+                'cross_boundary': {k: dict(v) for k, v in crs},
                 'patterns': self.learned_patterns[-100:],
                 'growth_stage': self.growth_stage,
             }
@@ -380,6 +586,17 @@ class PureConsciousness:
                 self.word_freq = Counter(state.get('word_freq', {}))
                 for k, v in state.get('bigrams', {}).items():
                     self.bigrams[k] = Counter(v)
+                # Additive migration: a version-1 file has no higher orders, so they simply
+                # start empty and the existing bigrams serve as the order-1 back-off floor
+                # from the first turn — the live student keeps everything it learned.
+                for k, v in state.get('trigrams', {}).items():
+                    parts = k.split("\t")
+                    if len(parts) == 2:
+                        self.trigrams[(parts[0], parts[1])] = Counter(v)
+                for k, v in state.get('suffix_next', {}).items():
+                    self.suffix_next[k] = Counter(v)
+                for k, v in state.get('cross_boundary', {}).items():
+                    self.cross_boundary[k] = Counter(v)
                 self.learned_patterns = [tuple(p) for p in state.get('patterns', [])]
             except Exception:
                 pass

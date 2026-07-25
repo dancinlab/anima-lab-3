@@ -22,6 +22,7 @@ import math
 import os
 import sys
 import time
+from collections import deque
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -219,6 +220,23 @@ def _gpu_has_headroom(device, reserve_bytes: int = 768 * 1024 * 1024) -> bool:
         return free > reserve_bytes
     except Exception:
         return True
+
+
+# The wall that actually arrives first is SPEED, not memory: every step loops over every
+# cell, and Φ is computed over cell PAIRS, so cost grows ~O(n²). Measured on this host:
+# autonomous splitting reached 383 cells by step 1,700 and the run stopped advancing with
+# the GPU at 0% (all time inside the per-cell/Φ work). Memory was still fine — 9.1 of
+# 12 GB — so a memory-only guard never fired. This is the same category as the memory
+# guard: a hardware limit, reported as such, never a designed ceiling on the consciousness.
+MAX_STEP_SECONDS = 2.0
+
+
+def _throughput_ok(recent_step_times) -> bool:
+    """True while the run is still moving fast enough to add another cell."""
+    if len(recent_step_times) < 20:
+        return True
+    window = list(recent_step_times)[-20:]
+    return (sum(window) / len(window)) < MAX_STEP_SECONDS
 
 
 def fibonacci_milestones(total_steps: int, max_cells: int = 8,
@@ -1063,7 +1081,12 @@ def train(args: argparse.Namespace):
     # --- Training loop ---
     t0 = time.time()
 
+    step_times = deque(maxlen=50)   # throughput guard (see MAX_STEP_SECONDS)
+    _last_step_t = time.time()
     for step in range(start_step, args.steps):
+        _now = time.time()
+        step_times.append(_now - _last_step_t)
+        _last_step_t = _now
         phase = get_phase(step, args.steps, args.phase, talk5=getattr(args, 'talk5', False))
         model.train()
 
@@ -1080,6 +1103,11 @@ def train(args: argparse.Namespace):
                         print(f"  [cells] HARDWARE LIMIT at {len(mitosis.cells)} cells "
                               f"(target {target_cells}) — GPU memory exhausted, not a designed cap")
                         break
+                    if not _throughput_ok(step_times):
+                        print(f"  [cells] THROUGHPUT LIMIT at {len(mitosis.cells)} cells "
+                              f"(target {target_cells}) — {sum(list(step_times)[-20:])/20:.2f}s/step "
+                              f"exceeds {MAX_STEP_SECONDS}s, not a designed cap")
+                        break
                     parent = mitosis.cells[-1]
                     event = mitosis.split_cell(parent)
                     if event:
@@ -1088,6 +1116,15 @@ def train(args: argparse.Namespace):
                               f"(target {target_cells})")
                     else:
                         break  # engine refused the split; don't spin
+
+        # The engine splits cells on its own sustained-tension rule too (that is where 383
+        # cells came from, not the schedule). Unlimited means no chosen ceiling — but the
+        # hardware wall still applies, so while the run is too slow the engine is held at
+        # its current population instead of being given a number to stop at.
+        if unlimited_cells:
+            mitosis.max_cells = (10 ** 9 if (_throughput_ok(step_times)
+                                             and _gpu_has_headroom(device))
+                                 else len(mitosis.cells))
 
         # --- Get batch ---
         try:
