@@ -1,0 +1,57 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 1538,
+    "keep_rate": 0.16644993498049415,
+    "probe_bytes": 64,
+    "block": 256
+  },
+  "p25": {
+    "ce_nats": 0.2774514858610928,
+    "bpc": 0.40027788273907294,
+    "tokens": 65536,
+    "ckpt_step": 11750,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "p25f": {
+    "ce_nats": 0.27549272403120995,
+    "bpc": 0.39745198676081833,
+    "tokens": 65536,
+    "ckpt_step": 12000,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "p50": {
+    "ce_nats": 3.1192405074834824,
+    "bpc": 4.500112811486393,
+    "tokens": 65536,
+    "ckpt_step": 6750,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "p50f": {
+    "ce_nats": 3.5184914395213127,
+    "bpc": 5.0761101512076685,
+    "tokens": 65536,
+    "ckpt_step": 12000,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "p100": {
+    "ce_nats": 1.3760768584907055,
+    "bpc": 1.9852592596266048,
+    "tokens": 65536,
+    "ckpt_step": 7000,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "p100f": {
+    "ce_nats": 1.6203863606788218,
+    "bpc": 2.3377233668754513,
+    "tokens": 65536,
+    "ckpt_step": 12000,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  }
+}

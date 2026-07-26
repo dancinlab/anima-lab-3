@@ -115,14 +115,40 @@ before it, and then lose ~21% each. The combined phase degrades both larger-data
 amount and leaves the smallest one alone.
 
 It is not what makes the 50% arm fail the gate: that arm is already at 4.34-4.50 at its best,
-above its 3.5925 bigram floor, before the switch happens. An ablation is running — same three
-arms with `--phase language` forced for the whole run — with these registered first:
+above its 3.5925 bigram floor, before the switch happens.
 
-- **A1** if the combined phase causes the degradation, final@12,000 should land near each arm's
-  original best: 50% ≈ 4.4 (vs 5.34), 100% ≈ 2.04 (vs 2.46), 25% ≈ 0.41 (unchanged).
-- **A2** the gate outcome should not move: 50% still FAIL, 25% and 100% still PASS. If 50% clears
-  its bigram floor without the combined phase, the phase is implicated in the gate failure too and
-  §2's framing needs revisiting.
+### Ablation result — A1 REFUTED, A2 CONFIRMED (measured 2026-07-27 02:40-04:16)
+
+Registered before the run: **A1** final@12,000 should land near each arm's original best if the
+combined phase causes the degradation (50% ≈ 4.4, 100% ≈ 2.04, 25% ≈ 0.41). **A2** the gate
+outcome must not move. Same three arms, `--phase language` for the whole budget, seed 1337.
+
+| arm | best | final WITH combined | final WITHOUT | degradation explained by the phase |
+|---|---|---|---|---|
+| 25% | 0.4003 | 0.4064 | **0.3975** | no degradation either way |
+| 50% | 4.5001 | 5.4441 (+21.0%) | **5.0761** (+12.8%) | **39%** |
+| 100% | 1.9853 | 2.4627 (+24.1%) | **2.3377** (+17.8%) | **26%** |
+
+Consistency check: `best` is bit-identical with and without the ablation for the 50% and 100% arms
+(4.5001 and 1.9853), which is what must happen — their peaks fall before step 8,400, and nothing
+differs before the switch.
+
+```
+best -> final degradation, and how much the combined phase owns
+  50%   ████████████████████ +21.0% with   →  █████████████ +12.8% without   (39% removed)
+ 100%   ███████████████████████ +24.1%     →  █████████████████ +17.8%       (26% removed)
+```
+
+**A1 is refuted.** Removing the phase recovered about a third of the 50% arm's loss and a quarter
+of the 100% arm's — real, but the majority of the best-to-final degradation happens without it.
+Calling the combined phase "the cause" was wrong; it is one contributor among others.
+
+**A2 is confirmed.** Gate outcomes are unchanged: 25% 11% of its floor (PASS), 100% 65% (PASS),
+50% 141% (FAIL). The phase is not implicated in the gate failure, so §2's framing stands.
+
+Smaller finding: the phase costs the 25% arm too (0.4064 → 0.3975, 2.2% better without it), which
+makes 0.3975 the best number any arm reached in this investigation. It costs every arm something;
+it costs the larger-data arms more.
 
 ## 5. Application
 
@@ -132,8 +158,9 @@ arms with `--phase language` forced for the whole run — with these registered 
 2. **The 50% arm is a reproducible failure case worth keeping.** A 25-minute run that reliably
    lands below the gate — the same region 300M runs reached expensively (DATA-2). Diagnosing a
    gate failure here costs minutes instead of hours.
-3. **The combined phase costs the larger-data arms ~21%.** The ablation is running (§4, A1/A2
-   registered): same arms, `--phase language` for the whole budget.
+3. **Drop the combined phase — it is a net cost with no upside found.** Ablated (§4): it owns 39%
+   of the 50% arm's best-to-final loss, 26% of the 100% arm's, and 2.2% of the 25% arm's final,
+   while changing no gate outcome. Nothing in these runs is better with it than without it.
 4. **Test a named mechanism before naming it.** "Unigram floor" was applied here from a BPC
    coincidence and the mechanism test refuted it in one run (§3.5). A BPC number locates a model;
    it does not explain one.

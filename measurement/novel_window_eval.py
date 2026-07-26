@@ -55,6 +55,13 @@ ALL_ARMS = {
     "v100f": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_v100/final.pt"),
     "v50": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_v50/best.pt"),
     "v50f": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_v50/final.pt"),
+    # p-arms: same config with --phase language, i.e. the COMBINED phase removed.
+    "p25": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_p25/best.pt"),
+    "p25f": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_p25/final.pt"),
+    "p50": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_p50/best.pt"),
+    "p50f": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_p50/final.pt"),
+    "p100": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_p100/best.pt"),
+    "p100f": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_p100/final.pt"),
 }
 # argv[2:] selects arms to report; default = the original three.
 SELECT = sys.argv[2:] or ["s25", "s50", "s100"]
