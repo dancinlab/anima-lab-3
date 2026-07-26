@@ -111,8 +111,8 @@ LANGUAGE below that boundary and COMBINED above it; the startup banner still pri
 mitosis phase was removed, CE runs from step 0, and the code comment says so.)
 
 The 25% arm's best sits at 11,750, past the switch; the 50% and 100% arms peak at 2,750-7,000,
-before it, and then lose ~21% each. The combined phase degrades both larger-data arms by the same
-amount and leaves the smallest one alone.
+before it, and then lose ~21% each. The switch was the obvious suspect for that loss — the
+ablation below tested it and found it owns only part.
 
 It is not what makes the 50% arm fail the gate: that arm is already at 4.34-4.50 at its best,
 above its 3.5925 bigram floor, before the switch happens.
