@@ -127,6 +127,11 @@ pairs, and 5% cannot produce an 11x gap. The 25% pair reproduced even the peak s
 Caveat kept explicit: the 50% arm — the extreme point — has **no replicate**. Its position rests on
 the assumption that its variance resembles the two arms that were replicated.
 
+**Resolved in [DATA-6](DATA-6-the-50-percent-arm-fails-the-language-gate.md)**: the 50% arm was
+replicated (4.5001 -> 4.3430) and the whole framing corrected — measured against each corpus's own
+bigram floor, this is not a curve with a low point but two arms clearing the language gate and one
+failing it at the unigram floor. Read DATA-6 before citing the "non-monotonic curve" here.
+
 ## 6. Application
 
 1. Retire the two-point data comparison as evidence for anything. DATA-4's regularisation result

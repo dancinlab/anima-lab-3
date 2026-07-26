@@ -44,6 +44,17 @@ ALL_ARMS = {
     "s100": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_a_data/best.pt"),
     "v25": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_v25/best.pt"),
     "v100": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_v100/best.pt"),
+    # final.pt is step 12,000 for every arm. best.pt is whatever each arm's OWN val span
+    # liked most, and those spans differ in difficulty (novelty 15.2% / 11.2% / 24.0%), so
+    # comparing best.pt across arms compares checkpoint SELECTION as much as training.
+    # The -f arms remove that: same step, same objective phase, one test set.
+    "s25f": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_s25/final.pt"),
+    "s50f": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_s50/final.pt"),
+    "s100f": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_a_data/final.pt"),
+    "v25f": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_v25/final.pt"),
+    "v100f": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_v100/final.pt"),
+    "v50": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_v50/best.pt"),
+    "v50f": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_v50/final.pt"),
 }
 # argv[2:] selects arms to report; default = the original three.
 SELECT = sys.argv[2:] or ["s25", "s50", "s100"]
