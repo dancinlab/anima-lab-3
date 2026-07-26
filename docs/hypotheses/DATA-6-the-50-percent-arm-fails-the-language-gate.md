@@ -73,11 +73,24 @@ is in the interaction between that data and the training schedule, not in the by
 | 50% | 4.42 -> 5.34 | **21% worse** |
 | 100% | 2.04 -> 2.46 | **21% worse** |
 
-The training runs phases — mitosis (0-30%), language (30-70%), combined (70-100%) — so step 8,400
-switches the objective. The 25% arm's best sits at 11,750, inside the combined phase; the 50% and
-100% arms peak at 2,750-7,000, before or near the switch, and then lose ~21% each. The combined
-phase degrades both larger-data arms by the same amount and leaves the smallest one alone. That is
-a schedule finding, separate from the gate failure, and it has not been isolated.
+There is ONE objective switch, at 70% of the step budget = step 8,400. (`get_phase` returns
+LANGUAGE below that boundary and COMBINED above it; the startup banner still prints
+"mitosis(0-30%) -> language(30-70%) -> combined(70-100%)" but that banner is stale — the CE-free
+mitosis phase was removed, CE runs from step 0, and the code comment says so.)
+
+The 25% arm's best sits at 11,750, past the switch; the 50% and 100% arms peak at 2,750-7,000,
+before it, and then lose ~21% each. The combined phase degrades both larger-data arms by the same
+amount and leaves the smallest one alone.
+
+It is not what makes the 50% arm fail the gate: that arm is already at 4.34-4.50 at its best,
+above its 3.5925 bigram floor, before the switch happens. An ablation is running — same three
+arms with `--phase language` forced for the whole run — with these registered first:
+
+- **A1** if the combined phase causes the degradation, final@12,000 should land near each arm's
+  original best: 50% ≈ 4.4 (vs 5.34), 100% ≈ 2.04 (vs 2.46), 25% ≈ 0.41 (unchanged).
+- **A2** the gate outcome should not move: 50% still FAIL, 25% and 100% still PASS. If 50% clears
+  its bigram floor without the combined phase, the phase is implicated in the gate failure too and
+  §2's framing needs revisiting.
 
 ## 5. Application
 
