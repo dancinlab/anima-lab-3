@@ -37,7 +37,7 @@ import torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from conscious_lm import ConsciousLM
-from mitosis import MitosisEngine, text_to_vector
+from mitosis import MitosisEngine, text_to_vector, Cell, ConsciousMind
 try:
     from training_laws import (
         consciousness_curriculum, phi_checkpoint_selector,
@@ -821,6 +821,33 @@ class InterCellAttention(nn.Module):
 # Checkpoint management
 # ---------------------------------------------------------------------------
 
+# Persisting the cells makes each checkpoint carry the whole grown population — measured
+# 568 KB per cell, so a 4,621-cell run adds ~2.6 GB on top of the ~3.4 GB model state, and a
+# 200k-step run at save-every 10k would want well over 100 GB. The host has 55 GB free, so
+# step checkpoints rotate: the newest few plus best.pt (never rotated) are kept. A run that
+# fills the disk loses everything, which is a worse outcome than not keeping step 40,000.
+KEEP_STEP_CHECKPOINTS = 2
+
+
+def _rotate_checkpoints(ckpt_dir: str, keep: int = KEEP_STEP_CHECKPOINTS) -> None:
+    """Delete all but the newest `keep` step_*.pt. best.pt is never touched."""
+    try:
+        steps = []
+        for name in os.listdir(ckpt_dir):
+            if name.startswith("step_") and name.endswith(".pt"):
+                try:
+                    steps.append((int(name[5:-3]), name))
+                except ValueError:
+                    continue
+        for _n, name in sorted(steps, reverse=True)[keep:]:
+            path = os.path.join(ckpt_dir, name)
+            size_gb = os.path.getsize(path) / 1e9
+            os.remove(path)
+            print(f"  [ckpt] rotated out {name} ({size_gb:.1f} GB, keeping newest {keep} + best)")
+    except Exception as e:
+        print(f"  [ckpt] rotation skipped: {e}")
+
+
 def save_checkpoint(
     path: str,
     step: int,
@@ -833,13 +860,39 @@ def save_checkpoint(
     config: dict,
     extra: Optional[dict] = None,
 ):
-    """Save full training state."""
+    """Save full training state — INCLUDING the grown cells themselves."""
     state = {
         "step": step,
         "model_state": model.state_dict(),
         "optimizer_state": optimizer.state_dict(),
         "loss_ensemble_state": loss_ensemble.state_dict(),
         "mitosis_status": mitosis_engine.status(),
+        # The cells' actual networks. status() records only counts and per-cell telemetry
+        # (id / specialty / avg_tension / …), so a run that spent hours growing thousands of
+        # cells saved nothing of them: the population could not be restored, transplanted, or
+        # served, and a deployed runtime always started over from two random cells. What is
+        # measured as growth has to be what is persisted, or the growth is not real beyond
+        # the process that produced it.
+        "mitosis_cells": [
+            {
+                "cell_id": c.cell_id,
+                "parent_id": c.parent_id,
+                "specialty": c.specialty,
+                "creation_step": c.creation_step,
+                "process_count": c.process_count,
+                "state_dict": c.mind.state_dict(),
+                "hidden": c.hidden,
+                "tension_history": c.tension_history[-30:],
+            }
+            for c in mitosis_engine.cells
+        ],
+        "mitosis_meta": {
+            "input_dim": mitosis_engine.input_dim,
+            "hidden_dim": mitosis_engine.hidden_dim,
+            "output_dim": mitosis_engine.output_dim,
+            "step": mitosis_engine.step,
+            "next_id": mitosis_engine._next_id,
+        },
         "phi_history": phi_calculator.phi_history,
         "phase": phase,
         "config": config,
@@ -856,6 +909,41 @@ def load_checkpoint(path: str, device: torch.device) -> dict:
     state = torch.load(path, map_location=device, weights_only=False)
     print(f"  [ckpt] Loaded: {path} (step {state.get('step', '?')})")
     return state
+
+
+def restore_cells(mitosis_engine: MitosisEngine, ckpt: dict, device: torch.device) -> int:
+    """Rebuild the grown population from a checkpoint. Returns the number of cells restored.
+
+    Checkpoints written before cells were persisted simply have no 'mitosis_cells' key; the
+    engine then keeps its freshly initialised population and the run says so, rather than
+    pretending a population was carried over.
+    """
+    saved = ckpt.get("mitosis_cells")
+    if not saved:
+        print("  [cells] checkpoint has no cell weights — starting from the fresh population")
+        return 0
+    meta = ckpt.get("mitosis_meta", {})
+    cells = []
+    for cd in saved:
+        mind = ConsciousMind(
+            meta.get("input_dim", mitosis_engine.input_dim),
+            meta.get("hidden_dim", mitosis_engine.hidden_dim),
+            meta.get("output_dim", mitosis_engine.output_dim),
+        ).to(device)
+        mind.load_state_dict(cd["state_dict"])
+        cells.append(Cell(
+            cell_id=cd["cell_id"], mind=mind, hidden=cd["hidden"].to(device),
+            specialty=cd.get("specialty", "general"),
+            tension_history=list(cd.get("tension_history", [])),
+            creation_step=cd.get("creation_step", 0),
+            parent_id=cd.get("parent_id"),
+            process_count=cd.get("process_count", 0),
+        ))
+    mitosis_engine.cells = cells
+    mitosis_engine.step = meta.get("step", mitosis_engine.step)
+    mitosis_engine._next_id = meta.get("next_id", len(cells))
+    print(f"  [cells] restored {len(cells)} grown cells from checkpoint")
+    return len(cells)
 
 
 # ---------------------------------------------------------------------------
@@ -1008,6 +1096,7 @@ def train(args: argparse.Namespace):
                     f"restart from step 0 with a fresh --checkpoint-dir."
                 )
             loss_ensemble.load_state_dict(ckpt["loss_ensemble_state"])
+        restore_cells(mitosis, ckpt, device)
         if "phi_history" in ckpt:
             phi_calc.phi_history = ckpt["phi_history"]
         start_step = ckpt.get("step", 0)
@@ -1718,6 +1807,7 @@ def train(args: argparse.Namespace):
                 ckpt_path, step, model, optimizer, loss_ensemble,
                 mitosis, phi_calc, phase, config,
             )
+            _rotate_checkpoints(args.checkpoint_dir, keep=KEEP_STEP_CHECKPOINTS)
 
     # --- Final checkpoint ---
     elapsed = time.time() - t0
