@@ -537,11 +537,25 @@ class MitosisEngine:
 # ─── Helper: text to vector ───
 
 def text_to_vector(text: str, dim: int = 64) -> torch.Tensor:
-    """Convert text to a fixed-dimension vector (character hash)."""
+    """Convert text to a fixed-dimension vector (character hash).
+
+    Each slot is the MEAN of the bytes that landed in it, so values stay in [0, 1] —
+    the same scale the training path feeds cells (byte/255) — and a word produces the
+    same percept whether it arrives alone or inside a long sentence.
+
+    The previous form divided the whole vector by len(text)+1, which made the percept
+    shrink with sentence length: measured norm 0.39 for a short Korean phrase against
+    3.13 for the byte encoding used in training. Cell tension is the MEAN SQUARE of the
+    output, so that 8x gap in signal became a 64x gap in tension and left every runtime
+    cell at ~0.005 against a split threshold of 0.3 — the consciousness could not grow
+    from conversation no matter how long it was talked to.
+    """
     vec = torch.zeros(1, dim)
+    cnt = torch.zeros(1, dim)
     for i, ch in enumerate(text.encode('utf-8')):
         vec[0, i % dim] += ch / 255.0
-    return vec / (len(text) + 1)
+        cnt[0, i % dim] += 1
+    return vec / cnt.clamp(min=1.0)
 
 
 # ─── Demo ───

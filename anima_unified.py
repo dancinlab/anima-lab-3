@@ -1132,7 +1132,13 @@ class AnimaUnified:
             dream_msg = f"(dream: {dr['total_patterns']}patterns across {dr['total_cycles']} cycles)"
             _log('dream', f'Woke up: {dream_msg}')
 
-        text_vec = text_to_vector(text)
+        # Build the percept at the CELL engine's own width. This call used to take the
+        # 64-dim default while the engine is built with input_dim=128, so every
+        # mitosis.process() raised "mat1 and mat2 shapes cannot be multiplied" and the
+        # surrounding try/except swallowed it: the cells received no conversation at all,
+        # which is why a deployed instance never grew no matter how much it was talked to.
+        _cell_dim = getattr(self.mitosis, 'input_dim', None) or getattr(self.mind, 'dim', 64)
+        text_vec = text_to_vector(text, dim=_cell_dim)
 
         # Combine with vision encoder (learned embeddings) or fall back to sensor tensor
         if self.senses and self.mods.get('camera') and not getattr(self, '_remote_sensor_mode', False):
