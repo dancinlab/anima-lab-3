@@ -88,20 +88,53 @@ The U-shape is not a test-set artefact. It reproduces.
 1. **DATA-4's headline does not survive.** "Unique data is the binding constraint at 27.7M" rested
    on a two-point comparison. A three-point curve is non-monotonic, so two points could not have
    established a direction — the same two points are equally consistent with the curve measured here.
-2. **The spread is too large to be a data-volume effect.** Identical architecture, steps, seed and
-   schedule, differing only in corpus size, produced an **11x** spread in novelty-controlled BPC
-   (0.41 / 4.50 / 1.99). No seed replicate exists for any arm, so run-to-run variance is unmeasured
-   and no causal claim about data volume is supportable from this design.
+2. **The spread is real, not noise — but it is not monotone in data.** The 11x spread in
+   novelty-controlled BPC (0.41 / 4.50 / 1.99) is ~100x larger than run-to-run variation, measured
+   directly in §6. What that licenses is "these arms genuinely differ", not "more data helps":
+   the middle arm is the worst, so data volume is not the variable doing the work.
 3. **Line-level span filtering has now failed three times** (DATA-3 on raw corpus_v2; the shared
    span here at 80-86%). Window-level probing is the construction that worked, and its keep rate
    (16.6%) is itself the number to report next to any BPC.
 
-## 5. Application
+## 5. Variance control — the spread is not noise (measured 2026-07-27 00:54–01:58)
+
+Registered before the control ran: if each repeat lands near its own seed-1337 twin, the arms
+genuinely differ; if a repeat lands near ANOTHER arm's number, the curve was run-to-run noise and
+no arm comparison in DATA-4 or DATA-5 stands. The 25% and 100% arms were repeated at **seed 7331**,
+every other flag identical.
+
+| arm | seed 1337 | seed 7331 | difference |
+|---|---|---|---|
+| 25% — best BPC @ step | 0.5128 @ 11,750 | 0.5103 @ **11,750** | 0.5%, same peak step |
+| 25% — ratio to own bigram | 14.2% | 14.1% | 0.1pp |
+| 25% — **novelty-controlled BPC** | 0.4089 | **0.4051** | **0.9%** |
+| 100% — best BPC @ step | 0.8640 @ 7,000 | 0.8634 @ 5,250 | 0.07% |
+| 100% — ratio to own bigram | 24.0% | 24.0% | 0.0pp |
+| 100% — **novelty-controlled BPC** | 1.9853 | **2.0879** | **5.2%** |
+
+```
+novelty-controlled BPC — seed pairs sit on top of each other, arms do not
+  25%   s25 0.409 · v25 0.405   ██░░░░░░░░░░░░░░░░░░
+ 100%   s100 1.985 · v100 2.088 █████████░░░░░░░░░░░
+  50%   s50 4.500 (no replicate) ████████████████████
+        └ within-arm spread 0.9-5.2%  ·  between-arm spread up to 11x
+```
+
+**Verdict: the arms genuinely differ.** Run-to-run variation is bounded at ~5% by two independent
+pairs, and 5% cannot produce an 11x gap. The 25% pair reproduced even the peak step exactly
+(11,750 both), so these runs are close to deterministic under a batch-order change.
+
+Caveat kept explicit: the 50% arm — the extreme point — has **no replicate**. Its position rests on
+the assumption that its variance resembles the two arms that were replicated.
+
+## 6. Application
 
 1. Retire the two-point data comparison as evidence for anything. DATA-4's regularisation result
-   (dropout 0.3 worse than 0.1) rests on the same design and inherits the same caveat.
-2. **No arm comparison without a seed replicate.** A variance control is now running: s25 and s100
-   repeated at seed 7331, everything else identical.
+   (dropout 0.3 worse than 0.1) rests on the same design; §6 shows run-to-run noise is small, so
+   that result is likely real too — but it was not replicated either.
+2. **The open question is now "what makes the 50% subset bad", not "does data help".** Data volume
+   is out: the curve is non-monotone and the ordering is reproducible. Replicating the 50% arm is
+   the next measurement.
 3. Promote window-level novelty selection from a separate tool into the evaluation path, printing
    the keep rate beside the CE — `measurement/novel_window_eval.py` has the selector.
 4. Reproduction: `measurement/build_scale_corpora.py` (subsets + floors),

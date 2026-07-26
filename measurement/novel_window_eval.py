@@ -35,11 +35,20 @@ STRIDE = 1021          # prime, so candidates do not align with any 1MB structur
 BATCH = 8
 LN2 = math.log(2)
 
-ARMS = [
-    ("s25", f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_s25/best.pt"),
-    ("s50", f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_s50/best.pt"),
-    ("s100", f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_a_data/best.pt"),
-]
+# Every arm ever compared on this corpus family. The novelty filter must exclude a
+# window seen by ANY of them, or an arm absent from the filter gets scored on its own
+# training data; SELECT picks which arms are reported, never which trains are screened.
+ALL_ARMS = {
+    "s25": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_s25/best.pt"),
+    "s50": (f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_s50/best.pt"),
+    "s100": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_a_data/best.pt"),
+    "v25": (f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_v25/best.pt"),
+    "v100": (f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_v100/best.pt"),
+}
+# argv[2:] selects arms to report; default = the original three.
+SELECT = sys.argv[2:] or ["s25", "s50", "s100"]
+ARMS = [(n, ALL_ARMS[n][0], ALL_ARMS[n][1]) for n in SELECT]
+SCREEN = [(n, c, k) for n, (c, k) in ALL_ARMS.items()]
 
 
 def load_trainer(path):
@@ -67,13 +76,17 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"[device] {device}", flush=True)
 
-    trains, full_val = [], None
-    for name, corpus, _ in ARMS:
+    trains, full_val, seen = [], None, set()
+    for name, corpus, _ in SCREEN:
+        if corpus in seen:          # v25 and s25 share a corpus; screen it once
+            continue
+        seen.add(corpus)
         tr, va = split(corpus)
         trains.append(tr)
-        if name == "s100":
+        if corpus.endswith("corpus_merged_dedup.txt"):
             full_val = va
-        print(f"[split] {name}: train={len(tr):,} val={len(va):,}", flush=True)
+        print(f"[split] screening {name}: train={len(tr):,} val={len(va):,}", flush=True)
+    print(f"[arms] reporting: {', '.join(n for n, _, _ in ARMS)}", flush=True)
 
     t0 = time.time()
     windows, tested = [], 0
