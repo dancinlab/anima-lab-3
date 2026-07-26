@@ -360,7 +360,12 @@ def load_text_data(path: str) -> torch.Tensor:
             all_bytes = bytearray(f.read())
 
     print(f"[data] Loaded {len(all_bytes):,} bytes from {path}")
-    return torch.tensor(list(all_bytes), dtype=torch.long)
+    # torch.tensor(list(all_bytes)) materialises one Python int per byte: for the
+    # 66.8MB merged corpus that is ~2.4GB of interpreter objects before the tensor
+    # even exists, and on a loaded box it stalls the run for minutes before the
+    # first log line. frombuffer views the same bytes with no copy; .long() then
+    # produces the identical tensor the rest of the code expects.
+    return torch.frombuffer(all_bytes, dtype=torch.uint8).long()
 
 
 def generate_demo_data(n_bytes: int = 500_000) -> torch.Tensor:
@@ -407,7 +412,7 @@ def generate_demo_data(n_bytes: int = 500_000) -> torch.Tensor:
 
     data = data[:n_bytes]
     print(f"[demo] Generated {len(data):,} bytes of synthetic data")
-    return torch.tensor(list(data), dtype=torch.long)
+    return torch.frombuffer(bytearray(data), dtype=torch.uint8).long()
 
 
 # ---------------------------------------------------------------------------
