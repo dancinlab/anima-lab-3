@@ -35,16 +35,18 @@ explicit: beating unigram only means the byte histogram was learned; a real LM m
 ```
 BPC on novelty-controlled material (both seeds, step 12,000)
   6.03 ── unigram floor (byte histogram)
-  5.34 ●● 50%   ██████████████████░░  ← stuck just under the histogram
+  5.34 ●● 50%   ██████████████████░░  ← below the gate, just under the histogram number
   3.60 ── bigram floor — the gate a real LM must clear
   2.47 ●● 100%  ████████░░░░░░░░░░░░
   0.41 ●● 25%   █░░░░░░░░░░░░░░░░░░░
 ```
 
-The 50% arm is not a low point on a curve. It is the **unigram-floor failure mode** this repo has
-recorded before (DATA-2 measured 300M runs stuck at 5.933 against a 5.7997 unigram floor), and it
-now reproduces across seeds. Two arms cleared the gate; one did not. "Non-monotonic scaling curve"
-described a pass/fail split as though it were a continuum.
+The 50% arm is not a low point on a curve. Two arms cleared the gate; one did not, reproducibly.
+"Non-monotonic scaling curve" described a pass/fail split as though it were a continuum.
+
+Its number lands where DATA-2's stuck 300M runs landed (5.933 against a 5.7997 unigram floor), but
+**"unigram floor" names where the number is, not how the model works** — see §3.5, which tested the
+mechanism and refuted the histogram reading.
 
 For context, that span's OWN floors are unigram 5.5975 and bigram 2.2531 (112 distinct byte
 values) — an oracle order-1 model fitted on the test text itself, which no learner can be asked to
@@ -62,6 +64,36 @@ match. The gate above uses the train-split floors, which is the fair reference.
 
 Nothing about the 50% corpus's surface statistics distinguishes it. Whatever selects the failure
 is in the interaction between that data and the training schedule, not in the bytes themselves.
+
+## 3.5 The failing arm still reads context — "unigram floor" is a location, not a mechanism
+
+Calling the 50% result a unigram-floor failure asserts a mechanism: that the model predicts from
+byte frequency and ignores what came before. BPC cannot show that, so it was measured. On the same
+novelty-controlled windows, each arm's final checkpoint was scored three ways — the window as it
+is, the context permuted inside the window (same bytes, no readable order, targets untouched), and
+the context replaced by uniform random bytes:
+
+| arm | true | shuffled context | uniform context | **context gain** |
+|---|---|---|---|---|
+| 25% | 0.4064 | 14.3726 | 11.9956 | **+13.97** |
+| 50% | 5.4441 | 13.8653 | 12.3803 | **+8.42** |
+| 100% | 2.4627 | 13.5764 | 11.9284 | **+11.11** |
+
+```
+BPC lost when the context's order is destroyed — a byte histogram would lose 0
+  25%   ██████████████████████  +13.97
+ 100%   ██████████████████░░░░  +11.11
+  50%   █████████████░░░░░░░░░   +8.42   ← least, but nowhere near zero
+```
+
+**The claim is refuted.** The failing arm depends on context for 8.42 BPC; a model reading byte
+frequencies alone would lose nothing. It reads context less effectively than the other two — the
+gain ordering matches the quality ordering — but it is a context-using model that landed near the
+unigram number, which is a different object from a histogram. §2's label is corrected accordingly.
+
+A second thing falls out: shuffled and uniform contexts cost 11.9-14.4 BPC, well ABOVE the 8.0 BPC
+of uniform guessing. Off-manifold context does not make these models uncertain, it makes them
+confidently wrong.
 
 ## 4. A second thing the fixed-step column shows
 
@@ -97,11 +129,15 @@ arms with `--phase language` forced for the whole run — with these registered 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
    each corpus's own bigram floor is what the data says. Any arm table should carry the floor
    columns so a gate failure cannot be read as "third place".
-2. **The 50% arm is a reproducible failure case worth keeping.** It is a cheap (25-minute) trigger
-   for the unigram-floor mode, which is otherwise only recorded at 300M scale. Diagnosing it there
-   is far cheaper than at 300M.
-3. **The combined phase costs the larger-data arms ~21%.** Worth an ablation: same arms, language
-   phase to 100%, no combined phase.
-4. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
-   `final.pt`), `measurement/subset_structure.py` (the structural controls in §3), raw output in
-   `measurement/arm_gate_eval.json`.
+2. **The 50% arm is a reproducible failure case worth keeping.** A 25-minute run that reliably
+   lands below the gate — the same region 300M runs reached expensively (DATA-2). Diagnosing a
+   gate failure here costs minutes instead of hours.
+3. **The combined phase costs the larger-data arms ~21%.** The ablation is running (§4, A1/A2
+   registered): same arms, `--phase language` for the whole budget.
+4. **Test a named mechanism before naming it.** "Unigram floor" was applied here from a BPC
+   coincidence and the mechanism test refuted it in one run (§3.5). A BPC number locates a model;
+   it does not explain one.
+5. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
+   `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
+   `measurement/context_sensitivity.py` (§3.5), raw output in `measurement/arm_gate_eval.json`
+   and `measurement/context_sensitivity.json`.
