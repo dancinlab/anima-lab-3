@@ -1,0 +1,80 @@
+{
+  "corpus": "data/corpus_v2_dedup.txt",
+  "train_bytes": 27173705,
+  "val_raw_bytes": 2097152,
+  "unseen_bytes": 2084274,
+  "unseen_frac_of_heldout": 0.9938592910766602,
+  "heldout_lines_in_train_frac": 0.3968615971134863,
+  "unseen_avg_line_bytes": 119.27175965665236,
+  "distinct_byte_values": 172,
+  "unigram_bpc": 5.799674610096531,
+  "bigram_bpc": 3.5043592114111743,
+  "in_train_frac": {
+    "unseen": {
+      "16": 0.68,
+      "32": 0.6175,
+      "64": 0.4125,
+      "128": 0.2725
+    },
+    "raw": {
+      "16": 0.7,
+      "32": 0.595,
+      "64": 0.43,
+      "128": 0.3175
+    },
+    "train(ceiling)": {
+      "16": 1.0,
+      "32": 1.0,
+      "64": 1.0,
+      "128": 1.0
+    }
+  },
+  "widths": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "n_sample": 400,
+  "seed": 1337
+}---
+{
+  "corpus": "data/corpus_merged_dedup.txt",
+  "train_bytes": 60518025,
+  "val_raw_bytes": 6291456,
+  "unseen_bytes": 6219837,
+  "unseen_frac_of_heldout": 0.9886164665222168,
+  "heldout_lines_in_train_frac": 0.45071328005965966,
+  "unseen_avg_line_bytes": 73.03364097505988,
+  "distinct_byte_values": 181,
+  "unigram_bpc": 6.019487123472307,
+  "bigram_bpc": 3.6010486010707665,
+  "in_train_frac": {
+    "unseen": {
+      "16": 0.7425,
+      "32": 0.4725,
+      "64": 0.21,
+      "128": 0.1525
+    },
+    "raw": {
+      "16": 0.715,
+      "32": 0.5525,
+      "64": 0.28,
+      "128": 0.165
+    },
+    "train(ceiling)": {
+      "16": 1.0,
+      "32": 1.0,
+      "64": 1.0,
+      "128": 1.0
+    }
+  },
+  "widths": [
+    16,
+    32,
+    64,
+    128
+  ],
+  "n_sample": 400,
+  "seed": 1337
+}

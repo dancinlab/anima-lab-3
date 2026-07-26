@@ -20,6 +20,7 @@ import argparse
 import json
 import math
 import os
+import random
 import sys
 import time
 from pathlib import Path
@@ -895,7 +896,8 @@ def train(args: argparse.Namespace):
     # was filtered from (16,683,944 bytes out of a 2,085,493-byte held-out split,
     # ratio exactly 8.00), so validation was scoring the model on a mostly-zero
     # stream it had never seen. Cast to uint8 first.
-    train_lines = set(bytes(train_data.to(torch.uint8).numpy()).split(b"\n"))
+    train_bytes = bytes(train_data.to(torch.uint8).numpy())
+    train_lines = set(train_bytes.split(b"\n"))
     unseen = b"\n".join(
         ln for ln in bytes(val_raw.to(torch.uint8).numpy()).split(b"\n")
         if len(ln) > 8 and ln not in train_lines
@@ -906,8 +908,41 @@ def train(args: argparse.Namespace):
     else:
         val_data = val_raw
         dedup_note = "RAW held-out span -- too few unseen lines to dedupe, BPC will be optimistic"
+
+    # Line-level absence is NOT novelty, so the note above cannot certify the span on
+    # its own. Measured on raw corpus_v2 (DATA-3), filtering held-out lines by verbatim
+    # absence RAISED 32-byte familiarity from 79.5% to 91.8%: short lines are the ones
+    # that repeat, so the filter selects long, near-duplicated lines -- absent as LINES
+    # while present as SUBSTRINGS. The model predicts from local context, so such a span
+    # scores BETTER: 0.299 BPC against 0.654 on the unfiltered span, from the same
+    # checkpoint. Corpus dedup is what makes the filter safe (the deduped corpora show no
+    # such inversion), not the filter itself. Print how much of the scored span the model
+    # can simply recall, so an unmeasurable span announces itself instead of returning a
+    # confident number.
+    # 400 samples, not fewer: at n=200 the estimate carries +-3.5pp, enough to disagree
+    # with measurement/arm_novelty.py (which uses these same three constants) by more
+    # than a point and make a reader doubt whichever number they saw second.
+    novelty_width, novelty_samples, novelty_seed = 64, 400, 1337
+    val_bytes_scored = bytes(val_data.to(torch.uint8).numpy())
+    # Its own generator on purpose: cell operations draw from the global RNG in an
+    # N-dependent amount, so sampling from it here would shift every subsequent draw and
+    # break comparability between two otherwise identical runs.
+    sampler = random.Random(novelty_seed)
+    hi = len(val_bytes_scored) - novelty_width
+    if hi > 0:
+        hits = sum(
+            train_bytes.find(val_bytes_scored[(i := sampler.randrange(hi)): i + novelty_width]) != -1
+            for _ in range(novelty_samples)
+        )
+        novelty_note = (f"{hits / novelty_samples * 100:.1f}% of {novelty_width}B windows already "
+                        f"in train (n={novelty_samples}, seed {novelty_seed})")
+    else:
+        novelty_note = f"span shorter than {novelty_width}B -- not sampled"
+    del train_bytes, val_bytes_scored
+
     print(f"[data] train={len(train_data):,} val={len(val_data):,} bytes "
           f"(interleaved 1MB chunks, every 10th held out; {dedup_note})")
+    print(f"[data] novelty: {novelty_note}")
 
     # --- Model ---
     model = ConsciousLM(

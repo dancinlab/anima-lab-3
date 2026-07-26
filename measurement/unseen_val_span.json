@@ -1,0 +1,18 @@
+{
+  "corpus": "data/corpus_v2.txt",
+  "total_bytes": 70507316,
+  "train_bytes": 64215860,
+  "val_bytes": 6291456,
+  "val_lines_total": 103224,
+  "val_lines_in_train": 58939,
+  "line_leak_frac": 0.5709815546772069,
+  "val_bytes_from_leaked_lines": 3870292,
+  "byte_leak_frac": 0.6151663462320963,
+  "train_distinct_lines": 501180,
+  "distinct_byte_values": 172,
+  "train_unigram_bpc": 5.954844225870693,
+  "train_bigram_bpc": 3.4920018207755406,
+  "unseen_span_bytes": 262144,
+  "unseen_span_lines": 648,
+  "unseen_span_path": "/private/tmp/claude-501/-Users-mini-dancinlab-anima-clm-v2/8a499e2e-91d7-4458-9277-2ae624631482/scratchpad/unseen_val_span.bin"
+}
