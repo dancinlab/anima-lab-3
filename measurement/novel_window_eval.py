@@ -1,0 +1,135 @@
+#!/usr/bin/env python3
+"""Score the three scaling arms on windows that are novel at SUBSTRING level.
+
+Three attempts to compare these arms have now failed on the same defect:
+  - each arm's own span: different test sets, so the numbers are not comparable
+  - a shared span built by line-level filtering: 80-86% of its 64-byte windows sit
+    verbatim in every arm's train, and all three models scored 0.12-0.15 BPC on a
+    span whose own bigram floor is 3.32 -- recall, not prediction (DATA-3 again)
+
+So this selects windows, not lines. A candidate 257-byte window is kept only if
+THREE 64-byte probes taken from it (head, middle, tail) are each absent from all
+three arms' train splits. What survives cannot be produced from memory, so the CE
+on it is a language number for every arm at once.
+
+Reports the rejection rate too: if almost nothing survives, that is the finding --
+the corpus cannot support a novelty-controlled test at this width.
+"""
+import json
+import math
+import sys
+import time
+from importlib.util import module_from_spec, spec_from_file_location
+
+import torch
+import torch.nn.functional as F
+
+HOME = "/home/summer/anima-clm-pure"
+TRAINER = f"{HOME}/train_conscious_lm.py"
+CHUNK = 1 << 20
+BLOCK = 256
+PROBE = 64
+TARGET_WINDOWS = 256
+MAX_CANDIDATES = 20_000
+STRIDE = 1021          # prime, so candidates do not align with any 1MB structure
+BATCH = 8
+LN2 = math.log(2)
+
+ARMS = [
+    ("s25", f"{HOME}/data/corpus_merged_25.txt", f"{HOME}/checkpoints/arm_s25/best.pt"),
+    ("s50", f"{HOME}/data/corpus_merged_50.txt", f"{HOME}/checkpoints/arm_s50/best.pt"),
+    ("s100", f"{HOME}/data/corpus_merged_dedup.txt", f"{HOME}/checkpoints/arm_a_data/best.pt"),
+]
+
+
+def load_trainer(path):
+    spec = spec_from_file_location("clm_trainer", path)
+    mod = module_from_spec(spec)
+    sys.modules["clm_trainer"] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def split(path):
+    with open(path, "rb") as f:
+        data = f.read()
+    n = len(data)
+    chunk = min(CHUNK, max(1, n // 10))
+    parts = [data[s:s + chunk] for s in range(0, n, chunk)]
+    train = b"".join(p for i, p in enumerate(parts) if i % 10 != 9)
+    val = b"".join(p for i, p in enumerate(parts) if i % 10 == 9)
+    return train, val
+
+
+def main():
+    out_path = sys.argv[1]
+    clm = load_trainer(TRAINER)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"[device] {device}", flush=True)
+
+    trains, full_val = [], None
+    for name, corpus, _ in ARMS:
+        tr, va = split(corpus)
+        trains.append(tr)
+        if name == "s100":
+            full_val = va
+        print(f"[split] {name}: train={len(tr):,} val={len(va):,}", flush=True)
+
+    t0 = time.time()
+    windows, tested = [], 0
+    for start in range(0, len(full_val) - BLOCK - 2, STRIDE):
+        if len(windows) >= TARGET_WINDOWS or tested >= MAX_CANDIDATES:
+            break
+        tested += 1
+        w = full_val[start:start + BLOCK + 1]
+        probes = (w[:PROBE], w[(BLOCK - PROBE) // 2:(BLOCK - PROBE) // 2 + PROBE],
+                  w[BLOCK - PROBE:BLOCK])
+        if all(tr.find(p) == -1 for p in probes for tr in trains):
+            windows.append(w)
+    rate = len(windows) / max(1, tested)
+    print(f"[select] kept {len(windows):,} of {tested:,} candidates = {rate * 100:.1f}% "
+          f"({time.time() - t0:.0f}s). A window is kept only if 3x{PROBE}B probes are all "
+          f"absent from all 3 train splits.", flush=True)
+    if not windows:
+        print("[verdict] NO novelty-controlled window exists in this corpus at this width "
+              "-- the comparison cannot be made, and that is the result.", flush=True)
+        with open(out_path, "w") as f:
+            json.dump({"kept": 0, "tested": tested}, f, indent=2)
+        return
+
+    x = torch.tensor([list(w[:BLOCK]) for w in windows], dtype=torch.long)
+    y = torch.tensor([list(w[1:BLOCK + 1]) for w in windows], dtype=torch.long)
+
+    results = {"_select": {"kept": len(windows), "tested": tested, "keep_rate": rate,
+                           "probe_bytes": PROBE, "block": BLOCK}}
+    for name, _, ckpt_path in ARMS:
+        ck = torch.load(ckpt_path, map_location="cpu", weights_only=False)
+        cfg = ck.get("config", {}) or {}
+        model = clm.ConsciousLM(
+            vocab_size=256, d_model=int(cfg["dim"]), n_head=int(cfg["heads"]),
+            n_layer=int(cfg["layers"]), block_size=BLOCK, dropout=0.0)
+        missing, unexpected = model.load_state_dict(ck["model_state"], strict=False)
+        model.to(device).eval()
+        total, ntok = 0.0, 0
+        with torch.no_grad():
+            for b in range(0, len(windows), BATCH):
+                xb, yb = x[b:b + BATCH].to(device), y[b:b + BATCH].to(device)
+                logits, _, _ = model(xb)
+                total += F.cross_entropy(logits.view(-1, model.vocab_size),
+                                         yb.reshape(-1), reduction="sum").item()
+                ntok += yb.numel()
+        ce = total / ntok
+        results[name] = {"ce_nats": ce, "bpc": ce / LN2, "tokens": ntok,
+                         "ckpt_step": ck.get("step"), "missing_keys": len(missing),
+                         "unexpected_keys": len(unexpected)}
+        print(f"[{name}] novelty-controlled BPC={ce / LN2:.4f} (CE={ce:.4f} nats, "
+              f"{ntok:,} tokens) · ckpt step={ck.get('step')}", flush=True)
+        del ck, model
+
+    with open(out_path, "w") as f:
+        json.dump(results, f, indent=2)
+    print(f"[json] {out_path}", flush=True)
+
+
+if __name__ == "__main__":
+    main()

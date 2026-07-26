@@ -1,0 +1,64 @@
+{
+  "s25": {
+    "ce_nats": 0.0853637118707411,
+    "bpc": 0.12315380378779253,
+    "ckpt_step": 11750,
+    "missing_keys": 0,
+    "unexpected_keys": 0,
+    "seconds": 2.2
+  },
+  "s50": {
+    "ce_nats": 0.0912084836163558,
+    "bpc": 0.1315860270003188,
+    "ckpt_step": 6750,
+    "missing_keys": 0,
+    "unexpected_keys": 0,
+    "seconds": 1.7
+  },
+  "s100": {
+    "ce_nats": 0.10406614979729056,
+    "bpc": 0.1501357182369591,
+    "ckpt_step": 7000,
+    "missing_keys": 0,
+    "unexpected_keys": 0,
+    "seconds": 2.2
+  },
+  "_span": {
+    "bytes": 262144,
+    "lines": 58742,
+    "rejected_seen_lines": 26422
+  }
+}---
+{
+  "_select": {
+    "kept": 256,
+    "tested": 1538,
+    "keep_rate": 0.16644993498049415,
+    "probe_bytes": 64,
+    "block": 256
+  },
+  "s25": {
+    "ce_nats": 0.28341501438990235,
+    "bpc": 0.40888143577378633,
+    "tokens": 65536,
+    "ckpt_step": 11750,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "s50": {
+    "ce_nats": 3.1192405074834824,
+    "bpc": 4.500112811486393,
+    "tokens": 65536,
+    "ckpt_step": 6750,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  },
+  "s100": {
+    "ce_nats": 1.3760768584907055,
+    "bpc": 1.9852592596266048,
+    "tokens": 65536,
+    "ckpt_step": 7000,
+    "missing_keys": 0,
+    "unexpected_keys": 0
+  }
+}
