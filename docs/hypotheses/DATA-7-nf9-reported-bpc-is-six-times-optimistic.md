@@ -55,9 +55,19 @@ held-out lines verbatim in train).
 
 ## 4. Application
 
-1. **Port the novelty line into `train_conscious_lm_nf8.py`.** The canonical trainer prints it
-   already (`[data] novelty: N% of 64B windows already in train`); the nf8 fork this run uses does
-   not, which is why a 6x-optimistic number went unchallenged for 10 hours.
+1. **Novelty line ported into `train_conscious_lm_nf8.py`** — done. The canonical trainer already
+   printed it; the fork did not, which is why a 6x-optimistic number went unchallenged for ten
+   hours. Verified by running the patched fork:
+
+   ```
+   [data] train=64,215,860 val=6,291,456 bytes (interleaved 1MB chunks, every 10th held out)
+   [data] novelty: 77.0% of 64B windows already in train (n=400, seed 1337)
+   ```
+
+   (The independent measurement of the same span read 83.0%; both are n=400 draws of the same
+   quantity and both say the span is mostly recallable, which is the flag's job. It is a warning,
+   not an estimate to quote.) The edit does not disturb the running job — Python holds the module
+   in memory, so the line appears on the next start; `.py.bak` is beside it.
 2. **Re-check nf9 at intervals with this script rather than reading its log.** One CPU minute per
    check, no GPU contention — `measurement/nf9_gate_check.py`.
 3. **A run on raw corpus_v2 cannot be evaluated well.** With 4.7% of windows usable, any span drawn
