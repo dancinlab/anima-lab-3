@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""G0 COHERENCE and G2 NOVELTY -- the sibling repo's OLD capability gates, run here.
+"""λ2 COHERENCE and λ3 NOVELTY for the 300M nf9 run.
+
+Same frozen bars and same three controls as g_gates.py -- a rung that covers
+fewer arms than the rung below it is not a rung. Differences are host, model
+class and corpus, plus BATCHED decoding: sequentially generating 5 seeds x 256
+bytes from a 300M model on CPU is 1,280 forward passes, batching the seeds
+makes it 256. CPU is deliberate -- the training job owns the card.
+
+ORIGINAL HEADER FOLLOWS.
+G0 COHERENCE and G2 NOVELTY -- the sibling repo's OLD capability gates.
 
 Why these and not another BPC number. anima's p7 says a perplexity verdict is
 not a verdict, and BPC is perplexity in log2 units, so everything gate.py
@@ -46,9 +55,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 import torch
 import torch.nn.functional as F
 
-HOME = "/home/summer/anima-clm-pure"
-TRAINER = f"{HOME}/train_conscious_lm.py"
-CORPUS = f"{HOME}/data/corpus_merged_dedup.txt"
+HOME = "/home/aiden/anima-clm-pure"
+CORPUS = f"{HOME}/data/corpus_v2.txt"
 CHUNK = 1 << 20
 BLOCK = 256
 SEED_BYTES = 128        # natural prefix handed to the model
@@ -61,43 +69,18 @@ DECODE_SEED, INIT_SEED = 20260727, 1337
 G0_BAR, G0_NEED = 0.50, 4      # frozen, anima/CONDITIONS.md
 G2_NEED = 3                    # frozen
 
-ARMS = {
-    "s25":   f"{HOME}/checkpoints/arm_s25/best.pt",
-    "v25":   f"{HOME}/checkpoints/arm_v25/best.pt",
-    "s50":   f"{HOME}/checkpoints/arm_s50/best.pt",
-    "v50":   f"{HOME}/checkpoints/arm_v50/best.pt",
-    "s100":  f"{HOME}/checkpoints/arm_a_data/best.pt",
-    "v100":  f"{HOME}/checkpoints/arm_v100/best.pt",
-    "p50":   f"{HOME}/checkpoints/arm_p50/best.pt",
-    "p50f":  f"{HOME}/checkpoints/arm_p50/final.pt",
-    "p100":  f"{HOME}/checkpoints/arm_p100/best.pt",
-    "p100f": f"{HOME}/checkpoints/arm_p100/final.pt",
-    "e50":   f"{HOME}/checkpoints/arm_e50/best.pt",
-    "e50f":  f"{HOME}/checkpoints/arm_e50/final.pt",
-    "e100":  f"{HOME}/checkpoints/arm_e100/best.pt",
-    "e100f": f"{HOME}/checkpoints/arm_e100/final.pt",
-    "s25f":  f"{HOME}/checkpoints/arm_s25/final.pt",
-    "v25f":  f"{HOME}/checkpoints/arm_v25/final.pt",
-    "s50f":  f"{HOME}/checkpoints/arm_s50/final.pt",
-    "v50f":  f"{HOME}/checkpoints/arm_v50/final.pt",
-    "s100f": f"{HOME}/checkpoints/arm_a_data/final.pt",
-    "v100f": f"{HOME}/checkpoints/arm_v100/final.pt",
-    "p25":   f"{HOME}/checkpoints/arm_p25/best.pt",
-    "p25f":  f"{HOME}/checkpoints/arm_p25/final.pt",
-    "c50":   f"{HOME}/checkpoints/arm_50c/best.pt",
-    "c50f":  f"{HOME}/checkpoints/arm_50c/final.pt",
-}
+ARMS = {"nf9_20k": f"{HOME}/checkpoints/clm_pure_300m_nf9/best.pt"}
 # Every arm gate.py adjudicates, so the ladder is scored on one roster and a
 # rung cannot silently cover fewer arms than the one below it.
 SELECT = sys.argv[2:] or list(ARMS)
 
 
-def load_trainer(path):
-    spec = spec_from_file_location("clm_trainer", path)
-    mod = module_from_spec(spec)
-    sys.modules["clm_trainer"] = mod
-    spec.loader.exec_module(mod)
-    return mod
+def model_class():
+    """Deferred import: the fork's model module lives on the host's path."""
+    if HOME not in sys.path:
+        sys.path.insert(0, HOME)
+    from conscious_lm import ConsciousLM
+    return ConsciousLM
 
 
 def split(path):
@@ -149,23 +132,26 @@ def novel_ngrams(raw, vocab, train_blob):
 
 
 @torch.no_grad()
-def generate(model, prefix, n_bytes, device, gen):
-    ctx = torch.tensor([list(prefix)], dtype=torch.long, device=device)
-    out = []
+def generate_batch(model, prefixes, n_bytes, device, gen):
+    """All seeds decoded together -- one forward pass per output byte, not one
+    per seed per byte."""
+    ctx = torch.tensor([list(p) for p in prefixes], dtype=torch.long, device=device)
+    out = [[] for _ in prefixes]
     for _ in range(n_bytes):
-        window = ctx[:, -BLOCK:]
-        logits, _, _ = model(window)
-        probs = F.softmax(logits[0, -1] / TEMP, dim=-1)
+        res = model(ctx[:, -BLOCK:])
+        logits = res[0] if isinstance(res, tuple) else res
+        probs = F.softmax(logits[:, -1] / TEMP, dim=-1)
         nxt = torch.multinomial(probs, 1, generator=gen)
-        out.append(int(nxt))
-        ctx = torch.cat([ctx, nxt.view(1, 1)], dim=1)
-    return bytes(out)
+        for i in range(len(prefixes)):
+            out[i].append(int(nxt[i]))
+        ctx = torch.cat([ctx, nxt], dim=1)
+    return [bytes(o) for o in out]
 
 
 def build(clm, cfg, device, state=None):
-    m = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
-                        n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                        block_size=BLOCK, dropout=0.0)
+    m = model_class()(vocab_size=256, d_model=int(cfg["dim"]),
+                      n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
+                      block_size=BLOCK, dropout=0.0)
     if state is not None:
         m.load_state_dict(state, strict=False)
     return m.to(device).eval()
@@ -177,8 +163,7 @@ def score_model(model, seeds, vocab, train_norm, device):
     gen = torch.Generator(device=device).manual_seed(DECODE_SEED)
     kwrs, novel = [], set()
     samples = []
-    for pfx in seeds:
-        raw = generate(model, pfx, GEN_BYTES, device, gen)
+    for raw in generate_batch(model, seeds, GEN_BYTES, device, gen):
         kwr, hits, tot = known_word_ratio(raw, vocab)
         kwrs.append(kwr)
         novel |= novel_ngrams(raw, vocab, train_norm)
@@ -195,9 +180,9 @@ def score_model(model, seeds, vocab, train_norm, device):
 
 def main():
     out_path = sys.argv[1]
-    clm = load_trainer(TRAINER)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"[device] {device}", flush=True)
+    clm = None
+    device = torch.device("cpu")
+    print("[device] cpu (deliberate: the training job owns the GPU)", flush=True)
 
     train, val = split(CORPUS)
     vocab = set(train.split())
@@ -250,8 +235,12 @@ def main():
         if not os.path.exists(path):
             print(f"[{name}] checkpoint absent -- skipped", flush=True)
             continue
-        sha = hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
-        ck = torch.load(path, map_location="cpu", weights_only=False)
+        h = hashlib.sha256()          # streamed: this checkpoint is 6.1 GB
+        with open(path, "rb") as fh:
+            for blk in iter(lambda: fh.read(1 << 22), b""):
+                h.update(blk)
+        sha = h.hexdigest()[:16]
+        ck = torch.load(path, map_location="cpu", weights_only=False, mmap=True)
         cfg = ck.get("config", {}) or {}
         t0 = time.time()
         r = score_model(build(clm, cfg, device, ck["model_state"]),
@@ -268,7 +257,8 @@ def main():
     # anti-Goodhart: the before-backbone must FAIL G0. If it passes, the metric
     # is reading the corpus, not the model, and every G0 row above is void.
     any_cfg = next((json.loads(json.dumps(results[n])) and
-                    torch.load(ARMS[n], map_location="cpu", weights_only=False)["config"]
+                    torch.load(ARMS[n], map_location="cpu", weights_only=False,
+                               mmap=True)["config"]
                     for n in SELECT if os.path.exists(ARMS[n])), None)
     torch.manual_seed(INIT_SEED)
     r = score_model(build(clm, any_cfg, device), seeds, vocab, train_norm, device)

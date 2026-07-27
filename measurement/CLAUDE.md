@@ -78,6 +78,10 @@ Two rules travel with it and are not optional:
 | before-backbone (동일구조 무학습망) | 지표가 모델을 읽는가 코퍼스를 읽는가 | kwr **0.000**, FAIL — VALID |
 | retrieval (train 구간 복사) | '부재' 가 부재를 뜻하는가 | 부재 n-gram **0** — VALID |
 
+전수 결과(24팔, summer 28M 로스터 = `gate.py` 가 판정하는 팔과 동일): **λ2 FAIL 0 · λ3 FAIL 0**.
+kwr 0.770~0.976, 부재 4-gram 65~103. 300M `nf9_20k` 는 호스트가 달라 `g_gates_nf9.py` 로
+같은 바·같은 통제에서 별도 채점한다 — 아래 등급이 위 등급보다 적은 팔을 덮으면 사다리가 아니다.
+
 두 통제가 실제로 결함을 잡았고, 둘 다 내 코드였다:
 1. **positive 통제가 없었다면 타입 버그가 결과로 읽혔다.** vocab 은 `bytes`, 생성 토큰은 `str`
    이라 kwr 이 전 팔 0.000 이었고, anti-Goodhart 통제도 0.000 이라(그게 정상이라서) 아무것도
