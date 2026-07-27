@@ -241,6 +241,33 @@ steps** — scale the step budget with corpus size so every arm sees each byte t
 times. If the ordering collapses, exposure-per-byte was the variable; if it survives, it is the
 optimizer's path.
 
+### Confound in that control, found while it was running
+
+Scaling `--steps` does not move exposure alone. The learning rate is tied to the total budget:
+
+```python
+_warmup = min(2000, max(1, args.steps // 100))      # 12,000 -> 120 · 23,300 -> 233 · 46,600 -> 466
+prog    = (step_i - _warmup) / max(args.steps - _warmup, 1)
+return 0.1 + 0.45 * (1.0 + math.cos(math.pi * prog))
+```
+
+So a 23,300-step run has a longer warmup and a slower cosine decay, and its learning rate at any
+given step differs from the 12,000-step run's. The trajectories therefore diverge from step 1 —
+visible in the runs themselves: at the same step 6,750 the exposure-fixed 50% arm reads 1.7615
+where the fixed-step one read 1.7390. (An earlier progress note claimed the two would share a
+trajectory up to 12,000; the numbers disprove it.)
+
+What this costs, stated before the verdict rather than after:
+
+- **A negative result stays interpretable.** If the ordering survives (E2), then neither the extra
+  exposure nor the gentler schedule rescued the 50% arm.
+- **A positive result would be confounded.** If the 50% arm clears its floor (E1), exposure and the
+  changed schedule are equally credible causes and the run cannot separate them.
+
+The clean design, for whoever runs it next: give **every** arm the same `--steps` (so the schedule
+is identical) and read each arm's curve at its own exposure milestones instead of scaling the
+budget.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
