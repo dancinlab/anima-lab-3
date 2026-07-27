@@ -24,6 +24,7 @@ so the value here is directly comparable to its 3.9881 (step 12,000) and 3.8583
 import hashlib
 import json
 import math
+import os
 import sys
 import time
 
@@ -51,6 +52,17 @@ def model_class():
         sys.path.insert(0, HOME)
     from conscious_lm import ConsciousLM
     return ConsciousLM
+
+
+def sha256_streaming(path, chunk=1 << 22):
+    """Hash without holding the file. This checkpoint is 6.1 GB and aiden has
+    ~7 GB free while training: reading it whole put the process into swap and it
+    burned 40 minutes at 64s of CPU. Stream it."""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(chunk), b""):
+            h.update(block)
+    return h.hexdigest()[:16]
 
 
 def split(path):
@@ -128,7 +140,9 @@ def main():
     g = torch.Generator().manual_seed(SHUFFLE_SEED)
     x_shuf = torch.stack([row[torch.randperm(BLOCK, generator=g)] for row in x])
 
-    sha = hashlib.sha256(open(CKPT, "rb").read()).hexdigest()[:16]
+    print(f"[hash] streaming sha256 of {CKPT.split('/')[-1]} "
+          f"({os.path.getsize(CKPT) / 1e9:.1f} GB)...", flush=True)
+    sha = sha256_streaming(CKPT)
     ck = torch.load(CKPT, map_location="cpu", weights_only=False, mmap=True)
     cfg = ck["config"]
     step = ck.get("step")
