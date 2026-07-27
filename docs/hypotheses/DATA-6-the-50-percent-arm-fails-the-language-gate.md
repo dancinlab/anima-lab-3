@@ -268,6 +268,36 @@ The clean design, for whoever runs it next: give **every** arm the same `--steps
 is identical) and read each arm's curve at its own exposure milestones instead of scaling the
 budget.
 
+### E1 verdict: REFUTED — equal exposure does not rescue the arm (measured 17:50)
+
+E1 named the 50% arm specifically, so its own run settles it; E2's ordering claim still waits on the
+100% arm. Scored on the same novelty-controlled span as every other arm:
+
+| 50% variant | steps | epochs | best | final | vs its 3.5925 floor |
+|---|---|---|---|---|---|
+| s50 — with combined phase | 12,000 | 3.2 | 4.5001 | 5.4441 | 125% / 152% FAIL |
+| p50 — no combined phase | 12,000 | 3.2 | 4.5001 | 5.0761 | 125% / 141% FAIL |
+| **e50 — exposure equalised** | **23,300** | **6.3** | **4.3134** | **5.2923** | **120% / 147% FAIL** |
+
+```
+best BPC against the 3.5925 floor it must clear
+  3.59 ── the gate
+  4.31 ●  e50  (6.3 epochs, gentler LR)   ████████████████████░  120%
+  4.50 ●  p50  (3.2 epochs)               █████████████████████  125%
+```
+
+Doubling exposure bought **4.1%** on the best checkpoint (4.5001 → 4.3134) and cost 4.3% on the
+final (5.0761 → 5.2923). Clearing the floor needed a 20% improvement. The arm stays below the gate
+at every checkpoint.
+
+This is the negative branch, so the LR-schedule confound recorded above does not damage it: the
+run gave this arm **both** more exposure per byte **and** a longer warmup with a gentler decay, and
+neither rescued it. Exposure-per-byte is not the variable that decides this gate.
+
+What that leaves: whatever separates these arms is not in the bytes (§4.6), not in how often they
+are shown (here), not in the objective phase (§4), not in checkpoint selection (§1), and not noise
+(DATA-5 §5).
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
