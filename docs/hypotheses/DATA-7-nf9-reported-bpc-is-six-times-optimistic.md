@@ -78,14 +78,30 @@ own val best   │                       0.4088 ──────────�
 ```
 
 That selector runs on a span whose 64-byte windows are 82.5% recallable (§2), so a stalled `best=`
-is not evidence the model stopped improving — the two measurements above show it did not. The
-consequence is operational: **the run can train for another 13 days and never save a checkpoint
-from any of it**, because the only thing that writes a checkpoint is a metric that has stopped
-moving.
+is not evidence the model stopped improving — the two measurements above show it did not.
+
+**Correction to a first reading of this.** The line above was initially written as "the run can
+train 13 more days and never save a checkpoint from any of it, because the only thing that writes
+one is a metric that has stopped moving". Checking the code and the log instead of inferring:
+
+| claim | what the evidence says |
+|---|---|
+| only `best.pt` is written | **false** — `--save-every 10000` writes `step_N.pt` too, and the log records `[ckpt] Saved: .../step_10000.pt` |
+| rotation deleted it | **false** — `_rotate_checkpoints` prints `rotated out` on every deletion and that line appears nowhere in the log |
+| the disk filled | **false** — 215 GB free, 76% used |
+| the file is gone | **true** — the directory holds `best.pt` alone, its mtime 00:40 |
+
+So the run does keep periodic checkpoints; `step_10000.pt` was written and then removed by
+something outside the trainer, at a time that coincides with a large space reclamation on the host
+(aiden went from 56 GB to 215 GB free overnight). Who removed it is not identified here.
+
+The accurate operational statement is narrower and still worth acting on: **`best.pt` is frozen at
+step 14,000 while the model keeps improving**, so the checkpoint a reader would reach for is not
+the best one available. `step_20000.pt` is due shortly and is the next readable point — provided
+nothing outside the run deletes it too.
 
 Limit of this measurement, stated: there is no checkpoint past step 14,000, so whether the honest
-number kept improving after it is unmeasured. `--save-every 10000` will produce step 20,000 shortly;
-that is the next readable point.
+number kept improving after it is unmeasured.
 
 ## 4. Application
 
@@ -105,10 +121,11 @@ that is the next readable point.
 2. **Re-check nf9 at intervals with this script rather than reading its log.** One CPU minute per
    check, no GPU contention — `measurement/nf9_gate_check.py`. Done once (§3.5); it showed the
    model improving while its checkpoint selector had stopped.
-3. **Fix what the run keeps, not just what it prints.** `best.pt` is written only when a
-   82.5%-recallable metric improves, and that metric has been flat for 5,300 steps. Either select
-   on the novelty-controlled number or keep periodic step checkpoints beyond the current
-   rotation — otherwise 13 more days of training can leave nothing behind.
+3. **Fix what `best.pt` means.** It is written only when a 82.5%-recallable metric improves, and
+   that metric has been flat for 5,300 steps while the model kept improving — so `best.pt` is not
+   the best checkpoint, it is the last one that metric liked. Select on the novelty-controlled
+   number instead. (Periodic `step_N.pt` files *are* written; §3.5 corrects an earlier claim that
+   they were not.)
 4. **A run on raw corpus_v2 cannot be evaluated well.** With 4.7% of windows usable, any span drawn
    from it is mostly recall. DATA-2's path (dedup the corpus) applies to this run too.
 5. Reproduction: `measurement/nf9_gate_check.py`, raw output `measurement/nf9_gate_check.json`
