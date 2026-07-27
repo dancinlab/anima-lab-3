@@ -1,0 +1,201 @@
+#!/usr/bin/env python3
+"""Adjudicate every arm against a CONJUNCTIVE gate, not a single threshold.
+
+Borrowed from the rho-weave instrument in the sibling anima repo
+(HYPOTHESES/cards/H_9270, cli/rho_axon.py). Its shape is:
+
+    PASS = value clears its bar
+         AND every control stays collapsed
+         AND value beats the worst control by a registered ratio
+
+Our gate had only the first clause. Controls existed -- context shuffling
+(DATA-6 3.5), span novelty (DATA-3), unigram/bigram floors -- but they were
+reported in prose beside the verdict instead of being required by it. That gap
+is exactly where the nf9 accident happened: a run reported 0.65 BPC for ten
+hours while scoring 3.99 on material it could not recall (DATA-7). No single
+number was wrong; nothing forced them to be read together.
+
+Three conditions, each mechanism-derived so none of them is a bar tuned after
+seeing the data (frozen-first, HYPOTHESES/CLAUDE.md lesson 3):
+
+  C1 LANGUAGE   novelty-controlled BPC < the corpus's own TRAIN-SPLIT BIGRAM
+                floor. Pre-registered in DATA-6. A model above it has not
+                learned more than pair statistics.
+  C2 CONTEXT    BPC < the corpus's own UNIGRAM floor, and shuffling the context
+                inside the window must make it worse. A byte histogram scores
+                exactly the unigram floor and loses exactly nothing to a
+                shuffle, so both halves read zero for the thing being excluded.
+                No tunable constant.
+  C3 SPAN       the score came from windows whose 3x64B probes are absent from
+                ALL train splits, with the keep rate recorded. Binary: either
+                the strict selection ran or the number is not a language score.
+
+  C4 MARGIN     value beats its floor by >= 3x. PROSPECTIVE ONLY -- registered
+                here for runs from now on and REPORTED for past ones. Two
+                reasons it decides nothing yet: choosing a ratio after the
+                numbers are in is tune-to-green, and the 3x is BORROWED BY
+                ANALOGY, not derived -- rho-weave measures reach against its
+                worst CONTROL, this measures BPC against a FLOOR, so the
+                denominators differ and the constant has to earn its value here
+                before it can fail an arm.
+
+Adding conditions to a conjunction can only turn PASS into FAIL, never the
+reverse, so re-adjudicating settled arms cannot manufacture a pass. Any arm
+that flips here was always failing and the old gate could not see it.
+
+Tier follows the sibling's vocabulary: an arm missing a control measurement is
+DIRECTIONAL, not a verdict -- absence of a control is not a passed control.
+"""
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+# Each corpus's own train-split floors (measurement/build_scale_corpora.py and
+# build_complement_half.py). A ratio against another corpus's floor is
+# meaningless; the gate is a ratio.
+FLOORS = {
+    "25":   {"unigram": 6.0293, "bigram": 3.6140, "corpus": "corpus_merged_25.txt"},
+    "50":   {"unigram": 6.0295, "bigram": 3.5925, "corpus": "corpus_merged_50.txt"},
+    "50c":  {"unigram": 6.0275, "bigram": 3.5934, "corpus": "corpus_merged_50c.txt"},
+    "100":  {"unigram": 6.0195, "bigram": 3.6010, "corpus": "corpus_merged_dedup.txt"},
+    "v2":   {"unigram": 5.9548, "bigram": 3.4920, "corpus": "corpus_v2.txt"},
+}
+
+# arm key -> (corpus, human label). The suffix convention comes from
+# novel_window_eval.py: bare = best.pt, trailing f = final.pt.
+ARMS = {
+    "s25":   ("25",  "25% seed 1337 best"),
+    "v25":   ("25",  "25% seed 7331 best"),
+    "s50":   ("50",  "50% seed 1337 best"),
+    "v50":   ("50",  "50% seed 7331 best"),
+    "s100":  ("100", "100% seed 1337 best"),
+    "v100":  ("100", "100% seed 7331 best"),
+    "p50":   ("50",  "50% phase-ablated best"),
+    "p50f":  ("50",  "50% phase-ablated final"),
+    "p100":  ("100", "100% phase-ablated best"),
+    "p100f": ("100", "100% phase-ablated final"),
+    "e50":   ("50",  "50% exposure-equalised best"),
+    "e50f":  ("50",  "50% exposure-equalised final"),
+    "e100":  ("100", "100% exposure-equalised best"),
+    "e100f": ("100", "100% exposure-equalised final"),
+    "c50":   ("50c", "50% complement best"),
+    "c50f":  ("50c", "50% complement final"),
+    # The 300M nf9 run. corpus_v2 has no context-shuffle measurement, so these
+    # come out DIRECTIONAL -- which is the point: the run whose dashboard was
+    # 6.1x optimistic is exactly the one whose controls were never measured.
+    "nf9_12k": ("v2", "nf9 300M @12,000"),
+    "nf9_14k": ("v2", "nf9 300M @14,000"),
+}
+
+# Context-shuffle measurements, keyed by the corpus they were run on
+# (measurement/context_sensitivity.json). Arms whose corpus has no entry come
+# out DIRECTIONAL rather than PASS/FAIL.
+CONTEXT_JSON = "measurement/context_sensitivity.json"
+CONTEXT_KEY = {"25": "25%", "50": "50%", "100": "100%"}
+
+MARGIN_RATIO = 3.0  # prospective, see C4 above
+
+
+def load_scores(paths):
+    """Merge the per-arm BPC tables, newest file wins on a repeated arm."""
+    scores, keep_rate = {}, None
+    for p in paths:
+        blob = json.loads(Path(p).read_text())
+        sel = blob.get("_select")
+        if sel:
+            keep_rate = sel.get("keep_rate", keep_rate)
+        for arm, row in blob.items():
+            if arm.startswith("_") or not isinstance(row, dict) or "bpc" not in row:
+                continue
+            scores[arm] = {**row, "_src": Path(p).name}
+    return scores, keep_rate
+
+
+def adjudicate(arm, row, ctx, keep_rate):
+    corpus_key, label = ARMS[arm]
+    fl = FLOORS[corpus_key]
+    bpc = row["bpc"]
+
+    c1 = bpc < fl["bigram"]
+    beats_unigram = bpc < fl["unigram"]
+    ctx_row = ctx.get(CONTEXT_KEY.get(corpus_key, ""))
+    if ctx_row is None:
+        c2, c2_note = None, "no context measurement for this corpus"
+    else:
+        uses_context = ctx_row["shuffled_bpc"] > ctx_row["true_bpc"]
+        c2 = beats_unigram and uses_context
+        c2_note = (f"unigram {'<' if beats_unigram else '>='} · "
+                   f"shuffle +{ctx_row['context_gain_bpc']:.2f} BPC")
+    # The strict 3x64B-probe selection is what produced these files at all; the
+    # keep rate is its receipt. A table without one is not scored on a novel span.
+    c3 = keep_rate is not None
+    margin = fl["bigram"] / bpc if bpc > 0 else float("inf")
+
+    if c2 is None:
+        tier, verdict = "DIRECTIONAL", "PASS" if (c1 and c3) else "FAIL"
+    else:
+        tier = "TERMINAL"
+        verdict = "PASS" if (c1 and c2 and c3) else "FAIL"
+    return {
+        "arm": arm, "label": label, "corpus": fl["corpus"], "bpc": bpc,
+        "ckpt_step": row.get("ckpt_step"), "src": row["_src"],
+        "bigram_floor": fl["bigram"], "unigram_floor": fl["unigram"],
+        "ratio_to_bigram": bpc / fl["bigram"],
+        "C1_language": c1, "C2_context": c2, "C2_note": c2_note,
+        "C3_span": c3, "margin_x": margin,
+        "C4_margin_prospective": margin >= MARGIN_RATIO,
+        "tier": tier, "verdict": verdict,
+    }
+
+
+def main():
+    out_json = sys.argv[1] if len(sys.argv) > 1 else "measurement/gate_verdicts.json"
+    srcs = sys.argv[2:] or [
+        "measurement/arm_gate_eval.json",
+        "measurement/epoch_control_eval.json",
+        "measurement/novel_window_epoch_final.json",
+        "measurement/nf9_honest_eval.json",
+    ]
+    srcs = [s for s in srcs if Path(s).exists()]
+    scores, keep_rate = load_scores(srcs)
+    ctx = json.loads(Path(CONTEXT_JSON).read_text()) if Path(CONTEXT_JSON).exists() else {}
+
+    print(f"[src] {', '.join(srcs)}")
+    print(f"[span] keep rate {keep_rate*100:.1f}% -- a window is kept only if 3x64B probes "
+          f"are absent from every train split" if keep_rate else "[span] NO keep rate recorded")
+    print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
+
+    rows = [adjudicate(a, scores[a], ctx, keep_rate) for a in ARMS if a in scores]
+    hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
+    print(hdr)
+    print("-" * len(hdr))
+    for r in rows:
+        mark = lambda v: " -" if v is None else (" Y" if v else " N")
+        print(f"{r['arm']:<6} {r['bpc']:>7.4f} {r['bigram_floor']:>7.4f} "
+              f"{r['ratio_to_bigram']*100:>6.0f}% {mark(r['C1_language'])}"
+              f"{mark(r['C2_context'])}{mark(r['C3_span'])}  {r['tier']:<12} {r['verdict']}")
+
+    flips = [r for r in rows if r["C1_language"] and r["verdict"] == "FAIL"]
+    print(f"\n[conjunction] {len(flips)} arm(s) cleared the old single-threshold gate but fail "
+          f"the conjunctive one" + (":" if flips else "."))
+    for r in flips:
+        print(f"    {r['arm']}: {r['C2_note']}")
+    ds = [r for r in rows if r["tier"] == "DIRECTIONAL"]
+    print(f"[tier] {len(ds)} arm(s) DIRECTIONAL -- a missing control is not a passed control"
+          + (": " + ", ".join(r["arm"] for r in ds) if ds else "."))
+    print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only: "
+          + ", ".join(f"{r['arm']} {r['margin_x']:.1f}x" for r in rows if r["C1_language"]))
+
+    payload = {"_gate": {"conditions": ["C1 language", "C2 context", "C3 span"],
+                         "C4_margin_prospective_ratio": MARGIN_RATIO,
+                         "keep_rate": keep_rate, "sources": srcs,
+                         "sources_sha256": {s: hashlib.sha256(Path(s).read_bytes()).hexdigest()[:16]
+                                            for s in srcs}},
+               "arms": {r["arm"]: r for r in rows}}
+    Path(out_json).write_text(json.dumps(payload, indent=2))
+    print(f"[json] {out_json}")
+
+
+if __name__ == "__main__":
+    main()

@@ -20,6 +20,30 @@ Consciousness measurement and calibration tools. Standalone scripts for measurin
   not line-level dedup, to claim a span is novel (DATA-3: line filtering moved 32-byte
   familiarity the WRONG way, 79.5% → 91.8%)
 
+- `gate.py` — **the adjudicator. Read this before quoting any BPC as a result.** Every arm's
+  verdict is a CONJUNCTION, not a threshold: C1 novelty-controlled BPC below the corpus's own
+  train-split bigram floor · C2 below its unigram floor AND worse under a context shuffle · C3
+  scored on windows whose 3x64B probes are absent from every train split. An arm missing a
+  control measurement is **DIRECTIONAL**, never PASS/FAIL — absence of a control is not a passed
+  control. Emits `gate_verdicts.json` with a sha256 of every input file.
+- `build_complement_half.py` — builds `corpus_merged_50c.txt`, the disjoint same-size complement
+  of the failing 50% subset, and measures its own floors (DATA-6 §5: the content control)
+
+## The gate rubric (imported, and why)
+Its shape comes from the `rho-weave` instrument in the sibling `anima` repo
+(`HYPOTHESES/cards/H_9270`, `cli/rho_axon.py`), where a capability passes only when the value
+clears its bar AND every control collapses. Ours had controls but read them in prose beside the
+verdict instead of requiring them — which is precisely the gap DATA-7 fell into, a dashboard
+reading 0.65 BPC for ten hours while the honest span read 3.99.
+
+Two rules travel with it and are not optional:
+1. **frozen-first.** Bars are registered before the measurement. A bar chosen after the numbers
+   are in is tune-to-green, and it does not matter that the number looks right.
+2. **A borrowed constant is not a derived one.** `gate.py`'s C4 margin (3x) is carried over by
+   analogy — rho-weave measures reach against its worst *control*, this measures BPC against a
+   *floor*. Different denominators, so it is reported and never decides an arm until it earns
+   its value here.
+
 ## Running
 ```bash
 python measurement/measure_all.py --cells 1024
