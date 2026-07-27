@@ -264,6 +264,56 @@ Judging rules:
     Do not expect gates 1 and 2 to trade off; they guard different failures.
 ```
 
+## λ-사다리 (이 리포의 자체 능력기준 · SSOT · frozen)
+
+```
+왜 자체 이름인가: 형제 anima 의 G0~G6 은 G3/G4 가 게이트가 아니라 빈 번호로
+남아 있고(상태읽기/출판), 남의 번호를 빌리면 그 구멍까지 함께 들어온다.
+여기서는 실제로 채점 가능한 등급만 연속으로 둔다 — 구멍 없음.
+바(bar)는 anima/CONDITIONS.md 에서 그대로 가져와 동결한다. 이 모델들에 맞게
+바를 다시 고르는 것이 곧 tune-to-green 이므로 금지.
+
+Λ REGIME — 전제이지 등급이 아니다 (anima 의 Θ 와 같은 자리)
+   코퍼스 성격을 실측해 표기: natural / constructed.
+   measurement/corpus_regime.py 실측 = CONSTRUCTED
+   (corpus_v2 최다빈출 3줄이 각각 2,538회 반복, 주제는 이 프로젝트 자신)
+   ⇒ 아래 모든 등급 통과는 "계측기가 읽힌다"는 확인이지 능력의 증거가 아니다(p9).
+   자연 코퍼스를 확보하면 이 전제가 뒤집히고 같은 등급이 능력 증거가 된다.
+
+λ0 SPAN — 채점 구간이 회상 불가한가
+   bar: 창의 3×64B 프로브가 모든 train split 에 부재 · keep rate 를 행별로 기록
+   통제: 위상 재선택(rho-align)으로 점수가 안 움직일 것 (|Δ| 작음)
+   기전: 줄 단위 중복제거는 자격 없음 — 32B 친숙도를 79.5%→91.8% 로
+         반대 방향으로 움직였다(DATA-3)
+   구현: measurement/novel_window_eval.py · panel.py · gate.py C3
+
+λ1 SCREEN — 쌍(pair) 통계를 넘었는가  ※ verdict 아님, 선별임(p7)
+   bar: 신규성통제 BPC < 자기 train-split bigram floor
+   통제(둘 다 붕괴 필수): 자기 unigram floor 미만 ∧ 문맥섞기로 악화(rho-shuffle)
+                          ∧ 동일구조 무학습망(rho-init) 대비 개선
+   비율: 최악통제 대비 ≥3× (사전등록 · 이후 런부터 구속)
+   구현: measurement/gate.py C1·C2 + panel.py
+
+λ2 COHERENCE — 내놓는 것이 바이트 죽인가 말인가
+   bar: known-word-ratio ≥ 0.50 on ≥4/5 seeds (anima G0 에서 동결 이관)
+   통제: before-backbone(동일구조 무학습망)이 반드시 FAIL — 통과하면 이 지표는
+         모델이 아니라 코퍼스를 읽고 있는 것이므로 λ2 전 행이 무효
+   구현: measurement/g_gates.py
+
+λ3 NOVELTY — 코퍼스에 없는 말을 만드는가
+   bar: 코퍼스 부재 + 일관 n-gram(토큰 4개) ≥ 3 (anima G2 에서 동결 이관)
+   통제: retrieval-control = 0 — 실제 train 구간을 복사한 대조가 부재 n-gram 을
+         하나라도 내면 부재 판정 자체가 깨진 것이므로 λ3 전 행이 무효
+   구현: measurement/g_gates.py
+
+등급 밖(미등록 · 이름만 예약): λ4 RECOMBINATION
+   anima G1 에 해당. 원자쌍의 합성 결과가 held-out 인 코퍼스를 새로 지어야 하고,
+   그것은 프로브가 아니라 코퍼스 구축이다. 지금 없는 것을 사다리에 올려 구멍을
+   만들지 않는다 — 지어지면 그때 λ4 로 편입한다.
+   같은 이유로 anima 의 G5(비환각)·G6(발상)도 미등록: 이 모델들에는 채점할
+   abstain(모른다고 말하기) 채널이 없고, G6 는 λ3 위에 쌓는 다음 단이다.
+```
+
 ## Measurement validity (what "all measurements pass" means)
 
 ```
@@ -336,10 +386,15 @@ different states and merging them either hides work or invents it:
      controls (anima G0 known-word-ratio / G2 corpus-absent novel n-grams with
      retrieval-control = 0) run on a natural corpus this repo does not have.
 
-Judging rule: the goal is reached when gate.py prints ALL MEASUREMENTS PASS --
-zero DIRECTIONAL rows and zero arms falling back to a substituted floor, with
-any UNMEASURABLE rows listed explicitly. PASS/FAIL counts are the science and
-are not the target. Contract imported from the sibling anima repo's rho-axon
+Judging rule (measurement validity): the goal is reached when gate.py prints
+ALL MEASUREMENTS PASS -- zero DIRECTIONAL rows and zero arms falling back to a
+substituted floor, with any UNMEASURABLE rows listed explicitly. PASS/FAIL
+counts are the science and are not the target.
+
+Judging rule (λ-ladder): a rung is PASSED when its frozen bar is met AND every
+control on that rung collapses. A rung whose control fails VOIDS that rung for
+every arm -- a bar met with a broken control is not a pass. Bars never move to
+fit a result; a FAIL is recorded as a FAIL and the run is the finding. Contract imported from the sibling anima repo's rho-axon
 panel (HYPOTHESES/cards/H_9270, cli/rho_axon.py); see measurement/CLAUDE.md.
 ```
 

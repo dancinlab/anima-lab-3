@@ -63,6 +63,29 @@ Two rules travel with it and are not optional:
    Scoring it as a control that "passed" would be the unregistered-extra-hurdle mistake
    `rho_self`'s docstring in the sibling repo warns about.
 
+## λ-사다리 채점기 (자체 기준 · 바는 CLAUDE.md 에 동결)
+
+- `gate.py` → **λ0 SPAN** + **λ1 SCREEN** (신규성통제 BPC · 통제 결합 · 25팔)
+- `panel.py` / `panel_nf9.py` → λ0·λ1 의 통제 실측 (rho-init · rho-shuffle · rho-align)
+- `g_gates.py` → **λ2 COHERENCE** + **λ3 NOVELTY** (행동 계측기 · anima G0/G2 에서 바 동결 이관)
+- `corpus_regime.py` → **Λ REGIME** 전제 판정
+
+λ2/λ3 의 통제 3종은 전부 필수이고, 하나라도 깨지면 그 등급 전 행이 무효다:
+
+| 통제 | 무엇을 증명 | 실측 |
+|---|---|---|
+| positive (실제 held-out 텍스트) | 계측기가 읽히기는 하는가 | kwr **0.937** — VALID |
+| before-backbone (동일구조 무학습망) | 지표가 모델을 읽는가 코퍼스를 읽는가 | kwr **0.000**, FAIL — VALID |
+| retrieval (train 구간 복사) | '부재' 가 부재를 뜻하는가 | 부재 n-gram **0** — VALID |
+
+두 통제가 실제로 결함을 잡았고, 둘 다 내 코드였다:
+1. **positive 통제가 없었다면 타입 버그가 결과로 읽혔다.** vocab 은 `bytes`, 생성 토큰은 `str`
+   이라 kwr 이 전 팔 0.000 이었고, anti-Goodhart 통제도 0.000 이라(그게 정상이라서) 아무것도
+   울리지 않았다. **구분할 수 없는 통제는 통제가 아니다** — 그래서 positive 통제를 넣었다.
+2. **retrieval 통제가 부재 판정의 결함을 잡았다.** 질의는 공백을 하나로 접어 만들고 건초더미는
+   원문 그대로라, 원래 구분자가 줄바꿈이던 n-gram 이 전부 '부재' 로 읽혀 통제가 0 대신 81 을
+   냈다. 양쪽 모두 정규화해야 부재 판정이 공백 판정이 아니게 된다.
+
 ## Imported rule coverage (sibling `anima`, audited — not all of it transferred)
 
 Source of the rules: `anima/CLAUDE.md` (p1-p9 + the pre-action hard-gate), `anima/cli/rho_axon.py`
