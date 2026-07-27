@@ -274,11 +274,30 @@ Judging rules:
 바를 다시 고르는 것이 곧 tune-to-green 이므로 금지.
 
 Λ REGIME — 전제이지 등급이 아니다 (anima 의 Θ 와 같은 자리)
-   코퍼스 성격을 실측해 표기: natural / constructed.
-   measurement/corpus_regime.py 실측 = CONSTRUCTED
-   (corpus_v2 최다빈출 3줄이 각각 2,538회 반복, 주제는 이 프로젝트 자신)
-   ⇒ 아래 모든 등급 통과는 "계측기가 읽힌다"는 확인이지 능력의 증거가 아니다(p9).
-   자연 코퍼스를 확보하면 이 전제가 뒤집히고 같은 등급이 능력 증거가 된다.
+   코퍼스마다 성격을 표기한다: natural / constructed. 판정의 근거는 출처(provenance)
+   이고, measurement/corpus_regime.py 의 신호는 그 판정을 뒷받침할 뿐 대신하지 않는다
+   — 수치 문턱으로 자연성을 정의하면 그 문턱을 맞추는 합성 코퍼스를 만들 수 있다.
+
+   | 코퍼스 | 출처 | 줄반복 | top10 점유 | 어휘 | 판정 |
+   |---|---|---|---|---|---|
+   | corpus_v2 | 이 프로젝트가 생성 | 1.90x | 2.47% | 234k | CONSTRUCTED |
+   | corpus_v4 | 이 프로젝트가 생성 | 3.09x | 6.90% | 149k | CONSTRUCTED |
+   | corpus_v5 | 이 엔진의 실행로그 | 4.90x | 13.14% | 134k | CONSTRUCTED |
+   | corpus_merged_dedup | 위 3종 병합·중복제거 | 1.00x | 0.00% | 387k | CONSTRUCTED |
+   | **corpus_natural_ko_dedup** | **한국어 위키백과 덤프** | **1.00x** | **0.00%** | **1,329k** | **NATURAL** |
+
+   자연 코퍼스: 73.4 MB 추출 → 중복제거 351,839 줄 (기존 코퍼스와 동일 처리).
+   출처 = dumps.wikimedia.org kowiki-latest-pages-articles (2026-07-06, CC BY-SA),
+   사람이 쓴 백과 산문. 어휘가 133만으로 합성 코퍼스의 3.4~9.9 배이고, 앞 10% 가
+   전체 어휘의 16.4% 뿐이다 = 템플릿처럼 조기에 고갈되지 않는다.
+
+   ⚠️ 명시할 편향 둘: ① register 가 백과 산문 하나뿐이다(구어·대화 없음).
+   ② 정제 전 단계에서 위키 날짜목록 템플릿 한 줄이 1,800 회 남아 있었고 중복제거로
+   사라졌다 — 정제기가 완벽하지 않다는 뜻이므로 이 코퍼스로 낸 결과는 정제기 버전과
+   함께 인용한다.
+
+   ⇒ corpus_natural_ko_dedup 위에서 낸 λ 등급만 능력 증거가 될 수 있다. 기존 25행은
+   전부 constructed 위에서 측정됐으므로 여전히 계측기 확인이다(p9).
 
 λ0 SPAN — 채점 구간이 회상 불가한가
    bar: 창의 3×64B 프로브가 모든 train split 에 부재 · keep rate 를 행별로 기록

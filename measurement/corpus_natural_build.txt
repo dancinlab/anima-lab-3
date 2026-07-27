@@ -1,0 +1,17 @@
+[done] 237,649 pages scanned · 357,585 prose lines kept · 73.4 MB -> data/corpus_natural_ko.txt
+[regime] now run: python3 corpus_regime.py data/corpus_natural_ko.txt
+[bias] register is encyclopedic prose only -- a natural corpus, but not a register-balanced one. State it in any claim built on this.
+===== REGIME =====
+[corpus_natural_ko.txt]
+  lines=357,585 distinct=351,839 · repetition=1.02x
+  speaker-prefixed 'A:'/'B:' = 0.0%
+  top-10 lines cover 0.57% of the file
+  vocab: first 10% has 212,553 of the full 1,328,714 = 16.0% (a template exhausts early)
+  most common: [('예) * 8월 6일 - 미국의 예술가 �', 1800), ('2008년 민족문제연구소가 발표�', 38), ('굵은 글씨는 메인 캐릭터.', 37)]
+[dedup] kept 351,839 dropped 5,746
+[corpus_natural_ko_dedup.txt]
+  lines=351,839 distinct=351,839 · repetition=1.00x
+  speaker-prefixed 'A:'/'B:' = 0.0%
+  top-10 lines cover 0.00% of the file
+  vocab: first 10% has 218,398 of the full 1,328,714 = 16.4% (a template exhausts early)
+  most common: [('1976년 미합중국 제39대 대통령 ', 1), ('소련과 제2차 전략 무기 제한 �', 1), ('카터는 1970년대 후반 당시 대�', 1)]

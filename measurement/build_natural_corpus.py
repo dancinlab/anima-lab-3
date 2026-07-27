@@ -55,6 +55,9 @@ RE_TEXT = re.compile(rb"<text[^>]*>(.*?)</text>", re.S)
 RE_HANGUL = re.compile(rb"[\xea-\xed]")               # UTF-8 lead bytes for 한글
 BAD_CHARS = (b"{", b"}", b"[", b"]", b"|", b"=", b"<", b">")
 MIN_LINE, MAX_LINE = 30, 400
+# Sentence endings. Built from str, not written as bytes literals: a bytes
+# literal may only hold ASCII, so b"다" is a SyntaxError, not a value.
+SENT_END = tuple(t.encode("utf8") for t in (".", "다", "요", "까", "음"))
 
 
 def strip_markup(raw):
@@ -84,7 +87,7 @@ def keep(line):
     hangul = len(RE_HANGUL.findall(line))
     if hangul * 3 < len(line) * 0.30:                   # ~30% of bytes Hangul
         return False
-    return line.rstrip().endswith((b".", b"다", b"요", b"까", b"음"))
+    return line.rstrip().endswith(SENT_END)
 
 
 def main():
