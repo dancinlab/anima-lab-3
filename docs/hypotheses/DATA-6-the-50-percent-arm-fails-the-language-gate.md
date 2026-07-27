@@ -208,6 +208,39 @@ overfitting rather than causing a separate failure** — which is what "owns 39%
 Caveat kept: for the arms that run it, the loss column crosses the objective boundary at step 8,400
 and is not comparable across it. The conclusion above rests on the single-objective runs only.
 
+## 4.6 The added lines are indistinguishable from the kept ones
+
+§4.5 established that adding data broke it. The obvious next suspect is *what* was added — every
+check until now compared whole corpora, never the increment on its own. Base = lines at `i%4==0`
+(the 25% corpus), increment = lines at `i%4==2` (their union is the 50% corpus):
+
+| | base (25% corpus) | increment (what 50% adds) |
+|---|---|---|
+| lines / distinct | 573,598 / 282,906 | 573,598 / 282,772 |
+| bytes | 16,705,031 | 16,709,235 |
+| mean line length | 29.1 B | 29.1 B |
+| non-empty share | 49.3% | 49.3% |
+| ASCII / Hangul-lead bytes | 71.1% / 6.4% | 70.8% / 6.4% |
+| unigram / bigram floor | 6.0300 / 3.5988 | 6.0347 / 3.5989 |
+| distinct byte values | 180 | 179 |
+
+And it is not redundant either: only **28.7%** of the increment's 64-byte windows already sit in the
+base, so 71.3% is genuinely new content.
+
+**Doubling the training set with statistically identical material — same length, same script mix,
+same entropy floors, 71% of it new — turned a passing model into a failing one, across two seeds.**
+
+That closes the data-property line of explanation. What differs between the arms is no longer
+anything measurable about the bytes; with steps and batch size fixed at 12,000 x 32, the arms differ
+only in **how often each byte is repeated**: 6.3 / 3.2 / 1.6 epochs for 25% / 50% / 100%. The gate
+outcome (PASS / FAIL / PASS) is not monotone in that either, so no single-variable story survives
+yet.
+
+The cheapest test that would separate the remaining candidates: **hold repetition fixed instead of
+steps** — scale the step budget with corpus size so every arm sees each byte the same number of
+times. If the ordering collapses, exposure-per-byte was the variable; if it survives, it is the
+optimizer's path.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
@@ -222,10 +255,11 @@ and is not comparable across it. The conclusion above rests on the single-object
 4. **Test a named mechanism before naming it.** "Unigram floor" was applied here from a BPC
    coincidence and the mechanism test refuted it in one run (§3.5). A BPC number locates a model;
    it does not explain one.
-5. **The open question is now sharper: why does a strict superset of a passing training set
-   fail?** Not volume (§4.5 — the response is non-monotone over nested data), not composition or
-   structure (§3), not the objective phase (§4). What is left is the interaction between those
-   particular added lines and the schedule.
+5. **The open question, as narrow as the measurements have made it:** the added lines are
+   indistinguishable from the kept ones on every axis measured (§4.6) and 71% of them are new, so
+   no property of the bytes explains it. Ruled out: volume (§4.5), composition and structure (§3),
+   the objective phase (§4), checkpoint selection (§1), run-to-run noise (DATA-5 §5). The next
+   measurement is the exposure-per-byte control in §4.6.
 6. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
    `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
    `measurement/context_sensitivity.py` (§3.5), `measurement/nesting_and_overfit.py` (§4.5),
