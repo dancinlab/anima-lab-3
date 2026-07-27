@@ -91,6 +91,14 @@ ARMS = {
     "e50f":  ("50",  "50% exposure-equalised final"),
     "e100":  ("100", "100% exposure-equalised best"),
     "e100f": ("100", "100% exposure-equalised final"),
+    "s25f":  ("25",  "25% seed 1337 final"),
+    "v25f":  ("25",  "25% seed 7331 final"),
+    "s50f":  ("50",  "50% seed 1337 final"),
+    "v50f":  ("50",  "50% seed 7331 final"),
+    "s100f": ("100", "100% seed 1337 final"),
+    "v100f": ("100", "100% seed 7331 final"),
+    "p25":   ("25",  "25% phase-ablated best"),
+    "p25f":  ("25",  "25% phase-ablated final"),
     "c50":   ("50c", "50% complement best"),
     "c50f":  ("50c", "50% complement final"),
     # The 300M nf9 run. corpus_v2 has no context-shuffle measurement, so these
@@ -201,6 +209,7 @@ def main():
         "measurement/epoch_control_eval.json",
         "measurement/novel_window_epoch_final.json",
         "measurement/nf9_honest_eval.json",
+        "measurement/phase_ablation_eval.json",
         "measurement/panel_results.json",
         "measurement/panel_nf9_results.json",
     ]
@@ -217,6 +226,11 @@ def main():
     for pj in (PANEL_JSON, PANEL_NF9_JSON):
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
+    uncovered = sorted(set(scores) - set(ARMS))
+    if uncovered:
+        print(f"[UNCOVERED] {len(uncovered)} arm(s) have a measurement but no ARMS entry, so "
+              f"they are NOT adjudicated: {', '.join(uncovered)}. Add them or the verdict "
+              f"below covers a subset.", flush=True)
     rows = [adjudicate(a, scores[a], ctx, keep_rate, panel) for a in ARMS if a in scores]
     hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
     print(hdr)
@@ -243,9 +257,10 @@ def main():
     # counting it as outstanding work would keep the board red forever.
     fallback = [r for r in rows
                 if r["margin_src"] != "worst control" and r["tier"] != "UNMEASURABLE"]
-    ok = not ds and not fallback
+    ok = not ds and not fallback and not uncovered
     print(f"[validity] {'ALL MEASUREMENTS PASS' if ok else 'NOT YET'} -- "
-          f"{len(ds)} measurable-but-unmeasured, {len(fallback)} on a substituted floor"
+          f"{len(uncovered)} uncovered, {len(ds)} measurable-but-unmeasured, "
+          f"{len(fallback)} on a substituted floor"
           + (f", {len(un)} permanently unmeasurable (recorded, not counted)" if un else ""))
     measured = [r for r in rows if r["margin_src"] == "worst control"]
     print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only. "

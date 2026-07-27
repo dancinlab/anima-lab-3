@@ -20,7 +20,10 @@ Consciousness measurement and calibration tools. Standalone scripts for measurin
   not line-level dedup, to claim a span is novel (DATA-3: line filtering moved 32-byte
   familiarity the WRONG way, 79.5% → 91.8%)
 
-- `gate.py` — **the adjudicator. Read this before quoting any BPC as a result.** Every arm's
+- `gate.py` — **the adjudicator. Read this before quoting any BPC as a result.** It reports
+  `[UNCOVERED]` for any arm that has a measurement but no `ARMS` entry: silently skipping one is
+  how "all measurements pass" gets declared over a subset, which happened once and is why the
+  check exists. Every arm's
   verdict is a CONJUNCTION, not a threshold: C1 novelty-controlled BPC below the corpus's own
   train-split bigram floor · C2 below its unigram floor AND worse under a context shuffle · C3
   scored on windows whose 3x64B probes are absent from every train split. An arm missing a
@@ -52,8 +55,8 @@ Two rules travel with it and are not optional:
    reads. Computing it as floor/bpc — an earlier version of this file — is a different quantity
    and read 1.8x for the 100% arms where the matching one reads 4.1x.
 3. **A confirmed bar is not a frozen bar.** The 3x ratio stays prospective even though the
-   measured ratios reproduce the C1 partition exactly (s25 19.7x · s100 4.1x · e100 4.0x pass;
-   s50 1.8x · e50 1.9x fail). That agreement is corroboration — corpus statistics and forward-pass
+   measured ratios reproduce the C1 partition on **all 25 adjudicated arms** — every passing arm
+   sits at 3.1-20.3x and every failing one at 1.5-2.0x, with nothing in between. That agreement is corroboration — corpus statistics and forward-pass
    controls are independent paths to the same split — but a bar confirmed after the numbers are in
    cannot also be the bar that judged them.
 4. **Stability checks are not collapse controls.** rho-align must come out equal, not worse.
