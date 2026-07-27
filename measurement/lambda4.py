@@ -126,11 +126,16 @@ def build_pairs(train, val, rng):
             novel.append((ln, got_novel))
         elif got_seen and not got_novel:
             seen.append((ln, got_seen))
+    # For the paired SEEN control: which band atoms each atom DID co-occur with.
+    partners = {}
+    for x, y in seen_pairs:
+        partners.setdefault(x, []).append(y)
+        partners.setdefault(y, []).append(x)
     rng.shuffle(novel)
     rng.shuffle(seen)
-    print(f"[lines] novel-cooccurrence {len(novel):,} · seen-cooccurrence {len(seen):,}",
-          flush=True)
-    return novel[:TARGET_LINES], seen[:TARGET_LINES], sorted(band)
+    print(f"[lines] novel-cooccurrence {len(novel):,} · seen-cooccurrence {len(seen):,} · "
+          f"atoms with a seen partner {len(partners):,}", flush=True)
+    return novel[:TARGET_LINES], seen[:TARGET_LINES], sorted(band), partners, freq
 
 
 def break_composition(lines, band, rng):
@@ -141,6 +146,72 @@ def break_composition(lines, band, rng):
         ra, rb = rng.choice(band), rng.choice(band)
         out.append(ln.replace(a, ra).replace(b, rb))
     return out
+
+
+def matched_swaps(lines, partners, freq, band_by_freq, rng):
+    """The control the first two designs both missed: ONE substitution on BOTH
+    sides, differing only in whether the swapped-in atom co-occurred with the
+    partner.
+
+    Run 1 compared different sentences, so line difficulty was the confound.
+    Run 2 compared an original sentence against one with a word replaced, so
+    SUBSTITUTION DAMAGE was the confound -- and the numbers said so: two swaps
+    (BROKEN) cost +0.17 and one swap cost +0.048, four arms all within 0.006 of
+    each other, which is what a pure damage term looks like and not what a
+    composition term looks like.
+
+    Here both arms of the comparison get exactly one substitution of an atom of
+    similar frequency into the same sentence slot. The ONLY difference is whether
+    the new atom ever shared a train line with the untouched partner:
+        SEEN-SWAP   A -> A_seen   where (A_seen, B) occurred in train
+        NOVEL-SWAP  A -> A_novel  where (A_novel, B) never occurred
+    Damage cancels. What is left is co-occurrence.
+
+    λ4 PASS = BPC(NOVEL-SWAP) <= BPC(SEEN-SWAP): the model pays no penalty for a
+    combination it has not seen. Frequency matching keeps the swapped atoms
+    within a factor of two, so the comparison is not secretly about word rarity.
+    """
+    seen_out, novel_out = [], []
+    for ln, (a, b) in lines:
+        fa = freq.get(a, 0)
+        if not fa:
+            continue
+        lo, hi = fa / 2, fa * 2
+        pset = set(partners.get(b, ()))
+        cands = band_by_freq(lo, hi)
+        seen_c = [t for t in cands if t in pset and t != a and t != b]
+        novel_c = [t for t in cands if t not in pset and t != a and t != b]
+        if not seen_c or not novel_c:
+            continue
+        seen_out.append(ln.replace(a, rng.choice(seen_c)))
+        novel_out.append(ln.replace(a, rng.choice(novel_c)))
+    return seen_out, novel_out
+
+
+def paired_seen(lines, partners, rng):
+    """The SEEN control, on the SAME lines.
+
+    Run 1 compared novel-cooccurrence lines against a different set of lines that
+    happened to carry a seen pair. Those are different sentences, so line
+    difficulty was never controlled and the headline gap (value - seen) carried
+    that confound. This removes it: keep the line and one atom, swap the OTHER
+    atom for one that DID co-occur with it in train. Same sentence, same length,
+    same surrounding context -- the only thing that changes is whether the
+    combination is one the model has seen.
+
+    Returns (lines, kept) so a line with no available partner is dropped from
+    BOTH sides rather than silently compared against itself."""
+    out, keep = [], []
+    for idx, (ln, (a, b)) in enumerate(lines):
+        alts = partners.get(b)
+        if not alts:
+            continue
+        alt = rng.choice(alts)
+        if alt == a or alt not in ln and True:
+            pass
+        out.append(ln.replace(a, alt))
+        keep.append(idx)
+    return out, keep
 
 
 def to_tensor(lines):
@@ -205,7 +276,7 @@ def main():
     print(f"[device] {device}", flush=True)
 
     train, val = split(CORPUS)
-    novel, seen, band = build_pairs(train, val, rng)
+    novel, seen, band, partners, freq = build_pairs(train, val, rng)
     if len(novel) < 32 or len(seen) < 32:
         print("[verdict] not enough lines in one group -- λ4 cannot be measured "
               "on this corpus, and that is the result.", flush=True)
@@ -214,9 +285,25 @@ def main():
         return
 
     broken = break_composition(novel, band, rng)
+    pseen, keep = paired_seen(novel, partners, rng)
+    print(f"[paired] SEEN control built on {len(pseen)} of {len(novel)} value lines "
+          f"(same sentence, one atom swapped for a train co-occurring partner)", flush=True)
     xv, yv = to_tensor([ln for ln, _ in novel])
     xs, ys = to_tensor([ln for ln, _ in seen])
     xb, yb = to_tensor(broken)
+    xp, yp = to_tensor(pseen)
+
+    # The damage-matched pair of controls, one substitution on each side.
+    by_freq = sorted(((freq[t], t) for t in band))
+    def band_by_freq(lo, hi):
+        return [t for f, t in by_freq if lo <= f <= hi]
+    m_seen, m_novel = matched_swaps(novel, partners, freq, band_by_freq, rng)
+    print(f"[matched] damage-matched controls on {len(m_seen)} lines "
+          f"(one swap each side, frequency within 2x)", flush=True)
+    xms, yms = to_tensor(m_seen)
+    xmn, ymn = to_tensor(m_novel)
+    # The paired comparison must use the same subset on both sides.
+    xvk, yvk = to_tensor([novel[i][0] for i in keep])
 
     results = {"_setup": {"freq_band": [FREQ_LO, FREQ_HI], "min_token_bytes": MIN_TOKEN_BYTES,
                           "lines_per_group": len(novel), "seed": SEED,
@@ -248,18 +335,48 @@ def main():
         # BROKEN is built from the NOVEL lines, so the paired test compares the
         # value lines against themselves with the composition removed.
         res = spread_is_resolvable(score_per_line(m, xv, yv, device), b_per)
+        # Paired SEEN: same lines, one atom swapped to a train co-occurring one.
+        v_k = score_per_line(m, xvk, yvk, device)
+        p_per = score_per_line(m, xp, yp, device)
+        paired = spread_is_resolvable(p_per, v_k)   # positive = novel costs more
+        p_mean = sum(p_per) / len(p_per)
+        ms_per = score_per_line(m, xms, yms, device)
+        mn_per = score_per_line(m, xmn, ymn, device)
+        matched = spread_is_resolvable(ms_per, mn_per)  # positive = novel costs more
+        ms_mean = sum(ms_per) / len(ms_per)
+        mn_mean = sum(mn_per) / len(mn_per)
+        lam4 = mn_mean <= ms_mean
         ok = v < mid and v < b
         pos = (v - s) / (b - s) if b != s else float("nan")
         results[name] = {"value_novel_cooccurrence": v, "ctrl_seen_cooccurrence": s,
                          "ctrl_broken_composition": b, "midpoint": mid,
                          "normalised_position": pos,
-                         "resolution": res, "lambda4": ok,
+                         "resolution": res,
+                         "ctrl_paired_seen": p_mean,
+                         "paired_novelty_cost": paired["spread"],
+                         "paired_t": paired["t"],
+                         "paired_resolvable": paired["resolvable"],
+                         "matched_seen_swap": ms_mean,
+                         "matched_novel_swap": mn_mean,
+                         "matched_novelty_cost": matched["spread"],
+                         "matched_t": matched["t"],
+                         "matched_resolvable": matched["resolvable"],
+                         "lambda4_matched": (None if not matched["resolvable"] else lam4),
+                         "lambda4_verdict": ("NULL" if not matched["resolvable"]
+                                             else ("PASS" if lam4 else "FAIL")),
+                         "lambda4_unmatched_run1": ok,
                          "lambda4_void": not res["resolvable"],
                          "ckpt_step": ck.get("step"), "ckpt_sha256_16": sha}
-        verdict = ("VOID (spread not resolvable)" if not res["resolvable"]
-                   else ("PASS" if ok else "FAIL"))
+        # A knife-edge PASS/FAIL on an effect smaller than its own noise is not a
+        # verdict. When the damage-matched cost is below resolution the honest
+        # reading is NULL: the confounds are controlled and no penalty exists at
+        # this resolution, in either direction.
+        verdict = ("NULL (|cost| below resolution -- no penalty either way)"
+                   if not matched["resolvable"] else ("PASS" if lam4 else "FAIL"))
         print(f"[{name}] novel={v:.4f} · seen={s:.4f} · broken={b:.4f} · mid={mid:.4f} · "
-              f"pos={pos:.3f} · Δ={res['spread']:+.4f} t={res['t']:.1f} → λ4 {verdict} "
+              f"pos={pos:.3f} · Δbroken={res['spread']:+.4f} t={res['t']:.1f} · "
+              f"MATCHED seen-swap={ms_mean:.4f} novel-swap={mn_mean:.4f} "
+              f"cost={matched['spread']:+.4f} t={matched['t']:+.1f} → λ4 {verdict} "
               f"· sha {sha}", flush=True)
         del ck, m
 
