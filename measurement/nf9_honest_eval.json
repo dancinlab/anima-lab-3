@@ -1,11 +1,7 @@
 {
   "_select": {
-    "kept": 256,
-    "tested": 1538,
-    "keep_rate": 0.16644993498049415,
-    "probe_bytes": 64,
-    "block": 256,
-    "_note": "Same window selection as the 28M arms. Values transcribed from DATA-7 sections 3 and 3.5, which recorded them in prose only; a verdict that lives in a sentence cannot be re-adjudicated by a gate."
+    "keep_rate": null,
+    "_note": "Selection receipt NOT preserved. DATA-7 recorded these two values in prose without the window-selection parameters or keep rate, and the checkpoints have since rotated away, so neither the span nor the controls can be reconstructed. An earlier version of this file claimed they shared the 28M arms' selection; that was unverifiable and the 28M selection screens the merged corpora, not corpus_v2."
   },
   "nf9_12k": {
     "bpc": 3.9881,

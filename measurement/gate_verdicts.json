@@ -6,20 +6,22 @@
       "C3 span"
     ],
     "C4_margin_prospective_ratio": 3.0,
-    "keep_rate": 0.16644993498049415,
+    "keep_rate": 0.04741618818299685,
     "sources": [
       "measurement/arm_gate_eval.json",
       "measurement/epoch_control_eval.json",
       "measurement/novel_window_epoch_final.json",
       "measurement/nf9_honest_eval.json",
-      "measurement/panel_results.json"
+      "measurement/panel_results.json",
+      "measurement/panel_nf9_results.json"
     ],
     "sources_sha256": {
       "measurement/arm_gate_eval.json": "e7cb401386925088",
       "measurement/epoch_control_eval.json": "273bc6388c50e74e",
       "measurement/novel_window_epoch_final.json": "f62fdc420fa2a95a",
-      "measurement/nf9_honest_eval.json": "497deca153dcaf7d",
-      "measurement/panel_results.json": "499a295d99625213"
+      "measurement/nf9_honest_eval.json": "2a3710fc40889878",
+      "measurement/panel_results.json": "499a295d99625213",
+      "measurement/panel_nf9_results.json": "284be3cfd91abd2b"
     }
   },
   "arms": {
@@ -404,7 +406,7 @@
       "C1_language": false,
       "C2_context": null,
       "C2_note": "no context measurement for this arm or its corpus",
-      "C3_span": true,
+      "C3_span": false,
       "margin_x": 0.8756049246508362,
       "margin_src": "floor (no panel)",
       "ctrl_shuffle_bpc": null,
@@ -427,7 +429,7 @@
       "C1_language": false,
       "C2_context": null,
       "C2_note": "no context measurement for this arm or its corpus",
-      "C3_span": true,
+      "C3_span": false,
       "margin_x": 0.9050618147888967,
       "margin_src": "floor (no panel)",
       "ctrl_shuffle_bpc": null,
@@ -435,6 +437,29 @@
       "stability_delta": null,
       "C4_margin_prospective": false,
       "tier": "UNMEASURABLE",
+      "verdict": "FAIL"
+    },
+    "nf9_20k": {
+      "arm": "nf9_20k",
+      "label": "nf9 300M @20,000 (controls measured on CPU)",
+      "corpus": "corpus_v2.txt",
+      "bpc": 4.117347236841306,
+      "ckpt_step": 20000,
+      "src": "panel_nf9_results.json",
+      "bigram_floor": 3.492,
+      "unigram_floor": 5.9548,
+      "ratio_to_bigram": 1.1790799647311874,
+      "C1_language": false,
+      "C2_context": true,
+      "C2_note": "unigram < \u00b7 shuffle +6.62 BPC (panel, per arm)",
+      "C3_span": true,
+      "margin_x": 1.935806205027593,
+      "margin_src": "worst control",
+      "ctrl_shuffle_bpc": 10.738314904802502,
+      "ctrl_init_bpc": 7.970386329330616,
+      "stability_delta": 0.03611536307829688,
+      "C4_margin_prospective": false,
+      "tier": "TERMINAL",
       "verdict": "FAIL"
     }
   }

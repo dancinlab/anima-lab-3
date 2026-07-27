@@ -98,6 +98,7 @@ ARMS = {
     # 6.1x optimistic is exactly the one whose controls were never measured.
     "nf9_12k": ("v2", "nf9 300M @12,000"),
     "nf9_14k": ("v2", "nf9 300M @14,000"),
+    "nf9_20k": ("v2", "nf9 300M @20,000 (controls measured on CPU)"),
 }
 
 # Context-shuffle measurements, keyed by the corpus they were run on
@@ -107,21 +108,27 @@ CONTEXT_JSON = "measurement/context_sensitivity.json"
 CONTEXT_KEY = {"25": "25%", "50": "50%", "100": "100%"}
 
 MARGIN_RATIO = 3.0  # prospective, see C4 above
-PANEL_JSON = "measurement/panel_results.json"  # measured collapse ratios, when present
+PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, when present
+PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
 
 
 def load_scores(paths):
-    """Merge the per-arm BPC tables, newest file wins on a repeated arm."""
+    """Merge the per-arm BPC tables, newest file wins on a repeated arm.
+
+    The keep rate is carried PER SOURCE, not globally: a row's span receipt
+    belongs to the file that produced it, and letting one file's rate stand in
+    for another's is how a row ends up claiming a provenance it never had."""
     scores, keep_rate = {}, None
     for p in paths:
         blob = json.loads(Path(p).read_text())
-        sel = blob.get("_select")
-        if sel:
-            keep_rate = sel.get("keep_rate", keep_rate)
+        sel = blob.get("_select") or {}
+        rate = sel.get("keep_rate")
+        if rate is not None:
+            keep_rate = rate
         for arm, row in blob.items():
             if arm.startswith("_") or not isinstance(row, dict) or "bpc" not in row:
                 continue
-            scores[arm] = {**row, "_src": Path(p).name}
+            scores[arm] = {**row, "_src": Path(p).name, "_keep_rate": rate}
     return scores, keep_rate
 
 
@@ -151,7 +158,7 @@ def adjudicate(arm, row, ctx, keep_rate, panel=None):
         c2, c2_note = None, "no context measurement for this arm or its corpus"
     # The strict 3x64B-probe selection is what produced these files at all; the
     # keep rate is its receipt. A table without one is not scored on a novel span.
-    c3 = keep_rate is not None
+    c3 = row.get("_keep_rate") is not None
     # The earned quantity is the collapse margin over the worst measured
     # control. Only fall back to the analytic floor when the panel has not run
     # this arm, and say so, because the two are not the same number.
@@ -206,7 +213,10 @@ def main():
           f"are absent from every train split" if keep_rate else "[span] NO keep rate recorded")
     print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
 
-    panel = json.loads(Path(PANEL_JSON).read_text()) if Path(PANEL_JSON).exists() else {}
+    panel = {}
+    for pj in (PANEL_JSON, PANEL_NF9_JSON):
+        if Path(pj).exists():
+            panel.update(json.loads(Path(pj).read_text()))
     rows = [adjudicate(a, scores[a], ctx, keep_rate, panel) for a in ARMS if a in scores]
     hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
     print(hdr)

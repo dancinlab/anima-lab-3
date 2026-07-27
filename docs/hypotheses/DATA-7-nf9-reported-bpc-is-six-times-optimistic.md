@@ -80,6 +80,37 @@ own val best   │                       0.4088 ──────────�
 That selector runs on a span whose 64-byte windows are 82.5% recallable (§2), so a stalled `best=`
 is not evidence the model stopped improving — the two measurements above show it did not.
 
+### 3.6 Third measurement (21:05) — with controls, and it reverses §3.5's reading
+
+The run advanced to step 20,000, `best.pt` moved with it, and this time the controls were taken
+rather than reported alongside (`measurement/panel_nf9.py`, on CPU because the training job holds
+8.9 of the card's 12.2 GB and a 300M eval beside it could OOM two days of work):
+
+| what | value | what it rules out |
+|---|---|---|
+| novelty-controlled BPC @20,000 | **4.1173** (118% of its 3.4920 floor) | — |
+| ρ·shuffle (context permuted) | 10.7383 (Δ +6.62) | it is not a byte histogram |
+| ρ·init (same shape, random weights) | 7.9704 (Δ +3.85) | it learned something measurable |
+| ρ·align (windows re-phased) | 4.1535 (\|Δ\| 0.036) | the score is not a selection artefact |
+| collapse ratio over the worst control | 1.94x | under the prospective 3x bar |
+| checkpoint | step 20,000, sha `39982e87c3232638` | which file this is |
+
+Span: 256 windows kept from 5,399 candidates = **4.7%**, each with three 64-byte probes absent from
+corpus_v2's train split. That rate is a third of the merged corpus's 16.6%, which is the same
+recallability problem DATA-3 measured, seen from the selection side.
+
+**§3.5 said the model was "improving on material it cannot recall — moving toward the gate rather
+than stalling". Three points now read 3.9881 → 3.8583 → 4.1173, so it is not.** The honest score at
+step 20,000 is worse than at either earlier point and further from the floor it must clear. Its own
+validation over the same stretch went the other way, which is the split this document exists to
+record.
+
+One limit on the comparison, stated because it bounds the claim: the earlier two numbers were
+recorded in prose without their selection parameters, and their checkpoints have since rotated
+away, so their span cannot be reconstructed and they cannot be re-measured with controls. They are
+kept in `measurement/nf9_honest_eval.json` marked UNMEASURABLE. The reversal is therefore firm on
+the direction — 4.1173 with controls is above both — and not exact on the deltas.
+
 **Correction to a first reading of this.** The line above was initially written as "the run can
 train 13 more days and never save a checkpoint from any of it, because the only thing that writes
 one is a metric that has stopped moving". Checking the code and the log instead of inferring:

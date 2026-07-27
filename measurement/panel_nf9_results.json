@@ -1,0 +1,29 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 5399,
+    "keep_rate": 0.04741618818299685,
+    "kept_alt": 256,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "corpus": "corpus_v2.txt",
+    "device": "cpu"
+  },
+  "nf9_20k": {
+    "bpc": 4.117347236841306,
+    "ckpt_step": 20000,
+    "ckpt_sha256_16": "39982e87c3232638",
+    "ctrl_shuffle_bpc": 10.738314904802502,
+    "ctrl_init_bpc": 7.970386329330616,
+    "stability_alt_phase_bpc": 4.153462599919603,
+    "stability_delta": 0.03611536307829688,
+    "collapse_delta_shuffle": 6.620967667961196,
+    "collapse_delta_init": 3.8530390924893094,
+    "ratio_over_worst_control": 1.935806205027593,
+    "controls_collapsed": true,
+    "bigram_floor": 3.492,
+    "ratio_to_bigram": 1.1790799647311874
+  }
+}
