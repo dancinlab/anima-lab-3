@@ -387,6 +387,56 @@ context shuffle costs it 7.0-13.8 BPC and every arm beats an identically-shaped 
 (8.0486), so none of these numbers is a byte histogram. The window selection is stable to
 re-phasing within 0.02 BPC.
 
+### 4.8 The U-shape does not survive a second corpus family (2026-07-28)
+
+§4.7 left one question that could not be asked with one corpus: is the
+non-monotonicity a property of THE DATA or of this model/optimiser at ~30 MB?
+A natural corpus (Λ REGIME = NATURAL, Korean Wikipedia, `corpus_regime.py`)
+makes it askable. Same modulo-index subsets, same flags including `--seed 1337`,
+12,000 steps each, NaN-free. Registered before launch as S1/S2, both branches
+closing the question.
+
+| family | train | ratio to its own bigram floor | gate |
+|---|---|---|---|
+| constructed 25% | 15.7M | 11% | PASS |
+| constructed 50% | 30.3M | **125%** | **FAIL** |
+| constructed 50% complement | 30.2M | **113%** | **FAIL** |
+| constructed 100% | 60.5M | 55% | PASS |
+| **natural 25%** | **17.2M** | **46%** | **PASS** |
+| **natural 50%** | **33.3M** | **46%** | **PASS** |
+| **natural 100%** | **66.1M** | **46%** | **PASS** |
+
+```
+ratio to each corpus's OWN bigram floor, by train size
+ constructed   11% ──▶ 125% ──▶ 113% ──▶  55%      pass fail fail pass
+ natural       46% ──▶  46% ──▶  46%               flat, all pass
+                └ three natural floors within 0.001 BPC of each other,
+                  so a size effect here could not have been a floor effect
+```
+
+**S1 confirmed, S2 refuted. The U-shape was a property of the constructed
+corpus, not of this model at this scale.** On natural bytes the gate outcome is
+not merely monotone -- it is *flat*: 1.5602 / 1.5494 / 1.5590 BPC across a 3.8x
+range of training data, every arm at 46% of its floor, every collapse ratio
+between 5.20x and 5.25x. Four times the data buys nothing measurable here, which
+is its own finding and a different one from anything the constructed family
+could show.
+
+That closes the open question §5.7 carried. What failed at 30 MB was never
+"30 MB": it was 30 MB of a corpus whose held-out span is 76-84% recallable
+(§4.7, DATA-3). The natural corpus at the same size has a 98.1% window-acceptance
+rate and fails nothing.
+
+All six natural rows carry measured controls, not substituted floors: context
+shuffle costs 11.82-11.91 BPC, every arm beats an identically-shaped random-weight
+model by 6.56-6.57, and re-phasing the window selection moves the score by at
+most 0.015. λ2/λ3 pass on all six (kwr 0.712-0.813, corpus-absent 4-grams 36-60).
+
+Registered limit: this is one natural corpus of one register (encyclopedic
+prose). A flat curve across 17-66 MB of Wikipedia does not say a flat curve
+across 17-66 MB of speech, and the constructed family's own flatness above 60 MB
+was never tested either.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
@@ -408,7 +458,13 @@ re-phasing within 0.02 BPC.
 6. **Never read an arm's own validation as evidence a change helped.** In E2 both arms' own metric
    disagreed in sign with the novelty-controlled span (§4.6) -- one said "helped" where the honest
    span said "hurt", the other the reverse. Only the honest span is a language score.
-7. **The open question, as narrow as the measurements have made it.** Ruled out: composition and
+7. **CLOSED (§4.8): it was the corpus.** On a natural corpus the same size sweep
+   is flat -- 46% of floor at 17.2M, 33.3M and 66.1M alike, all PASS -- so the
+   PASS/FAIL/FAIL/PASS below belongs to the constructed data, not to this model at
+   ~30 MB. What follows is the reasoning that narrowed it, kept because the
+   eliminations still hold and because the answer only became visible once a
+   second corpus family existed.
+   **The former open question.** Ruled out: composition and
    structure (§3), the objective phase (§4), checkpoint selection (§1), run-to-run noise
    (DATA-5 §5), exposure per byte (§4.6 — E1 refuted, E2 confirmed), batch order (DATA-5 §5
    changed the seed, which reorders sampling; the 50% arm still failed at 4.3430), and now

@@ -1,9 +1,15 @@
 ===== λ0/λ1 (panel) =====
 [device] cuda
+[split] screening corpus_nat_25.txt: train=17,203,691
+[split] screening corpus_nat_50.txt: train=33,327,893
 [split] screening corpus_natural_ko_dedup.txt: train=66,060,288
-[select] primary 256/261 = 98.1% · alt-phase 256/259 = 98.8% (8s)
-[nat] value=1.5657 · shuffle=13.3788 (Δ+11.8130) · init=8.1204 (Δ+6.5547) · alt-phase=1.5530 (|Δ|0.0128) · ratio=5.19x · sha f86a7d3ad5fe252c
-[natf] value=1.5635 · shuffle=13.4461 (Δ+11.8826) · init=8.1204 (Δ+6.5569) · alt-phase=1.5508 (|Δ|0.0127) · ratio=5.19x · sha ff95e0e7892a8db1
+[select] primary 256/950 = 26.9% · alt-phase 256/924 = 27.7% (26s)
+[nat] value=1.5590 · shuffle=13.3970 (Δ+11.8380) · init=8.1192 (Δ+6.5601) · alt-phase=1.5681 (|Δ|0.0090) · ratio=5.21x · sha f86a7d3ad5fe252c
+[natf] value=1.5576 · shuffle=13.4674 (Δ+11.9098) · init=8.1192 (Δ+6.5616) · alt-phase=1.5657 (|Δ|0.0081) · ratio=5.21x · sha ff95e0e7892a8db1
+[nat25] value=1.5602 · shuffle=13.4105 (Δ+11.8503) · init=8.1192 (Δ+6.5590) · alt-phase=1.5696 (|Δ|0.0095) · ratio=5.20x · sha 18add2da8d1ffa69
+[nat25f] value=1.5584 · shuffle=13.3833 (Δ+11.8249) · init=8.1192 (Δ+6.5608) · alt-phase=1.5681 (|Δ|0.0097) · ratio=5.21x · sha 84d4ca142094dc0c
+[nat50] value=1.5494 · shuffle=13.3844 (Δ+11.8349) · init=8.1192 (Δ+6.5697) · alt-phase=1.5641 (|Δ|0.0146) · ratio=5.24x · sha dd057b2a075e6ac3
+[nat50f] value=1.5478 · shuffle=13.3755 (Δ+11.8277) · init=8.1192 (Δ+6.5714) · alt-phase=1.5610 (|Δ|0.0132) · ratio=5.25x · sha 5907749cff6db01a
 [json] logs/panel_nat.json
 ===== λ2/λ3 (g_gates) =====
 [device] cuda
@@ -11,9 +17,17 @@
 [seeds] 5 x 128B prefixes from the held-out split
 [ctrl] POSITIVE control (real held-out text) kwr=0.839 → VALID -- the instrument reads
 [ctrl] retrieval control novel n-grams = 0 (VALID -- absence test works)
-[nat] G0 kwr mean=0.802 · 5/5 over 0.5 → PASS | G2 novel=52 → PASS · sha f86a7d3ad5fe252c (5s)
+[nat] G0 kwr mean=0.802 · 5/5 over 0.5 → PASS | G2 novel=52 → PASS · sha f86a7d3ad5fe252c (19s)
         sample: �주(範江州 主節生)로 나왔다.⏎조선 오카시 전북도에 있던 한족이 조선 시대에서 사용하여 무소속의 일생을 대신하고 전역하였다.
-[natf] G0 kwr mean=0.805 · 5/5 over 0.5 → PASS | G2 novel=55 → PASS · sha ff95e0e7892a8db1 (5s)
+[natf] G0 kwr mean=0.805 · 5/5 over 0.5 → PASS | G2 novel=55 → PASS · sha ff95e0e7892a8db1 (14s)
         sample: �주(範江州臣)와 함께 등을 지냈다. 오창을 전북특별자치도 옹주군 중앙동에 효율정에 보존하였다.⏎오창의전에 고림한 자치 전력은
+[nat25] G0 kwr mean=0.762 · 5/5 over 0.5 → PASS | G2 novel=44 → PASS · sha 18add2da8d1ffa69 (13s)
+        sample: �사(策池寺)의 아들로 나왔다. 조선(典具)은 인천(李川)의 연호이다.⏎아버지 유어선에 의해 둘러싸인 음식은 대부분의 전자기적
+[nat25f] G0 kwr mean=0.712 · 5/5 over 0.5 → PASS | G2 novel=36 → PASS · sha 84d4ca142094dc0c (9s)
+        sample: �사(策江寺)의 아들로 나왔다. 조선(宋具)은 인천(李川)과 인천(沙川)의 시호에서 살고 있다. 천주교 오종시에서 고림했던 제
+[nat50] G0 kwr mean=0.765 · 5/5 over 0.5 → PASS | G2 novel=50 → PASS · sha dd057b2a075e6ac3 (9s)
+        sample: �삼조를 내려받고 결성삼조에 추대하여 인조를 모신 것은 한백선(多城聖)이고, 육예(孝跴)은 송신(宋人)이다.⏎좡은 龍壽, 11
+[nat50f] G0 kwr mean=0.813 · 5/5 over 0.5 → PASS | G2 novel=60 → PASS · sha 5907749cff6db01a (9s)
+        sample: �주(經池羅臣)에 합류한다. 지름은 1964년의 전북특별자치도 현청 송신시대 이후에 3개 현을 관할하는 사람이 이곳에 있던 제
 [ctrl] before-backbone (random weights) G0 kwr=0.000 → FAIL -- correct, metric is not reading the corpus
 [json] logs/g_gates_nat.json
