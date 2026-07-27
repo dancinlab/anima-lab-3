@@ -150,6 +150,64 @@ Smaller finding: the phase costs the 25% arm too (0.4064 → 0.3975, 2.2% better
 makes 0.3975 the best number any arm reached in this investigation. It costs every arm something;
 it costs the larger-data arms more.
 
+## 4.5 After the ablation: the subsets are NESTED, and the rest of the loss IS overfitting
+
+Two things the ablation left open, both settled from data already on disk.
+
+### The subsets are nested — adding data is what broke it
+
+The subsets were taken by line-index modulo (25% = i%4==0, 50% = i%2==0), so 25% must be a strict
+subset of 50%. Verified by set containment on the actual files rather than assumed:
+
+| containment | result | coverage |
+|---|---|---|
+| 25% subset-of 50% | SUBSET | 100.00% |
+| 50% subset-of 100% | SUBSET | 100.00% |
+| 25% subset-of 100% | SUBSET | 100.00% |
+
+(282,906 / 565,677 / 1,130,940 distinct lines respectively)
+
+The 50% corpus therefore contains **everything the 25% corpus has plus 282,771 more distinct
+lines** — and the model trained on the superset FAILS the gate (5.34 BPC) while the one trained on
+the subset PASSES it decisively (0.41). Adding the next 565,263 lines then recovers it (2.47, PASS).
+
+```
+nested corpora, gate outcome
+  25%   ████░░░░░░░░░░░░░░░░    282,906 lines   0.41  PASS
+  50%   ████████░░░░░░░░░░░░    565,677         5.34  FAIL   <- strict superset of the row above
+ 100%   ████████████████████  1,130,940         2.47  PASS
+```
+
+"Non-monotonic in data volume" understated it. The response is non-monotone over **nested** data: a
+strict superset of a passing training set produced a failing model.
+
+### The remaining degradation is overfitting — the first check of it was wrong
+
+The ablation showed the combined phase owns 39%/26% of the best-to-final loss; the rest was guessed
+to be overfitting. A first check compared train loss at a single step near the peak against a single
+step at the end and concluded "train did not fall — NOT the overfitting signature". **That check was
+wrong**: single step rows are noisy. Binned means over 2,000-step windows:
+
+| steps | p50 train | p50 val | p100 train | p100 val |
+|---|---|---|---|---|
+| 0-2,000 | 1.3870 | 1.8876 | 1.4389 | 1.0765 |
+| 2,000-4,000 | 0.5233 | 1.7921 | 0.5358 | 0.9207 |
+| 4,000-6,000 | 0.4598 | 1.7779 | 0.4693 | 0.8977 |
+| 6,000-8,000 | 0.4485 | **1.7390** | 0.4270 | **0.8640** |
+| 8,000-10,000 | 0.4355 | 1.8346 | 0.4061 | 0.8716 |
+| 10,000-12,000 | **0.4267** | 1.8515 | **0.3929** | 0.8678 |
+
+Train falls monotonically throughout; validation turns at 6,000-8,000 and rises after. That is the
+overfitting signature, and these are the `--phase language` runs, so the loss column means the same
+thing at every row — no objective change to confound it.
+
+The combined phase's role sharpens accordingly: with it, train reaches 0.2027 in the last window
+(against 0.4267 without) and validation reaches 1.9151 (against 1.8515). **It accelerates the
+overfitting rather than causing a separate failure** — which is what "owns 39%" was measuring.
+
+Caveat kept: for the arms that run it, the loss column crosses the objective boundary at step 8,400
+and is not comparable across it. The conclusion above rests on the single-objective runs only.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
@@ -164,7 +222,11 @@ it costs the larger-data arms more.
 4. **Test a named mechanism before naming it.** "Unigram floor" was applied here from a BPC
    coincidence and the mechanism test refuted it in one run (§3.5). A BPC number locates a model;
    it does not explain one.
-5. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
+5. **The open question is now sharper: why does a strict superset of a passing training set
+   fail?** Not volume (§4.5 — the response is non-monotone over nested data), not composition or
+   structure (§3), not the objective phase (§4). What is left is the interaction between those
+   particular added lines and the schedule.
+6. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
    `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
-   `measurement/context_sensitivity.py` (§3.5), raw output in `measurement/arm_gate_eval.json`
-   and `measurement/context_sensitivity.json`.
+   `measurement/context_sensitivity.py` (§3.5), `measurement/nesting_and_overfit.py` (§4.5),
+   raw output in `measurement/arm_gate_eval.json` and `measurement/context_sensitivity.json`.
