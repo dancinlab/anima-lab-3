@@ -5,6 +5,7 @@
       "C2 context",
       "C3 span"
     ],
+    "p7_p9_scope": "verdicts here are a SCREEN, not a faculty claim: BPC is a perplexity-family number (p7) measured on a CONSTRUCTED corpus (p9, corpus_regime.py). A PASS means the model beat pair statistics on material it cannot recall -- nothing more.",
     "C4_margin_prospective_ratio": 3.0,
     "keep_rate": 0.04741618818299685,
     "sources": [

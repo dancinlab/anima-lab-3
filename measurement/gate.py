@@ -116,6 +116,22 @@ CONTEXT_JSON = "measurement/context_sensitivity.json"
 CONTEXT_KEY = {"25": "25%", "50": "50%", "100": "100%"}
 
 MARGIN_RATIO = 3.0  # prospective, see C4 above
+
+# Two laws from the sibling repo that this gate CANNOT satisfy, printed on every
+# run so nobody quotes a verdict the number cannot carry:
+#   p7  "no perplexity verdict" -- BPC is perplexity in log2 units, so a PASS
+#       here is a SCREEN, not a faculty verdict. It says a model beat pair
+#       statistics on a held-out span it cannot recall. It does not say the
+#       model can do anything.
+#   p9  a faculty claim measured on a non-natural corpus is OFF-STANDARD, not
+#       merely weak. measurement/corpus_regime.py measured these corpora:
+#       corpus_v2's three most common lines repeat 2,538x each and are about
+#       this project itself, so the regime is CONSTRUCTED, not natural.
+# Neither invalidates the arm comparisons -- they are real readings about this
+# corpus family. Both bound what those readings may be CITED for.
+P7_P9_NOTE = ("verdicts here are a SCREEN, not a faculty claim: BPC is a perplexity-family "
+              "number (p7) measured on a CONSTRUCTED corpus (p9, corpus_regime.py). A PASS "
+              "means the model beat pair statistics on material it cannot recall -- nothing more.")
 PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, when present
 PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
 
@@ -277,12 +293,14 @@ def main():
           f"arm -- corpus statistics and forward-pass controls are independent paths")
 
     payload = {"_gate": {"conditions": ["C1 language", "C2 context", "C3 span"],
+                         "p7_p9_scope": P7_P9_NOTE,
                          "C4_margin_prospective_ratio": MARGIN_RATIO,
                          "keep_rate": keep_rate, "sources": srcs,
                          "sources_sha256": {s: hashlib.sha256(Path(s).read_bytes()).hexdigest()[:16]
                                             for s in srcs}},
                "arms": {r["arm"]: r for r in rows}}
     Path(out_json).write_text(json.dumps(payload, indent=2))
+    print(f"[p7/p9] {P7_P9_NOTE}")
     print(f"[json] {out_json}")
 
 

@@ -1,0 +1,24 @@
+[corpus_v2.txt]
+  lines=1,028,596 distinct=541,506 · repetition=1.90x
+  speaker-prefixed 'A:'/'B:' = 35.0%
+  top-10 lines cover 2.47% of the file
+  vocab: first 10% has 3,128 of the full 233,925 = 1.3% (a template exhausts early)
+  most common: [("A: I've been reading about the PureField", 2538), ("B: The repulsion field model? That's fas", 2538), ('A: Yes, the idea that tension between fo', 2538)]
+[corpus_merged_dedup.txt]
+  lines=1,130,939 distinct=1,130,939 · repetition=1.00x
+  speaker-prefixed 'A:'/'B:' = 0.1%
+  top-10 lines cover 0.00% of the file
+  vocab: first 10% has 71,828 of the full 387,487 = 18.5% (a template exhausts early)
+  most common: [('A: 우주에 외계 생명체가 있을�', 1), ('B: 확률적으로 봤을 때 있을 가', 1), ('A: 은하계만 해도 수천억 개의 ', 1)]
+[corpus_merged_50.txt]
+  lines=565,676 distinct=565,676 · repetition=1.00x
+  speaker-prefixed 'A:'/'B:' = 0.1%
+  top-10 lines cover 0.00% of the file
+  vocab: first 10% has 48,020 of the full 263,697 = 18.2% (a template exhausts early)
+  most common: [('A: 우주에 외계 생명체가 있을�', 1), ('A: 은하계만 해도 수천억 개의 ', 1), ('A: 그런데 왜 아직 발견하지 못', 1)]
+[corpus_merged_25.txt]
+  lines=282,905 distinct=282,905 · repetition=1.00x
+  speaker-prefixed 'A:'/'B:' = 0.1%
+  top-10 lines cover 0.00% of the file
+  vocab: first 10% has 29,264 of the full 178,564 = 16.4% (a template exhausts early)
+  most common: [('A: 우주에 외계 생명체가 있을�', 1), ('A: 그런데 왜 아직 발견하지 못', 1), ('B: 유연성이라고 생각해요. 뇌�', 1)]

@@ -321,6 +321,21 @@ different states and merging them either hides work or invents it:
                 taken. Recorded, never counted as outstanding -- and never
                 promoted to PASS: the clock stops, the row does not improve.
 
+  V7 SCOPE STATED — what a PASS may be cited for
+     Two laws imported from the sibling anima repo bound every verdict here, and
+     gate.py prints both on each run:
+       p7  no perplexity verdict. BPC is perplexity in log2 units, so a PASS is
+           a SCREEN -- the model beat pair statistics on material it cannot
+           recall -- and never a claim that it can DO something.
+       p9  a faculty claim measured on a non-natural corpus is OFF-STANDARD, not
+           merely weak. Measured, not assumed: measurement/corpus_regime.py
+           reads corpus_v2's three most common lines repeating 2,538x each, on
+           the subject of this project. The regime is CONSTRUCTED.
+     Neither invalidates an arm comparison. Both cap it at instrument reading.
+     A faculty-level verdict needs a BEHAVIOURAL instrument with its own >=2
+     controls (anima G0 known-word-ratio / G2 corpus-absent novel n-grams with
+     retrieval-control = 0) run on a natural corpus this repo does not have.
+
 Judging rule: the goal is reached when gate.py prints ALL MEASUREMENTS PASS --
 zero DIRECTIONAL rows and zero arms falling back to a substituted floor, with
 any UNMEASURABLE rows listed explicitly. PASS/FAIL counts are the science and

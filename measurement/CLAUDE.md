@@ -63,6 +63,50 @@ Two rules travel with it and are not optional:
    Scoring it as a control that "passed" would be the unregistered-extra-hurdle mistake
    `rho_self`'s docstring in the sibling repo warns about.
 
+## Imported rule coverage (sibling `anima`, audited — not all of it transferred)
+
+Source of the rules: `anima/CLAUDE.md` (p1-p9 + the pre-action hard-gate), `anima/cli/rho_axon.py`
+(the seven axes), `anima/HYPOTHESES/CLAUDE.md` (the seven lessons). Audited line by line rather
+than adopted by vibe, because two of them say things this repo's gate cannot deliver.
+
+| rule | status here |
+|---|---|
+| value + N controls that must ALL collapse | **imported** — `panel.py`, bound into `gate.py` C2 |
+| "read the signal as collapse-Δ vs **≥2 controls**, never a raw value" | **imported** — ρ-shuffle + ρ-init is exactly two; this is the floor, not comfort |
+| ratio over the worst control | **imported**, prospective (`MARGIN_RATIO`) |
+| frozen-first · no tune-to-green · a negative is a result | **imported** — CLAUDE.md `## Measurement validity` V5 |
+| no self-judge (captured output is the evidence) | **already held** — every number here comes from a script's stdout |
+| misattribution guard ("which ckpt *sha* was that") | **imported** — every row carries sha256 |
+| DIRECTIONAL vs TERMINAL tier | **imported**, plus a third (UNMEASURABLE) this repo needed |
+| multi-seed against sampler artefacts | **already held** — DATA-5 §5 |
+| every H on **2 surfaces** | **partially** — analytic floors and forward-pass controls are two independent paths and agree 25/25, but that is corroboration of one instrument, not two instruments |
+| **p7 — no perplexity verdict** | **CANNOT be satisfied.** BPC *is* perplexity in log₂ units |
+| **p9 — natural corpus or the claim is off-standard** | **FAILS, measured.** `corpus_regime.py`: corpus_v2's three most common lines repeat **2,538× each** and are about this project itself |
+| GREEN only when wired to a live engine | **not applicable** — no engine in this repo |
+| the `HYPOTHESES/` registry + folder invariants | **deliberately not imported** — `docs/hypotheses/` + `ING.jsonl` already fill that role |
+
+### What p7 and p9 cost, stated so nobody re-derives it as a surprise
+
+Neither law invalidates the arm comparisons. DATA-6's PASS/FAIL/FAIL/PASS by train size is a real
+measurement, it survived 25/25 across two independent paths, and it is reproducible. What the two
+laws bound is what it may be **cited for**:
+
+```
+읽어도 되는 것                       │  읽으면 안 되는 것
+──────────────────────────────      │  ──────────────────────────────
+ 이 코퍼스족 안에서 팔들이           │   "이 모델은 언어를 한다/못한다"
+ pair 통계를 넘었는가                │   (p7: perplexity 는 verdict 아님)
+ 크기에 따라 비단조인가              │   "faculty 에 대한 증거"
+ 통제가 붕괴하는가                   │   (p9: 구성된 코퍼스 = off-standard)
+──────────────────────────────      │  ──────────────────────────────
+ = 계측기 판독 (instrument reading)  │   = 능력 주장 (faculty claim)
+```
+
+`gate.py` prints this scope on every run, so a PASS cannot be quoted as more than it is. Earning a
+faculty-level verdict would need a **behavioural** instrument with its own ≥2 controls — anima's G0
+(known-word-ratio) / G2 (corpus-absent novel n-grams with retrieval-control = 0) are the shape —
+run on a **natural** corpus this repo does not currently have.
+
 ## Running
 ```bash
 python measurement/measure_all.py --cells 1024
