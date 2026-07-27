@@ -1,0 +1,13 @@
+{
+  "bpc": 3.8582702713136157,
+  "ce_nats": 2.674349160399288,
+  "tokens": 65536,
+  "ckpt_step": 14000,
+  "cells": 4359,
+  "keep_rate": 0.04741618818299685,
+  "kept": 256,
+  "tested": 5399,
+  "gate": "FAIL",
+  "train_unigram_bpc": 5.9548,
+  "train_bigram_bpc": 3.492
+}

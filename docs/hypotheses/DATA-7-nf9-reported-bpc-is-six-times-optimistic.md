@@ -53,6 +53,40 @@ held-out lines verbatim in train).
 - It **does not** predict step 200,000. Failing the gate at 6% of the budget is a status, not a
   verdict.
 
+## 3.5 Second measurement (17:55) — the model is improving, its metric has stopped
+
+Re-checked as §4 recommends, five hours and 7,300 training steps later:
+
+| checkpoint step | novelty-controlled BPC | vs its 3.4920 floor |
+|---|---|---|
+| 12,000 | 3.9881 | 114% FAIL |
+| **14,000** | **3.8583** | **110% FAIL** |
+
+It is improving on material it cannot recall — 3.3% in 2,000 checkpoint steps. Still below the gate,
+but moving toward it rather than stalling.
+
+**The problem is what the run keeps.** `best.pt` holds step 14,000 and is the only checkpoint left
+(step files rotate away, `KEEP_STEP_CHECKPOINTS=2`). Its own validation `best=` has read 0.4088
+unchanged across the last five evaluations while the run advanced to step 19,300 — so the selector
+has not fired in ~5,300 steps.
+
+```
+run progress   ├────────── 12,000 ──── 14,000 ──────────────── 19,300 ──→ 200,000
+honest BPC     │           3.9881      3.8583                  unmeasured
+best.pt        │                       ●─────────────────────────────── frozen here
+own val best   │                       0.4088 ─────────────────────────── unchanged
+```
+
+That selector runs on a span whose 64-byte windows are 82.5% recallable (§2), so a stalled `best=`
+is not evidence the model stopped improving — the two measurements above show it did not. The
+consequence is operational: **the run can train for another 13 days and never save a checkpoint
+from any of it**, because the only thing that writes a checkpoint is a metric that has stopped
+moving.
+
+Limit of this measurement, stated: there is no checkpoint past step 14,000, so whether the honest
+number kept improving after it is unmeasured. `--save-every 10000` will produce step 20,000 shortly;
+that is the next readable point.
+
 ## 4. Application
 
 1. **Novelty line ported into `train_conscious_lm_nf8.py`** — done. The canonical trainer already
@@ -69,7 +103,13 @@ held-out lines verbatim in train).
    not an estimate to quote.) The edit does not disturb the running job — Python holds the module
    in memory, so the line appears on the next start; `.py.bak` is beside it.
 2. **Re-check nf9 at intervals with this script rather than reading its log.** One CPU minute per
-   check, no GPU contention — `measurement/nf9_gate_check.py`.
-3. **A run on raw corpus_v2 cannot be evaluated well.** With 4.7% of windows usable, any span drawn
+   check, no GPU contention — `measurement/nf9_gate_check.py`. Done once (§3.5); it showed the
+   model improving while its checkpoint selector had stopped.
+3. **Fix what the run keeps, not just what it prints.** `best.pt` is written only when a
+   82.5%-recallable metric improves, and that metric has been flat for 5,300 steps. Either select
+   on the novelty-controlled number or keep periodic step checkpoints beyond the current
+   rotation — otherwise 13 more days of training can leave nothing behind.
+4. **A run on raw corpus_v2 cannot be evaluated well.** With 4.7% of windows usable, any span drawn
    from it is mostly recall. DATA-2's path (dedup the corpus) applies to this run too.
-4. Reproduction: `measurement/nf9_gate_check.py`, raw output `measurement/nf9_gate_check.json`.
+5. Reproduction: `measurement/nf9_gate_check.py`, raw output `measurement/nf9_gate_check.json`
+   and `measurement/nf9_gate_check2.json`.
