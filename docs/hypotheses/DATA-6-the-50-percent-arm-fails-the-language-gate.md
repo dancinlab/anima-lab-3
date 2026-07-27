@@ -298,6 +298,35 @@ What that leaves: whatever separates these arms is not in the bytes (§4.6), not
 are shown (here), not in the objective phase (§4), not in checkpoint selection (§1), and not noise
 (DATA-5 §5).
 
+### E2 partial reading (18:58) — ordering holds, and the exposure gain does not survive the honest span
+
+The 100% arm is still running (28,600 / 46,600), but its `best.pt` exists at step 17,750 and can be
+scored now. On the same novelty-controlled span:
+
+| arm | checkpoint | novelty-controlled BPC | vs its own floor | gate |
+|---|---|---|---|---|
+| e100 (100%, exposure equalised) | best @17,750 | **2.0089** | 55.8% of 3.6010 | PASS |
+| e50 (50%, exposure equalised) | best @6,750, completed | 4.3134 | 120.1% of 3.5925 | **FAIL** |
+| s100 / p100 (fixed step) | best @7,000 | 1.9853 | 55.1% | PASS |
+
+**The ordering E2 asked about holds**: with exposure equalised, the 100% arm passes and the 50% arm
+fails — the same split as at fixed steps.
+
+**And a claim from the progress notes is refuted.** Watching each arm's OWN validation, the 100%
+arm looked like it was benefiting from the longer budget: 0.8640 at fixed steps → 0.8387 with
+exposure equalised. On the span it cannot recall, that gain is not there — 1.9853 → **2.0089**, 1.2%
+*worse*. The extra exposure improved what the arm's own metric sees and nothing that the honest
+metric sees. This is the same own-metric/honest-metric split DATA-7 §3.5 found in the 300M run,
+appearing here in the opposite direction.
+
+Two limits, stated rather than glossed:
+
+- `best.pt` is selected by the arm's own validation, not by this metric, so a later `best.pt` is
+  **not** guaranteed to be better here. The reading above is of the checkpoint that exists now; it
+  is not a monotone floor.
+- The `final@46,600` reading is still pending, so E2 is not closed. What is closed is that the
+  ordering is not an artefact of the fixed-step budget.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against
