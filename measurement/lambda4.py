@@ -79,6 +79,8 @@ ARMS = {
     "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
     # Intervention 2: same everything, --dropout 0.3 instead of 0.1.
     "natdrop": f"{HOME}/checkpoints/arm_nat_drop3/best.pt",
+    # Intervention 2b: the strength sweep -- does the lever reach zero?
+    "natdrop5": f"{HOME}/checkpoints/arm_nat_drop5/best.pt",
 }
 SELECT = sys.argv[2:] or list(ARMS)
 
