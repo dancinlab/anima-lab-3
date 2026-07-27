@@ -161,7 +161,13 @@ def adjudicate(arm, row, ctx, keep_rate, panel=None):
     else:
         margin, margin_src = (fl["bigram"] / bpc if bpc > 0 else float("inf")), "floor (no panel)"
 
-    if c2 is None:
+    # Three tiers, because "not measured yet" and "can never be measured" are
+    # different states and collapsing them either hides work or invents it.
+    # UNMEASURABLE is still never a PASS -- the checkpoint being gone does not
+    # promote a row, it only stops the clock on it.
+    if c2 is None and row.get("ckpt_available") is False:
+        tier, verdict = "UNMEASURABLE", "PASS" if (c1 and c3) else "FAIL"
+    elif c2 is None:
         tier, verdict = "DIRECTIONAL", "PASS" if (c1 and c3) else "FAIL"
     else:
         tier = "TERMINAL"
@@ -217,8 +223,20 @@ def main():
     for r in flips:
         print(f"    {r['arm']}: {r['C2_note']}")
     ds = [r for r in rows if r["tier"] == "DIRECTIONAL"]
+    un = [r for r in rows if r["tier"] == "UNMEASURABLE"]
     print(f"[tier] {len(ds)} arm(s) DIRECTIONAL -- a missing control is not a passed control"
           + (": " + ", ".join(r["arm"] for r in ds) if ds else "."))
+    if un:
+        print(f"       {len(un)} arm(s) UNMEASURABLE -- checkpoint gone, controls can never be "
+              f"taken, still not a PASS: " + ", ".join(r["arm"] for r in un))
+    # A permanently unmeasurable row cannot have a measured margin either, so
+    # counting it as outstanding work would keep the board red forever.
+    fallback = [r for r in rows
+                if r["margin_src"] != "worst control" and r["tier"] != "UNMEASURABLE"]
+    ok = not ds and not fallback
+    print(f"[validity] {'ALL MEASUREMENTS PASS' if ok else 'NOT YET'} -- "
+          f"{len(ds)} measurable-but-unmeasured, {len(fallback)} on a substituted floor"
+          + (f", {len(un)} permanently unmeasurable (recorded, not counted)" if un else ""))
     measured = [r for r in rows if r["margin_src"] == "worst control"]
     print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only. "
           f"Measured against the worst control ({len(measured)} arm(s)): "

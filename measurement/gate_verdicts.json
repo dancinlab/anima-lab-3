@@ -18,7 +18,7 @@
       "measurement/arm_gate_eval.json": "e7cb401386925088",
       "measurement/epoch_control_eval.json": "273bc6388c50e74e",
       "measurement/novel_window_epoch_final.json": "f62fdc420fa2a95a",
-      "measurement/nf9_honest_eval.json": "9c50daa05c69ac40",
+      "measurement/nf9_honest_eval.json": "497deca153dcaf7d",
       "measurement/panel_results.json": "499a295d99625213"
     }
   },
@@ -411,7 +411,7 @@
       "ctrl_init_bpc": null,
       "stability_delta": null,
       "C4_margin_prospective": false,
-      "tier": "DIRECTIONAL",
+      "tier": "UNMEASURABLE",
       "verdict": "FAIL"
     },
     "nf9_14k": {
@@ -434,7 +434,7 @@
       "ctrl_init_bpc": null,
       "stability_delta": null,
       "C4_margin_prospective": false,
-      "tier": "DIRECTIONAL",
+      "tier": "UNMEASURABLE",
       "verdict": "FAIL"
     }
   }

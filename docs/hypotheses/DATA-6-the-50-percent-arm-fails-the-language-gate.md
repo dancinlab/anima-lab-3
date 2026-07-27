@@ -408,15 +408,17 @@ re-phasing within 0.02 BPC.
 6. **Never read an arm's own validation as evidence a change helped.** In E2 both arms' own metric
    disagreed in sign with the novelty-controlled span (§4.6) -- one said "helped" where the honest
    span said "hurt", the other the reverse. Only the honest span is a language score.
-7. **The open question, as narrow as the measurements have made it:** the added lines are
-   indistinguishable from the kept ones on every axis measured (§4.6) and 71% of them are new, so
-   no property of the bytes explains it. Ruled out: volume (§4.5), composition and structure (§3),
-   the objective phase (§4), checkpoint selection (§1), run-to-run noise (DATA-5 §5), and now
-   exposure per byte (§4.6, E1 refuted + E2 confirmed), and batch order (DATA-5 §5 changed the
-   seed, which reorders sampling; the 50% arm still failed at 4.3430). The variable never varied
-   is WHICH lines make up the failing subset: every 50% run used the same modulo phase
-   (`i%2==0`). Its complement (`i%2==1`) is the same size, built by the same rule, and shares no
-   line with it -- the one control that holds the failing size fixed and swaps the content.
+7. **The open question, as narrow as the measurements have made it.** Ruled out: composition and
+   structure (§3), the objective phase (§4), checkpoint selection (§1), run-to-run noise
+   (DATA-5 §5), exposure per byte (§4.6 — E1 refuted, E2 confirmed), batch order (DATA-5 §5
+   changed the seed, which reorders sampling; the 50% arm still failed at 4.3430), and now
+   **content** (§4.7 — the disjoint complement half, same size and same rule, fails identically).
+   The gate outcome by train size reads PASS(15.7M) → FAIL(30.3M) → FAIL(30.2M) → PASS(60.5M):
+   **not monotone in data volume**, and not explicable by which lines are present, since the lines
+   that were not added reproduce the failure. What is left is an interaction between this corpus
+   scale and this model/optimiser. It stays unnamed on purpose (§5.4). The next measurement that
+   could name it is a size sweep between 15.7M and 60.5M — if the U-shape is real a 40M and a 50M
+   arm straddle the recovery, and if it is not, one of them breaks the pattern.
 8. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
    `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
    `measurement/context_sensitivity.py` (§3.5), `measurement/nesting_and_overfit.py` (§4.5),

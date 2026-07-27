@@ -313,9 +313,18 @@ adjudicated at all. Run `python3 measurement/gate.py` -- these are its columns.
      (novelty 37.8/24.0 vs 41.2/21.0 reads z=0.98/1.02 = agreement, not
      divergence).
 
-Judging rule: the goal is reached when gate.py reports zero DIRECTIONAL rows and
-zero arms falling back to a substituted floor. PASS/FAIL counts are the science
-and are not the target. Contract imported from the sibling anima repo's rho-axon
+Three tiers, because "not measured yet" and "can never be measured" are
+different states and merging them either hides work or invents it:
+  TERMINAL      controls measured; the verdict stands.
+  DIRECTIONAL   controls measurable but not yet taken. Outstanding work.
+  UNMEASURABLE  the checkpoint is gone (rotation), so its controls can never be
+                taken. Recorded, never counted as outstanding -- and never
+                promoted to PASS: the clock stops, the row does not improve.
+
+Judging rule: the goal is reached when gate.py prints ALL MEASUREMENTS PASS --
+zero DIRECTIONAL rows and zero arms falling back to a substituted floor, with
+any UNMEASURABLE rows listed explicitly. PASS/FAIL counts are the science and
+are not the target. Contract imported from the sibling anima repo's rho-axon
 panel (HYPOTHESES/cards/H_9270, cli/rho_axon.py); see measurement/CLAUDE.md.
 ```
 

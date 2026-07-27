@@ -7,6 +7,20 @@
     "block": 256,
     "_note": "Same window selection as the 28M arms. Values transcribed from DATA-7 sections 3 and 3.5, which recorded them in prose only; a verdict that lives in a sentence cannot be re-adjudicated by a gate."
   },
-  "nf9_12k": {"bpc": 3.9881, "ckpt_step": 12000, "corpus": "corpus_v2.txt", "_src_doc": "DATA-7 section 3"},
-  "nf9_14k": {"bpc": 3.8583, "ckpt_step": 14000, "corpus": "corpus_v2.txt", "_src_doc": "DATA-7 section 3.5"}
+  "nf9_12k": {
+    "bpc": 3.9881,
+    "ckpt_step": 12000,
+    "corpus": "corpus_v2.txt",
+    "_src_doc": "DATA-7 section 3",
+    "ckpt_available": false,
+    "_unmeasurable": "checkpoint rotated away (KEEP_STEP_CHECKPOINTS=2); only best.pt @20,000 and step_20000.pt survive, so this row's controls can never be measured"
+  },
+  "nf9_14k": {
+    "bpc": 3.8583,
+    "ckpt_step": 14000,
+    "corpus": "corpus_v2.txt",
+    "_src_doc": "DATA-7 section 3.5",
+    "ckpt_available": false,
+    "_unmeasurable": "checkpoint rotated away (KEEP_STEP_CHECKPOINTS=2); only best.pt @20,000 and step_20000.pt survive, so this row's controls can never be measured"
+  }
 }
