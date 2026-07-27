@@ -367,9 +367,11 @@ schedule, and neither moved the gate. Nothing here separates exposure from sched
    indistinguishable from the kept ones on every axis measured (§4.6) and 71% of them are new, so
    no property of the bytes explains it. Ruled out: volume (§4.5), composition and structure (§3),
    the objective phase (§4), checkpoint selection (§1), run-to-run noise (DATA-5 §5), and now
-   exposure per byte (§4.6, E1 refuted + E2 confirmed). What remains untested is the interaction
-   between the added lines and the optimiser's trajectory -- i.e. an order/curriculum effect
-   rather than a property of the data, which needs a shuffled-order replicate to probe.
+   exposure per byte (§4.6, E1 refuted + E2 confirmed), and batch order (DATA-5 §5 changed the
+   seed, which reorders sampling; the 50% arm still failed at 4.3430). The variable never varied
+   is WHICH lines make up the failing subset: every 50% run used the same modulo phase
+   (`i%2==0`). Its complement (`i%2==1`) is the same size, built by the same rule, and shares no
+   line with it -- the one control that holds the failing size fixed and swaps the content.
 8. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
    `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
    `measurement/context_sensitivity.py` (§3.5), `measurement/nesting_and_overfit.py` (§4.5),
