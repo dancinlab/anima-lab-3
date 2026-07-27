@@ -77,6 +77,8 @@ ARMS = {
     "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
     # Intervention 1: same everything, --block-size 512 instead of 256.
     "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
+    # Intervention 2: same everything, --dropout 0.3 instead of 0.1.
+    "natdrop": f"{HOME}/checkpoints/arm_nat_drop3/best.pt",
 }
 SELECT = sys.argv[2:] or list(ARMS)
 
