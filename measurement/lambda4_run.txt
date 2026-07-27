@@ -9,4 +9,5 @@
 [natf] novel=4.3482 · seen=4.3619 · broken=4.4651 · mid=4.4135 · pos=-0.133 · Δbroken=+0.1169 t=5.7 · MATCHED seen-swap=4.4245 novel-swap=4.4304 cost=+0.0059 t=+7.4 (clustered over 13929 lines; unclustered would read +7.6) → λ4 FAIL · sha ff95e0e7892a8db1
 [nat25] novel=5.8810 · seen=6.2183 · broken=5.9836 · mid=6.1010 · pos=1.437 · Δbroken=+0.1026 t=3.5 · MATCHED seen-swap=6.0433 novel-swap=6.0525 cost=+0.0091 t=+7.7 (clustered over 13929 lines; unclustered would read +8.1) → λ4 FAIL · sha 18add2da8d1ffa69
 [nat50] novel=6.0050 · seen=6.2235 · broken=6.1460 · mid=6.1847 · pos=2.819 · Δbroken=+0.1410 t=4.8 · MATCHED seen-swap=6.2326 novel-swap=6.2548 cost=+0.0222 t=+16.0 (clustered over 13929 lines; unclustered would read +16.9) → λ4 FAIL · sha dd057b2a075e6ac3
+[natctx] novel=3.2790 · seen=3.4185 · broken=3.3461 · mid=3.3823 · pos=1.925 · Δbroken=+0.0671 t=3.0 · MATCHED seen-swap=3.2487 novel-swap=3.2547 cost=+0.0060 t=+4.9 (clustered over 13929 lines; unclustered would read +5.3) → λ4 FAIL · sha 55f8c645fd9d7b48
 [json] logs/lambda4.json
