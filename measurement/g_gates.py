@@ -101,7 +101,11 @@ if os.environ.get("LAMBDA_FAMILY") == "natural":
     NAT = f"{HOME}/data/corpus_natural_ko_dedup.txt"
     CORPUS = NAT
     ARMS = {"nat": f"{HOME}/checkpoints/arm_nat/best.pt",
-            "natf": f"{HOME}/checkpoints/arm_nat/final.pt"}
+            "natf": f"{HOME}/checkpoints/arm_nat/final.pt",
+            "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
+            "nat25f": f"{HOME}/checkpoints/arm_nat25/final.pt",
+            "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
+            "nat50f": f"{HOME}/checkpoints/arm_nat50/final.pt"}
     SELECT = sys.argv[2:] or list(ARMS)
 
 

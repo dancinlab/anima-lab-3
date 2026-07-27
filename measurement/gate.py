@@ -76,6 +76,11 @@ FLOORS = {
     # family despite 3.4x the vocabulary -- encyclopedic Korean prose is more
     # predictable byte-to-byte than a mix of Korean, English, logs and numbers.
     "nat":  {"unigram": 5.4355, "bigram": 3.3634, "corpus": "corpus_natural_ko_dedup.txt"},
+    # Natural subsets, same modulo rule as the constructed family. Their floors
+    # sit within 0.001 BPC of each other, so a size effect here cannot be a
+    # floor effect.
+    "nat25": {"unigram": 5.4361, "bigram": 3.3627, "corpus": "corpus_nat_25.txt"},
+    "nat50": {"unigram": 5.4357, "bigram": 3.3636, "corpus": "corpus_nat_50.txt"},
 }
 
 # arm key -> (corpus, human label). The suffix convention comes from
@@ -115,6 +120,10 @@ ARMS = {
     # about a faculty rather than as an instrument check (p9).
     "nat":   ("nat", "natural corpus best"),
     "natf":  ("nat", "natural corpus final"),
+    "nat25":  ("nat25", "natural 25% best"),
+    "nat25f": ("nat25", "natural 25% final"),
+    "nat50":  ("nat50", "natural 50% best"),
+    "nat50f": ("nat50", "natural 50% final"),
 }
 
 # Context-shuffle measurements, keyed by the corpus they were run on

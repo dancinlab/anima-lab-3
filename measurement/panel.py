@@ -104,10 +104,18 @@ SELECT = sys.argv[2:] or list(ARMS)
 # memorised and quietly invert the result.
 if os.environ.get("LAMBDA_FAMILY") == "natural":
     NAT = f"{HOME}/data/corpus_natural_ko_dedup.txt"
-    SCREEN_CORPORA = [NAT]
+    # All three subsets are screened, not just the one an arm trained on:
+    # 25% is a subset of 50% is a subset of 100%, so a window novel against one
+    # can sit inside another arm's train and score that arm on memory.
+    SCREEN_CORPORA = [f"{HOME}/data/corpus_nat_25.txt",
+                      f"{HOME}/data/corpus_nat_50.txt", NAT]
     VAL_CORPUS = NAT
     ARMS = {"nat": f"{HOME}/checkpoints/arm_nat/best.pt",
-            "natf": f"{HOME}/checkpoints/arm_nat/final.pt"}
+            "natf": f"{HOME}/checkpoints/arm_nat/final.pt",
+            "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
+            "nat25f": f"{HOME}/checkpoints/arm_nat25/final.pt",
+            "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
+            "nat50f": f"{HOME}/checkpoints/arm_nat50/final.pt"}
     SELECT = sys.argv[2:] or list(ARMS)
 
 
