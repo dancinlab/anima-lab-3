@@ -75,6 +75,8 @@ ARMS = {
     "natf":  f"{HOME}/checkpoints/arm_nat/final.pt",
     "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
     "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
+    # Intervention 1: same everything, --block-size 512 instead of 256.
+    "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
 }
 SELECT = sys.argv[2:] or list(ARMS)
 
@@ -347,7 +349,7 @@ def main():
         cfg = ck.get("config", {}) or {}
         m = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
                             n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                            block_size=BLOCK, dropout=0.0)
+                            block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
         m.load_state_dict(ck["model_state"], strict=False)
         m.to(device).eval()
         v = score(m, xv, yv, device)
