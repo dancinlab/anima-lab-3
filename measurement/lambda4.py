@@ -54,7 +54,14 @@ LN2 = math.log(2)
 # Frozen before the first run.
 FREQ_LO, FREQ_HI = 50, 5000    # learned, but not ubiquitous
 MIN_TOKEN_BYTES = 6            # skip particles and one-syllable noise
-TARGET_LINES = 192             # per group
+TARGET_LINES = 192             # per group, for the unmatched run-1/2 controls
+# The damage-matched comparison gets every available line and several swap draws
+# per line. N is a POWER parameter, not a bar: the test (novel-swap <= seen-swap)
+# is symmetric, so more samples cannot bias the answer toward either verdict.
+# Raising it after a null is raising resolution, not moving a threshold -- and a
+# result below resolution is not an answer, so leaving it there is not a finding.
+MATCHED_LINES = 1027           # all novel-cooccurrence lines the corpus yields
+MATCHED_DRAWS = 4              # independent swap pairs per line
 SEED = 20260728
 
 ARMS = {
@@ -135,7 +142,8 @@ def build_pairs(train, val, rng):
     rng.shuffle(seen)
     print(f"[lines] novel-cooccurrence {len(novel):,} · seen-cooccurrence {len(seen):,} · "
           f"atoms with a seen partner {len(partners):,}", flush=True)
-    return novel[:TARGET_LINES], seen[:TARGET_LINES], sorted(band), partners, freq
+    return (novel[:TARGET_LINES], seen[:TARGET_LINES], sorted(band), partners,
+            freq, novel[:MATCHED_LINES])
 
 
 def break_composition(lines, band, rng):
@@ -148,7 +156,7 @@ def break_composition(lines, band, rng):
     return out
 
 
-def matched_swaps(lines, partners, freq, band_by_freq, rng):
+def matched_swaps(lines, partners, freq, band_by_freq, rng, draws=1):
     """The control the first two designs both missed: ONE substitution on BOTH
     sides, differing only in whether the swapped-in atom co-occurred with the
     partner.
@@ -171,7 +179,7 @@ def matched_swaps(lines, partners, freq, band_by_freq, rng):
     combination it has not seen. Frequency matching keeps the swapped atoms
     within a factor of two, so the comparison is not secretly about word rarity.
     """
-    seen_out, novel_out = [], []
+    seen_out, novel_out, line_of = [], [], []
     for ln, (a, b) in lines:
         fa = freq.get(a, 0)
         if not fa:
@@ -183,9 +191,11 @@ def matched_swaps(lines, partners, freq, band_by_freq, rng):
         novel_c = [t for t in cands if t not in pset and t != a and t != b]
         if not seen_c or not novel_c:
             continue
-        seen_out.append(ln.replace(a, rng.choice(seen_c)))
-        novel_out.append(ln.replace(a, rng.choice(novel_c)))
-    return seen_out, novel_out
+        for _ in range(draws):
+            seen_out.append(ln.replace(a, rng.choice(seen_c)))
+            novel_out.append(ln.replace(a, rng.choice(novel_c)))
+            line_of.append(len(line_of) // draws)   # which sentence this draw came from
+    return seen_out, novel_out, line_of
 
 
 def paired_seen(lines, partners, rng):
@@ -276,7 +286,7 @@ def main():
     print(f"[device] {device}", flush=True)
 
     train, val = split(CORPUS)
-    novel, seen, band, partners, freq = build_pairs(train, val, rng)
+    novel, seen, band, partners, freq, novel_all = build_pairs(train, val, rng)
     if len(novel) < 32 or len(seen) < 32:
         print("[verdict] not enough lines in one group -- λ4 cannot be measured "
               "on this corpus, and that is the result.", flush=True)
@@ -297,9 +307,11 @@ def main():
     by_freq = sorted(((freq[t], t) for t in band))
     def band_by_freq(lo, hi):
         return [t for f, t in by_freq if lo <= f <= hi]
-    m_seen, m_novel = matched_swaps(novel, partners, freq, band_by_freq, rng)
-    print(f"[matched] damage-matched controls on {len(m_seen)} lines "
-          f"(one swap each side, frequency within 2x)", flush=True)
+    m_seen, m_novel, m_line = matched_swaps(novel_all, partners, freq, band_by_freq,
+                                            rng, draws=MATCHED_DRAWS)
+    print(f"[matched] damage-matched controls: {len(m_seen):,} paired samples from "
+          f"{len(novel_all):,} lines x {MATCHED_DRAWS} draws (one swap each side, "
+          f"frequency within 2x)", flush=True)
     xms, yms = to_tensor(m_seen)
     xmn, ymn = to_tensor(m_novel)
     # The paired comparison must use the same subset on both sides.
@@ -342,7 +354,21 @@ def main():
         p_mean = sum(p_per) / len(p_per)
         ms_per = score_per_line(m, xms, yms, device)
         mn_per = score_per_line(m, xmn, ymn, device)
-        matched = spread_is_resolvable(ms_per, mn_per)  # positive = novel costs more
+        # CLUSTERED by sentence. Several swap draws from one line are not
+        # independent samples -- they share the sentence -- so testing across
+        # draws underestimates the standard error and inflates t. Average the
+        # draws within each line first, then test across LINES. This is strictly
+        # more conservative and it is the number the verdict uses.
+        by_line = {}
+        for li, sv, nv in zip(m_line, ms_per, mn_per):
+            by_line.setdefault(li, []).append(nv - sv)
+        per_line = [sum(v) / len(v) for v in by_line.values()]
+        matched = spread_is_resolvable([0.0] * len(per_line), per_line)
+        matched["n_lines"] = len(per_line)
+        matched["n_draws"] = len(ms_per)
+        # Reported alongside so the inflation is visible rather than hidden.
+        naive = spread_is_resolvable(ms_per, mn_per)
+        matched["t_unclustered"] = naive["t"]
         ms_mean = sum(ms_per) / len(ms_per)
         mn_mean = sum(mn_per) / len(mn_per)
         lam4 = mn_mean <= ms_mean
@@ -376,7 +402,9 @@ def main():
         print(f"[{name}] novel={v:.4f} · seen={s:.4f} · broken={b:.4f} · mid={mid:.4f} · "
               f"pos={pos:.3f} · Δbroken={res['spread']:+.4f} t={res['t']:.1f} · "
               f"MATCHED seen-swap={ms_mean:.4f} novel-swap={mn_mean:.4f} "
-              f"cost={matched['spread']:+.4f} t={matched['t']:+.1f} → λ4 {verdict} "
+              f"cost={matched['spread']:+.4f} t={matched['t']:+.1f} "
+              f"(clustered over {matched['n_lines']} lines; unclustered would read "
+              f"{matched['t_unclustered']:+.1f}) → λ4 {verdict} "
               f"· sha {sha}", flush=True)
         del ck, m
 

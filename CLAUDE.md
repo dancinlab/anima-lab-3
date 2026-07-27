@@ -360,14 +360,21 @@ Judging rules:
       NOVEL-SWAP A→A_novel (A_novel,B) 는 train 에 없음
       손상이 상쇄되고 공기만 남는다.
 
-   실측(3차 · 손상 맞춤):
-     nat +0.0072 (t=+0.5) · natf +0.0116 (t=+0.9) · nat25 +0.0210 (t=+1.0) ·
-     nat50 −0.0006 (t=−0.0)
-   ⇒ 네 팔 모두 **NULL** — 신규성 비용이 자기 잡음보다 작다. 통제를 다 걸고 나니
-     '처음 보는 조합'에 대한 벌점이 어느 방향으로도 검출되지 않는다. 합성을
-     한다는 증거도, 못 한다는 증거도 아니다. 이 해상도에서의 경계 있는 영(null)이다.
-   해상도 요건: |cost| 가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL 로 적는다.
-     자기 잡음보다 작은 효과에 칼날 같은 통과/실패를 붙이는 것은 판정이 아니다.
+   실측(4차 · 손상 맞춤 + 해상도 상향 + 문장 군집 보정):
+     표본 4,108쌍 = novel 공기줄 1,027개 × 줄당 4회 추출. 검정은 줄 단위로 묶어
+     수행한다 — 한 문장에서 뽑은 여러 추출은 독립이 아니라 표준오차를 과소평가한다.
+     (군집 보정 전후: +2.4→+2.3 · +2.2→+2.1 · +1.7→+1.7 · +3.4→+3.2)
+
+     nat    cost +0.0078  t=+2.3  → FAIL
+     natf   cost +0.0061  t=+2.1  → FAIL
+     nat50  cost +0.0162  t=+3.2  → FAIL
+     nat25  cost +0.0071  t=+1.7  → NULL (이 코퍼스가 낼 수 있는 줄 수로는 미해상)
+
+   ⇒ **λ4 미도달.** 통제를 모두 건 뒤에도 세 팔은 처음 보는 조합에 작지만 실재하는
+     벌점을 낸다(+0.006~+0.016 BPC). 즉 완전한 합성은 아니다. 남은 한 팔은 효과가
+     1,027줄로 분해되지 않는다 — 자연 코퍼스가 더 커져 val 공기줄이 늘어야 풀린다.
+     표본 수 N 은 바가 아니라 검정력 파라미터이고 검정이 대칭이라 올려도 어느 쪽으로도
+     편향되지 않는다. 그래서 3차의 NULL 을 결과로 남기지 않고 해상도를 올렸다.
 
 등급 밖(미등록 · 이름만 예약): (없음 — λ4 편입 완료)
    구 λ4 자리 설명
@@ -463,7 +470,14 @@ substituted floor, with any UNMEASURABLE rows listed explicitly. PASS/FAIL
 counts are the science and are not the target.
 
 Judging rule (λ-ladder): a rung is PASSED when its frozen bar is met AND every
-control on that rung collapses. A rung whose control fails VOIDS that rung for
+control on that rung collapses. **A FAIL is not attainment, and neither is a
+NULL.** The ladder is PASSED only when every rung reads PASS on every arm; a
+rung with one failing arm is a rung that is not passed, and a rung whose effect
+sits below its own resolution is not answered at all. Recording either as
+"done" is the same error as moving a bar -- it converts an unfinished
+measurement into a claim. When a rung comes back NULL, raise resolution (sample
+size is a power parameter, not a bar, and a symmetric test cannot be biased by
+it) before writing anything down; when it comes back FAIL, write FAIL. A rung whose control fails VOIDS that rung for
 every arm -- a bar met with a broken control is not a pass. Bars never move to
 fit a result; a FAIL is recorded as a FAIL and the run is the finding. Contract imported from the sibling anima repo's rho-axon
 panel (HYPOTHESES/cards/H_9270, cli/rho_axon.py); see measurement/CLAUDE.md.
