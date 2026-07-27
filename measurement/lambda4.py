@@ -155,16 +155,46 @@ def to_tensor(lines):
     return x, y
 
 
-def score(model, x, y, device):
-    total, ntok = 0.0, 0
+def score_per_line(model, x, y, device):
+    """BPC for every line separately, so the spread between two conditions can be
+    tested instead of eyeballed."""
+    out = []
     with torch.no_grad():
         for b in range(0, len(x), BATCH):
             xb, yb = x[b:b + BATCH].to(device), y[b:b + BATCH].to(device)
             logits, _, _ = model(xb)
-            total += F.cross_entropy(logits.view(-1, model.vocab_size),
-                                     yb.reshape(-1), reduction="sum").item()
-            ntok += yb.numel()
-    return total / ntok / LN2
+            ce = F.cross_entropy(logits.view(-1, model.vocab_size),
+                                 yb.reshape(-1), reduction="none")
+            out.extend((ce.view(yb.shape).mean(dim=1) / LN2).tolist())
+    return out
+
+
+def score(model, x, y, device):
+    per = score_per_line(model, x, y, device)
+    return sum(per) / len(per)
+
+
+def spread_is_resolvable(seen_per_line, broken_per_line):
+    """Is the instrument's dynamic range on this arm bigger than its own noise?
+
+    The λ4 bar asks whether `value` sits below the midpoint of SEEN and BROKEN,
+    which means resolving a distance of spread/2. If the SEEN-BROKEN gap is not
+    itself distinguishable from zero across lines, that midpoint is a coin flip
+    and the rung is VOID for that arm -- exactly the weakness the first run
+    exposed, where the small arms' spread was half the large arms' and they
+    passed for that reason rather than by composing.
+
+    Tested as a paired comparison over the SAME lines (broken is those lines with
+    the atoms swapped), so line difficulty cancels. The threshold is |t| >= 2,
+    i.e. the gap is at least twice its own standard error -- a resolution
+    requirement, not a bar on the result."""
+    diffs = [b - s for s, b in zip(seen_per_line, broken_per_line)]
+    n = len(diffs)
+    mean = sum(diffs) / n
+    var = sum((d - mean) ** 2 for d in diffs) / (n - 1)
+    se = math.sqrt(var / n)
+    t = mean / se if se > 0 else float("inf")
+    return {"spread": mean, "se": se, "t": t, "resolvable": abs(t) >= 2.0}
 
 
 def main():
@@ -192,7 +222,11 @@ def main():
                           "lines_per_group": len(novel), "seed": SEED,
                           "corpus": os.path.basename(CORPUS),
                           "regime": "NATURAL",
-                          "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN"}}
+                          "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN",
+                          "resolution_rule": "VOID unless the value-vs-BROKEN gap is at "
+                                             "least 2x its own standard error across lines "
+                                             "-- registered after run 1 exposed that a narrow "
+                                             "spread passes the midpoint for free"}}
     for name in SELECT:
         path = ARMS[name]
         if not os.path.exists(path):
@@ -207,16 +241,26 @@ def main():
         m.load_state_dict(ck["model_state"], strict=False)
         m.to(device).eval()
         v = score(m, xv, yv, device)
-        s = score(m, xs, ys, device)
-        b = score(m, xb, yb, device)
+        s_per = score_per_line(m, xs, ys, device)
+        b_per = score_per_line(m, xb, yb, device)
+        s, b = sum(s_per) / len(s_per), sum(b_per) / len(b_per)
         mid = (s + b) / 2
+        # BROKEN is built from the NOVEL lines, so the paired test compares the
+        # value lines against themselves with the composition removed.
+        res = spread_is_resolvable(score_per_line(m, xv, yv, device), b_per)
         ok = v < mid and v < b
+        pos = (v - s) / (b - s) if b != s else float("nan")
         results[name] = {"value_novel_cooccurrence": v, "ctrl_seen_cooccurrence": s,
                          "ctrl_broken_composition": b, "midpoint": mid,
-                         "lambda4": ok, "ckpt_step": ck.get("step"),
-                         "ckpt_sha256_16": sha}
-        print(f"[{name}] novel={v:.4f} · seen={s:.4f} · broken={b:.4f} · "
-              f"mid={mid:.4f} → λ4 {'PASS' if ok else 'FAIL'} · sha {sha}", flush=True)
+                         "normalised_position": pos,
+                         "resolution": res, "lambda4": ok,
+                         "lambda4_void": not res["resolvable"],
+                         "ckpt_step": ck.get("step"), "ckpt_sha256_16": sha}
+        verdict = ("VOID (spread not resolvable)" if not res["resolvable"]
+                   else ("PASS" if ok else "FAIL"))
+        print(f"[{name}] novel={v:.4f} · seen={s:.4f} · broken={b:.4f} · mid={mid:.4f} · "
+              f"pos={pos:.3f} · Δ={res['spread']:+.4f} t={res['t']:.1f} → λ4 {verdict} "
+              f"· sha {sha}", flush=True)
         del ck, m
 
     json.dump(results, open(out_path, "w"), indent=2)

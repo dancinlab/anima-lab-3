@@ -9,41 +9,74 @@
     "seed": 20260728,
     "corpus": "corpus_natural_ko_dedup.txt",
     "regime": "NATURAL",
-    "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN"
+    "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN",
+    "resolution_rule": "VOID unless the value-vs-BROKEN gap is at least 2x its own standard error across lines -- registered after run 1 exposed that a narrow spread passes the midpoint for free"
   },
   "nat": {
-    "value_novel_cooccurrence": 4.817599958088868,
-    "ctrl_seen_cooccurrence": 4.57652655924418,
-    "ctrl_broken_composition": 4.992717021427427,
-    "midpoint": 4.7846217903358035,
+    "value_novel_cooccurrence": 4.817599933594465,
+    "ctrl_seen_cooccurrence": 4.5765265338122845,
+    "ctrl_broken_composition": 4.992716987927754,
+    "midpoint": 4.784621760870019,
+    "normalised_position": 0.5792381766528845,
+    "resolution": {
+      "spread": 0.17511705433328947,
+      "se": 0.022404538242260977,
+      "t": 7.81614208870289,
+      "resolvable": true
+    },
     "lambda4": false,
+    "lambda4_void": false,
     "ckpt_step": 11750,
     "ckpt_sha256_16": "f86a7d3ad5fe252c"
   },
   "natf": {
-    "value_novel_cooccurrence": 4.3399995647707135,
-    "ctrl_seen_cooccurrence": 4.0838015529887475,
-    "ctrl_broken_composition": 4.504454950629997,
-    "midpoint": 4.294128251809372,
+    "value_novel_cooccurrence": 4.339999566475551,
+    "ctrl_seen_cooccurrence": 4.083801489323378,
+    "ctrl_broken_composition": 4.504454820106427,
+    "midpoint": 4.294128154714903,
+    "normalised_position": 0.6090480174619282,
+    "resolution": {
+      "spread": 0.16445525363087654,
+      "se": 0.021114024839285185,
+      "t": 7.788910682954571,
+      "resolvable": true
+    },
     "lambda4": false,
+    "lambda4_void": false,
     "ckpt_step": 12000,
     "ckpt_sha256_16": "ff95e0e7892a8db1"
   },
   "nat25": {
-    "value_novel_cooccurrence": 5.801590740802826,
-    "ctrl_seen_cooccurrence": 5.752190300850117,
-    "ctrl_broken_composition": 5.968443593478911,
-    "midpoint": 5.860316947164514,
+    "value_novel_cooccurrence": 5.801590645685792,
+    "ctrl_seen_cooccurrence": 5.752190173603594,
+    "ctrl_broken_composition": 5.968443538993597,
+    "midpoint": 5.860316856298596,
+    "normalised_position": 0.22843793433275014,
+    "resolution": {
+      "spread": 0.16685289330780506,
+      "se": 0.02582327705953767,
+      "t": 6.461336914099327,
+      "resolvable": true
+    },
     "lambda4": true,
+    "lambda4_void": false,
     "ckpt_step": 11750,
     "ckpt_sha256_16": "18add2da8d1ffa69"
   },
   "nat50": {
-    "value_novel_cooccurrence": 6.023895271666003,
-    "ctrl_seen_cooccurrence": 5.95909749728741,
-    "ctrl_broken_composition": 6.20630631987408,
-    "midpoint": 6.082701908580745,
+    "value_novel_cooccurrence": 6.023895263671875,
+    "ctrl_seen_cooccurrence": 5.959097429799537,
+    "ctrl_broken_composition": 6.206306237727404,
+    "midpoint": 6.082701833763471,
+    "normalised_position": 0.2621178202163627,
+    "resolution": {
+      "spread": 0.18241097405552864,
+      "se": 0.032815636001546675,
+      "t": 5.558660330305078,
+      "resolvable": true
+    },
     "lambda4": true,
+    "lambda4_void": false,
     "ckpt_step": 11750,
     "ckpt_sha256_16": "dd057b2a075e6ac3"
   }
