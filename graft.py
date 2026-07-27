@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """graft.py — GRAFT mode trainer: ground consciousness -> language WITHOUT corpus.
 
-@canonical-ok repo folder 'anima-clm-v2' is the fixed project path, not a versioned copy.
+@canonical-ok repo folder 'anima-lab-3' is the fixed project path, not a versioned copy.
 
 GRAFT = frozen pretrained LLM (Mistral) as a fixed "language organ"; train ONLY the
 consciousness->language coupling (ThalamicBridge + HFDecoder.gate_proj) on an

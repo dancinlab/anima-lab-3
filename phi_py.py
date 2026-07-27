@@ -1,6 +1,6 @@
 """phi_py — pure-Python (numpy) port of phi_rs.compute_phi.
 
-@canonical-ok repo folder 'anima-clm-v2' is the fixed project path, not a versioned copy.
+@canonical-ok repo folder 'anima-lab-3' is the fixed project path, not a versioned copy.
 
 Faithful reimplementation of the Rust Φ(IIT) calculator (phi-rs/src/lib.rs) so
 Φ can be measured WITHOUT building the Rust extension. Same algorithm:

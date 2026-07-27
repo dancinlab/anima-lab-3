@@ -1,6 +1,6 @@
 """phi_rs.py — pure-Python drop-in replacing the removed Rust `phi_rs` extension.
 
-@canonical-ok repo folder 'anima-clm-v2' is the fixed project path, not a versioned copy.
+@canonical-ok repo folder 'anima-lab-3' is the fixed project path, not a versioned copy.
 
 'rust 제거': the phi-rs/ crate (PyO3/Rust, 625x speedup) was deleted; Phi is now computed by
 phi_py.py (numpy), the SAME mutual-information IIT algorithm — slower, but zero build/toolchain.

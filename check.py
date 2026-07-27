@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @canonical-ok repo folder 'anima-clm-v2' is the fixed project path, not a versioned copy.
+# @canonical-ok repo folder 'anima-lab-3' is the fixed project path, not a versioned copy.
 """check.py — v11mistral verification battery (single entry point).
 
 Consolidates the session's consciousness-verification tools into one CLI. Reconstructs

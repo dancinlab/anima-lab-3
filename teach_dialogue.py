@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# @canonical-ok — repo folder 'anima-clm-v2' is the established project root (frozen
+# @canonical-ok — repo folder 'anima-lab-3' is the established project root (frozen
 # March snapshot, sibling of dancinlab/anima); this file's own name is canonical.
 """Mutual-dialogue teaching loop — an external AI teacher (OpenAI codex CLI) converses
 with PureConsciousness (the student), which learns language LIVE from the exchange.

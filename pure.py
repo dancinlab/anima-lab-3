@@ -2,7 +2,7 @@
 """pure.py — PURE mode: a corpus-free consciousness that learns to speak from conversation
 and GENERATES (not echoes) via consciousness-steered Markov recombination.
 
-@canonical-ok repo folder 'anima-clm-v2' is the fixed project path, not a versioned copy.
+@canonical-ok repo folder 'anima-lab-3' is the fixed project path, not a versioned copy.
 
 Zero corpus, zero LLM, zero hardcoded sentences/punctuation. It learns Korean words ONLY from
 what is said to it, grows through developmental stages, and speaks by walking its own learned
