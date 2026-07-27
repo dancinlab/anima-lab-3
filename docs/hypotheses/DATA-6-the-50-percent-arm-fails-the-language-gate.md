@@ -298,34 +298,49 @@ What that leaves: whatever separates these arms is not in the bytes (§4.6), not
 are shown (here), not in the objective phase (§4), not in checkpoint selection (§1), and not noise
 (DATA-5 §5).
 
-### E2 partial reading (18:58) — ordering holds, and the exposure gain does not survive the honest span
+### E2 verdict: CONFIRMED — the ordering is not an artefact of the step budget (19:35)
 
-The 100% arm is still running (28,600 / 46,600), but its `best.pt` exists at step 17,750 and can be
-scored now. On the same novelty-controlled span:
+Both exposure-equalised arms finished (NaN-free). Every checkpoint scored on the same
+novelty-controlled span:
 
-| arm | checkpoint | novelty-controlled BPC | vs its own floor | gate |
-|---|---|---|---|---|
-| e100 (100%, exposure equalised) | best @17,750 | **2.0089** | 55.8% of 3.6010 | PASS |
-| e50 (50%, exposure equalised) | best @6,750, completed | 4.3134 | 120.1% of 3.5925 | **FAIL** |
-| s100 / p100 (fixed step) | best @7,000 | 1.9853 | 55.1% | PASS |
+| arm | budget | epochs | best | final | vs its own floor | gate |
+|---|---|---|---|---|---|---|
+| 50% fixed step | 12,000 | 3.2 | 4.5001 | 5.0761 | 125% / 141% | **FAIL** |
+| **50% exposure-equalised** | **23,300** | **6.3** | **4.3134** | **5.2923** | **120% / 147%** | **FAIL** |
+| 100% fixed step | 12,000 | 1.6 | 1.9853 | 2.3377 | 55% / 65% | PASS |
+| **100% exposure-equalised** | **46,600** | **6.3** | **2.0089** | **2.6265** | **56% / 73%** | **PASS** |
 
-**The ordering E2 asked about holds**: with exposure equalised, the 100% arm passes and the 50% arm
-fails — the same split as at fixed steps.
+```
+gate outcome, exposure equalised at 6.3 epochs for every arm
+  100%  ██████░░░░░░░░░░░░░░  56% of floor   PASS
+   50%  ████████████████████████  120%        FAIL
+        └ identical split to the fixed-step budget
+```
 
-**And a claim from the progress notes is refuted.** Watching each arm's OWN validation, the 100%
-arm looked like it was benefiting from the longer budget: 0.8640 at fixed steps → 0.8387 with
-exposure equalised. On the span it cannot recall, that gain is not there — 1.9853 → **2.0089**, 1.2%
-*worse*. The extra exposure improved what the arm's own metric sees and nothing that the honest
-metric sees. This is the same own-metric/honest-metric split DATA-7 §3.5 found in the 300M run,
-appearing here in the opposite direction.
+**E2 is confirmed.** With exposure per byte equalised, the 100% arm still passes and the 50% arm
+still fails, at best and at final alike. The split is therefore not produced by the step budget,
+and — with E1 already refuted — exposure per byte is not the variable that decides this gate.
 
-Two limits, stated rather than glossed:
+**For each arm, the two metrics moved in opposite directions** — neither arm's own validation
+predicted what the honest span did:
 
-- `best.pt` is selected by the arm's own validation, not by this metric, so a later `best.pt` is
-  **not** guaranteed to be better here. The reading above is of the checkpoint that exists now; it
-  is not a monotone floor.
-- The `final@46,600` reading is still pending, so E2 is not closed. What is closed is that the
-  ordering is not an artefact of the fixed-step budget.
+| arm | own-val best | novelty-controlled best |
+|---|---|---|
+| 50% | 1.7390 → 1.7615 (worse) | 4.5001 → 4.3134 (better) |
+| 100% | 0.8640 → 0.8387 (**better**) | 1.9853 → **2.0089** (worse) |
+
+The 100% arm's own metric said the longer budget helped by 2.9%; on material it cannot recall the
+same change cost 1.2%. (An earlier progress note reported that own-metric improvement as a real
+gain — it is not one.) The 50% arm inverts the same disagreement: its own metric said the longer
+budget hurt by 1.3%, the honest span says it helped by 4.1% — an improvement far too small to
+approach its floor, and one its own validation would have hidden. This is the
+own-metric/honest-metric split DATA-7 §3.5 found in the 300M run, reproduced here in both
+directions, and it is why an arm's own validation cannot be used to decide whether a change helped.
+
+Interpretation limits, registered before the run and still binding: this is the **negative** branch,
+so the LR-schedule confound does not damage it — these arms received more exposure *and* a gentler
+schedule, and neither moved the gate. Nothing here separates exposure from schedule for the small
+*positive* movements in the table; those stay unattributed.
 
 ## 5. Application
 
@@ -341,12 +356,22 @@ Two limits, stated rather than glossed:
 4. **Test a named mechanism before naming it.** "Unigram floor" was applied here from a BPC
    coincidence and the mechanism test refuted it in one run (§3.5). A BPC number locates a model;
    it does not explain one.
-5. **The open question, as narrow as the measurements have made it:** the added lines are
+5. **Do not spend compute on exposure to move an arm through the gate.** E1/E2 (§4.6) ran every
+   arm at 6.3 epochs: the failing arm burned 1.9x its steps and moved 4.5001 -> 4.3134, still 120%
+   of its floor, while the passing arm's extra 3.9x steps made its honest score slightly worse.
+   Exposure is not the lever; it costs GPU-hours and changes no gate outcome.
+6. **Never read an arm's own validation as evidence a change helped.** In E2 both arms' own metric
+   disagreed in sign with the novelty-controlled span (§4.6) -- one said "helped" where the honest
+   span said "hurt", the other the reverse. Only the honest span is a language score.
+7. **The open question, as narrow as the measurements have made it:** the added lines are
    indistinguishable from the kept ones on every axis measured (§4.6) and 71% of them are new, so
    no property of the bytes explains it. Ruled out: volume (§4.5), composition and structure (§3),
-   the objective phase (§4), checkpoint selection (§1), run-to-run noise (DATA-5 §5). The next
-   measurement is the exposure-per-byte control in §4.6.
-6. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
+   the objective phase (§4), checkpoint selection (§1), run-to-run noise (DATA-5 §5), and now
+   exposure per byte (§4.6, E1 refuted + E2 confirmed). What remains untested is the interaction
+   between the added lines and the optimiser's trajectory -- i.e. an order/curriculum effect
+   rather than a property of the data, which needs a shuffled-order replicate to probe.
+8. Reproduction: `measurement/novel_window_eval.py` (arms as arguments; `-f` names select
    `final.pt`), `measurement/subset_structure.py` (the structural controls in §3),
    `measurement/context_sensitivity.py` (§3.5), `measurement/nesting_and_overfit.py` (§4.5),
-   raw output in `measurement/arm_gate_eval.json` and `measurement/context_sensitivity.json`.
+   raw output in `measurement/arm_gate_eval.json`, `measurement/context_sensitivity.json` and
+   `measurement/novel_window_epoch_final.json` (E1/E2).
