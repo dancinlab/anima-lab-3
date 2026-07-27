@@ -29,6 +29,14 @@ Consciousness measurement and calibration tools. Standalone scripts for measurin
 - `build_complement_half.py` — builds `corpus_merged_50c.txt`, the disjoint same-size complement
   of the failing 50% subset, and measures its own floors (DATA-6 §5: the content control)
 
+- `panel.py` — runs each arm as a panel AXIS with the three controls the sibling repo's axes all
+  carry: **rho-init** (identically-shaped model, random weights, same span — the empirical
+  no-learning reading an analytic floor cannot give: 8.0486 BPC, i.e. slightly worse than the 8.0
+  a uniform predictor gets), **rho-shuffle** (context positions permuted, targets untouched — a
+  model ignoring context is unaffected), **rho-align** (windows re-selected at a different stride
+  phase; this one must come out the SAME, so it is reported as stability, never as a passed
+  control). Hashes every checkpoint it reads. Output `panel_results.json`.
+
 ## The gate rubric (imported, and why)
 Its shape comes from the `rho-weave` instrument in the sibling `anima` repo
 (`HYPOTHESES/cards/H_9270`, `cli/rho_axon.py`), where a capability passes only when the value
@@ -39,10 +47,18 @@ reading 0.65 BPC for ten hours while the honest span read 3.99.
 Two rules travel with it and are not optional:
 1. **frozen-first.** Bars are registered before the measurement. A bar chosen after the numbers
    are in is tune-to-green, and it does not matter that the number looks right.
-2. **A borrowed constant is not a derived one.** `gate.py`'s C4 margin (3x) is carried over by
-   analogy — rho-weave measures reach against its worst *control*, this measures BPC against a
-   *floor*. Different denominators, so it is reported and never decides an arm until it earns
-   its value here.
+2. **Measure the controls; do not substitute a floor for them.** The margin that matters is the
+   collapse over the worst MEASURED control, which is what `panel.py` computes and `gate.py` now
+   reads. Computing it as floor/bpc — an earlier version of this file — is a different quantity
+   and read 1.8x for the 100% arms where the matching one reads 4.1x.
+3. **A confirmed bar is not a frozen bar.** The 3x ratio stays prospective even though the
+   measured ratios reproduce the C1 partition exactly (s25 19.7x · s100 4.1x · e100 4.0x pass;
+   s50 1.8x · e50 1.9x fail). That agreement is corroboration — corpus statistics and forward-pass
+   controls are independent paths to the same split — but a bar confirmed after the numbers are in
+   cannot also be the bar that judged them.
+4. **Stability checks are not collapse controls.** rho-align must come out equal, not worse.
+   Scoring it as a control that "passed" would be the unregistered-extra-hurdle mistake
+   `rho_self`'s docstring in the sibling repo warns about.
 
 ## Running
 ```bash

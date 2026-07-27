@@ -30,14 +30,26 @@ seeing the data (frozen-first, HYPOTHESES/CLAUDE.md lesson 3):
                 ALL train splits, with the keep rate recorded. Binary: either
                 the strict selection ran or the number is not a language score.
 
-  C4 MARGIN     value beats its floor by >= 3x. PROSPECTIVE ONLY -- registered
-                here for runs from now on and REPORTED for past ones. Two
-                reasons it decides nothing yet: choosing a ratio after the
-                numbers are in is tune-to-green, and the 3x is BORROWED BY
-                ANALOGY, not derived -- rho-weave measures reach against its
-                worst CONTROL, this measures BPC against a FLOOR, so the
-                denominators differ and the constant has to earn its value here
-                before it can fail an arm.
+  C4 MARGIN     value beats its WORST CONTROL by >= 3x -- the same quantity and
+                the same constant rho-weave uses, now that panel.py measures the
+                controls with forward passes instead of substituting an analytic
+                floor for them. Read from panel_results.json where it exists.
+
+                Still PROSPECTIVE: it binds runs from here on and is reported,
+                never applied retroactively, because a bar confirmed after the
+                numbers are in cannot also be the bar that judged them. Recorded
+                because it matters: on the five arms measured it produces
+                EXACTLY the C1 partition (s25 19.7x, s100 4.1x, e100 4.0x pass;
+                s50 1.8x, e50 1.9x fail). Two independent paths -- corpus
+                statistics for the floor, forward passes against controls for
+                the ratio -- landing on the same split is corroboration the
+                gate outcome is not an artefact of which floor was chosen.
+
+                An earlier version of this file computed the margin as
+                floor/bpc, which read 1.8x for the 100% arms and made them look
+                like narrow passes. That was the wrong denominator: rho-weave
+                measures against the worst CONTROL, not against a floor. With
+                the matching quantity the 100% arms sit at ~4x.
 
 Adding conditions to a conjunction can only turn PASS into FAIL, never the
 reverse, so re-adjudicating settled arms cannot manufacture a pass. Any arm
@@ -95,6 +107,7 @@ CONTEXT_JSON = "measurement/context_sensitivity.json"
 CONTEXT_KEY = {"25": "25%", "50": "50%", "100": "100%"}
 
 MARGIN_RATIO = 3.0  # prospective, see C4 above
+PANEL_JSON = "measurement/panel_results.json"  # measured collapse ratios, when present
 
 
 def load_scores(paths):
@@ -112,7 +125,7 @@ def load_scores(paths):
     return scores, keep_rate
 
 
-def adjudicate(arm, row, ctx, keep_rate):
+def adjudicate(arm, row, ctx, keep_rate, panel=None):
     corpus_key, label = ARMS[arm]
     fl = FLOORS[corpus_key]
     bpc = row["bpc"]
@@ -130,7 +143,14 @@ def adjudicate(arm, row, ctx, keep_rate):
     # The strict 3x64B-probe selection is what produced these files at all; the
     # keep rate is its receipt. A table without one is not scored on a novel span.
     c3 = keep_rate is not None
-    margin = fl["bigram"] / bpc if bpc > 0 else float("inf")
+    # The earned quantity is the collapse margin over the worst measured
+    # control. Only fall back to the analytic floor when the panel has not run
+    # this arm, and say so, because the two are not the same number.
+    prow = (panel or {}).get(arm)
+    if prow:
+        margin, margin_src = prow["ratio_over_worst_control"], "worst control"
+    else:
+        margin, margin_src = (fl["bigram"] / bpc if bpc > 0 else float("inf")), "floor (no panel)"
 
     if c2 is None:
         tier, verdict = "DIRECTIONAL", "PASS" if (c1 and c3) else "FAIL"
@@ -143,7 +163,10 @@ def adjudicate(arm, row, ctx, keep_rate):
         "bigram_floor": fl["bigram"], "unigram_floor": fl["unigram"],
         "ratio_to_bigram": bpc / fl["bigram"],
         "C1_language": c1, "C2_context": c2, "C2_note": c2_note,
-        "C3_span": c3, "margin_x": margin,
+        "C3_span": c3, "margin_x": margin, "margin_src": margin_src,
+        "ctrl_shuffle_bpc": (prow or {}).get("ctrl_shuffle_bpc"),
+        "ctrl_init_bpc": (prow or {}).get("ctrl_init_bpc"),
+        "stability_delta": (prow or {}).get("stability_delta"),
         "C4_margin_prospective": margin >= MARGIN_RATIO,
         "tier": tier, "verdict": verdict,
     }
@@ -166,7 +189,8 @@ def main():
           f"are absent from every train split" if keep_rate else "[span] NO keep rate recorded")
     print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
 
-    rows = [adjudicate(a, scores[a], ctx, keep_rate) for a in ARMS if a in scores]
+    panel = json.loads(Path(PANEL_JSON).read_text()) if Path(PANEL_JSON).exists() else {}
+    rows = [adjudicate(a, scores[a], ctx, keep_rate, panel) for a in ARMS if a in scores]
     hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
     print(hdr)
     print("-" * len(hdr))
@@ -184,8 +208,19 @@ def main():
     ds = [r for r in rows if r["tier"] == "DIRECTIONAL"]
     print(f"[tier] {len(ds)} arm(s) DIRECTIONAL -- a missing control is not a passed control"
           + (": " + ", ".join(r["arm"] for r in ds) if ds else "."))
-    print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only: "
-          + ", ".join(f"{r['arm']} {r['margin_x']:.1f}x" for r in rows if r["C1_language"]))
+    measured = [r for r in rows if r["margin_src"] == "worst control"]
+    print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only. "
+          f"Measured against the worst control ({len(measured)} arm(s)): "
+          + ", ".join(f"{r['arm']} {r['margin_x']:.1f}x"
+                      f"{'' if r['margin_x'] >= MARGIN_RATIO else ' (under bar)'}"
+                      for r in measured))
+    unmeasured = [r for r in rows if r["margin_src"] != "worst control" and r["C1_language"]]
+    if unmeasured:
+        print("          Falling back to floor/bpc, NOT the same quantity: "
+              + ", ".join(f"{r['arm']} {r['margin_x']:.1f}x" for r in unmeasured))
+    agree = all((r["margin_x"] >= MARGIN_RATIO) == r["C1_language"] for r in measured)
+    print(f"[corroboration] measured ratio and C1 {'AGREE on every' if agree else 'DISAGREE on some'} "
+          f"arm -- corpus statistics and forward-pass controls are independent paths")
 
     payload = {"_gate": {"conditions": ["C1 language", "C2 context", "C3 span"],
                          "C4_margin_prospective_ratio": MARGIN_RATIO,

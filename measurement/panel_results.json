@@ -1,0 +1,79 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 1538,
+    "keep_rate": 0.16644993498049415,
+    "kept_alt": 256,
+    "tested_alt": 1541,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "ratio_prospective": 3.0
+  },
+  "s25": {
+    "bpc": 0.40888143577378633,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "b4dbf53a0b644be2",
+    "ctrl_shuffle_bpc": 14.251244204648659,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 0.40396041623958845,
+    "stability_delta": 0.004921019534197879,
+    "collapse_delta_shuffle": 13.842362768874873,
+    "collapse_delta_init": 7.639767705619423,
+    "ratio_over_worst_control": 19.684555074410678,
+    "controls_collapsed": true
+  },
+  "s50": {
+    "bpc": 4.500112811486393,
+    "ckpt_step": 6750,
+    "ckpt_sha256_16": "c514d321ab0c4cf3",
+    "ctrl_shuffle_bpc": 11.860572644525808,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.5206279662239615,
+    "stability_delta": 0.020515154737568153,
+    "collapse_delta_shuffle": 7.360459833039415,
+    "collapse_delta_init": 3.548536329906816,
+    "ratio_over_worst_control": 1.78854386068929,
+    "controls_collapsed": true
+  },
+  "s100": {
+    "bpc": 1.9852592596266048,
+    "ckpt_step": 7000,
+    "ckpt_sha256_16": "5a79a1cf91273f48",
+    "ctrl_shuffle_bpc": 12.248025092387632,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 1.973041381679431,
+    "stability_delta": 0.012217877947173772,
+    "collapse_delta_shuffle": 10.262765832761026,
+    "collapse_delta_init": 6.0633898817666045,
+    "ratio_over_worst_control": 4.054205566534938,
+    "controls_collapsed": true
+  },
+  "e50": {
+    "bpc": 4.3133545936421775,
+    "ckpt_step": 6750,
+    "ckpt_sha256_16": "2edbaeaf7c630956",
+    "ctrl_shuffle_bpc": 11.478047822078675,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.3091246803442065,
+    "stability_delta": 0.004229913297971066,
+    "collapse_delta_shuffle": 7.164693228436498,
+    "collapse_delta_init": 3.7352945477510318,
+    "ratio_over_worst_control": 1.8659836483781793,
+    "controls_collapsed": true
+  },
+  "e100": {
+    "bpc": 2.0089266951207527,
+    "ckpt_step": 17750,
+    "ckpt_sha256_16": "65338d0905f8b03b",
+    "ctrl_shuffle_bpc": 12.784084932644099,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 1.9885100998782739,
+    "stability_delta": 0.020416595242478852,
+    "collapse_delta_shuffle": 10.775158237523346,
+    "collapse_delta_init": 6.039722446272457,
+    "ratio_over_worst_control": 4.006442425670201,
+    "controls_collapsed": true
+  }
+}
