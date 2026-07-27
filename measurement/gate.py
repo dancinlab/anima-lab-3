@@ -132,14 +132,23 @@ def adjudicate(arm, row, ctx, keep_rate, panel=None):
 
     c1 = bpc < fl["bigram"]
     beats_unigram = bpc < fl["unigram"]
+    # C2 is "beats the byte histogram AND actually uses context". panel.py
+    # measures both per arm on the arm's own span, so prefer it; the older
+    # context_sensitivity.json is per CORPUS at one step and is the fallback.
+    prow_c2 = (panel or {}).get(arm)
     ctx_row = ctx.get(CONTEXT_KEY.get(corpus_key, ""))
-    if ctx_row is None:
-        c2, c2_note = None, "no context measurement for this corpus"
-    else:
+    if prow_c2 and prow_c2.get("ctrl_shuffle_bpc") is not None:
+        gain = prow_c2["ctrl_shuffle_bpc"] - bpc
+        c2 = beats_unigram and gain > 0
+        c2_note = (f"unigram {'<' if beats_unigram else '>='} · "
+                   f"shuffle +{gain:.2f} BPC (panel, per arm)")
+    elif ctx_row is not None:
         uses_context = ctx_row["shuffled_bpc"] > ctx_row["true_bpc"]
         c2 = beats_unigram and uses_context
         c2_note = (f"unigram {'<' if beats_unigram else '>='} · "
-                   f"shuffle +{ctx_row['context_gain_bpc']:.2f} BPC")
+                   f"shuffle +{ctx_row['context_gain_bpc']:.2f} BPC (corpus-level)")
+    else:
+        c2, c2_note = None, "no context measurement for this arm or its corpus"
     # The strict 3x64B-probe selection is what produced these files at all; the
     # keep rate is its receipt. A table without one is not scored on a novel span.
     c3 = keep_rate is not None
@@ -179,6 +188,8 @@ def main():
         "measurement/epoch_control_eval.json",
         "measurement/novel_window_epoch_final.json",
         "measurement/nf9_honest_eval.json",
+        "measurement/panel_results.json",
+        "measurement/panel_nf9_results.json",
     ]
     srcs = [s for s in srcs if Path(s).exists()]
     scores, keep_rate = load_scores(srcs)

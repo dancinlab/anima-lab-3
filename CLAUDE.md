@@ -264,6 +264,61 @@ Judging rules:
     Do not expect gates 1 and 2 to trade off; they guard different failures.
 ```
 
+## Measurement validity (what "all measurements pass" means)
+
+```
+"All measurements pass" NEVER means "every arm gets a PASS verdict". A FAIL is a
+result; moving a bar to erase one is tune-to-green and is forbidden. What must
+pass is the MEASUREMENT: every number must be in a state where it can be
+adjudicated at all. Run `python3 measurement/gate.py` -- these are its columns.
+
+  V1 CONTROLS MEASURED, not substituted
+     Every arm needs its controls run as forward passes, not replaced by an
+     analytic floor computed from corpus statistics. measurement/panel.py:
+       rho-init     identically-shaped model, random weights, same span. The
+                    empirical no-learning reading. Measured 8.0486 BPC (a
+                    uniform predictor gets 8.00), which also proves the harness
+                    leaks nothing.
+       rho-shuffle  context positions permuted, targets untouched. A model that
+                    ignores context is unaffected, so no degradation here means
+                    a byte histogram wearing a transformer.
+     An arm with an unmeasured control is DIRECTIONAL, never PASS/FAIL --
+     absence of a control is not a passed control.
+
+  V2 STABILITY, not a control
+     rho-align re-selects the windows at a different stride phase and must come
+     out the SAME (measured |delta| <= 0.02 BPC). A score that moves with where
+     the windows start is a property of the selection. Report it as stability;
+     scoring an equality check as a "passed control" is the unregistered-extra-
+     hurdle mistake.
+
+  V3 SPAN IS UNRECALLABLE
+     Scored only on windows whose 3x64B probes are absent from EVERY train
+     split, with the keep rate recorded (16.6%). Line-level dedup does not
+     qualify -- it moved 32B familiarity the WRONG way, 79.5% -> 91.8% (DATA-3).
+
+  V4 NO MISATTRIBUTION
+     Every verdict row carries the checkpoint's sha256, not just its step. A
+     step number does not identify a file; this repo has already published one
+     wrong checkpoint claim.
+
+  V5 BARS ARE FROZEN BEFORE THE MEASUREMENT
+     A bar confirmed after the numbers are in cannot be the bar that judged
+     them, even when it agrees. The 3x collapse-ratio bar is registered
+     PROSPECTIVE for that reason and reported, never applied retroactively.
+
+  V6 TWO PATHS, OR SAY SO
+     Where a second measurement path exists, divergence is a TOOLING alarm
+     before it is a finding -- but check it against sampling error first
+     (novelty 37.8/24.0 vs 41.2/21.0 reads z=0.98/1.02 = agreement, not
+     divergence).
+
+Judging rule: the goal is reached when gate.py reports zero DIRECTIONAL rows and
+zero arms falling back to a substituted floor. PASS/FAIL counts are the science
+and are not the target. Contract imported from the sibling anima repo's rho-axon
+panel (HYPOTHESES/cards/H_9270, cli/rho_axon.py); see measurement/CLAUDE.md.
+```
+
 ## Work Rules
 
 - **학습 진행 상황 보고 시 ASCII 그래프 포함 (필수!)**

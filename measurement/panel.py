@@ -42,6 +42,7 @@ Ratio bar stays PROSPECTIVE, as in gate.py: reported, never deciding.
 """
 import hashlib
 import json
+import os
 import math
 import sys
 import time
@@ -68,11 +69,22 @@ SCREEN_CORPORA = [f"{HOME}/data/corpus_merged_25.txt",
                   f"{HOME}/data/corpus_merged_dedup.txt"]
 VAL_CORPUS = f"{HOME}/data/corpus_merged_dedup.txt"
 ARMS = {
-    "s25":  f"{HOME}/checkpoints/arm_s25/best.pt",
-    "s50":  f"{HOME}/checkpoints/arm_s50/best.pt",
-    "s100": f"{HOME}/checkpoints/arm_a_data/best.pt",
-    "e50":  f"{HOME}/checkpoints/arm_e50/best.pt",
-    "e100": f"{HOME}/checkpoints/arm_e100/best.pt",
+    "s25":   f"{HOME}/checkpoints/arm_s25/best.pt",
+    "v25":   f"{HOME}/checkpoints/arm_v25/best.pt",
+    "s50":   f"{HOME}/checkpoints/arm_s50/best.pt",
+    "v50":   f"{HOME}/checkpoints/arm_v50/best.pt",
+    "s100":  f"{HOME}/checkpoints/arm_a_data/best.pt",
+    "v100":  f"{HOME}/checkpoints/arm_v100/best.pt",
+    "p50":   f"{HOME}/checkpoints/arm_p50/best.pt",
+    "p50f":  f"{HOME}/checkpoints/arm_p50/final.pt",
+    "p100":  f"{HOME}/checkpoints/arm_p100/best.pt",
+    "p100f": f"{HOME}/checkpoints/arm_p100/final.pt",
+    "e50":   f"{HOME}/checkpoints/arm_e50/best.pt",
+    "e50f":  f"{HOME}/checkpoints/arm_e50/final.pt",
+    "e100":  f"{HOME}/checkpoints/arm_e100/best.pt",
+    "e100f": f"{HOME}/checkpoints/arm_e100/final.pt",
+    "c50":   f"{HOME}/checkpoints/arm_50c/best.pt",
+    "c50f":  f"{HOME}/checkpoints/arm_50c/final.pt",
 }
 SELECT = sys.argv[2:] or list(ARMS)
 
@@ -175,6 +187,9 @@ def main():
     init_cache = {}
     for name in SELECT:
         path = ARMS[name]
+        if not os.path.exists(path):
+            print(f"[{name}] checkpoint absent -- skipped, not scored", flush=True)
+            continue
         sha = hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
         ck = torch.load(path, map_location="cpu", weights_only=False)
         cfg = ck.get("config", {}) or {}

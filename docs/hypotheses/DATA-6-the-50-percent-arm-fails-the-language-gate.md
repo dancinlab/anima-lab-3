@@ -342,6 +342,51 @@ so the LR-schedule confound does not damage it — these arms received more expo
 schedule, and neither moved the gate. Nothing here separates exposure from schedule for the small
 *positive* movements in the table; those stay unattributed.
 
+### 4.7 Content control: the complement half fails too, so it was never the lines (20:13)
+
+Registered before launch (`measurement/build_complement_half.py`): every 50% run so far used the
+same modulo phase (`i%2==0`), so which lines the failing subset contains was the one variable never
+varied. Its complement (`i%2==1`) was built by the same rule -- 33,395,213 bytes against
+33,414,267 (99.9%), bigram floor 3.5934 against 3.5925, and **0 shared distinct lines**. Same size,
+same construction, disjoint content. Flags byte-identical to `arm_s50` including `--seed 1337`; the
+corpus file was the only difference.
+
+| arm | train bytes | best | final | vs its own floor | gate |
+|---|---|---|---|---|---|
+| 25% (`i%4==0`) | 15.7M | 0.4089 | — | 11% | **PASS** |
+| 50% (`i%2==0`) | 30.3M | 4.5001 | 5.0761 | 125% / 141% | FAIL |
+| **50% complement (`i%2==1`)** | **30.2M** | **4.0473** | **4.9205** | **113% / 137%** | **FAIL** |
+| 100% (all) | 60.5M | 1.9853 | 2.3377 | 55% / 65% | **PASS** |
+
+```
+ratio to each corpus's OWN bigram floor, by train size
+  15.7M   █░░░░░░░░░░░░░░░░░░░   11%   PASS
+  30.3M   █████████████████████████  125%  FAIL
+  30.2M   ███████████████████████    113%  FAIL   ← disjoint from the row above
+  60.5M   ███████████░░░░░░░░░   55%   PASS
+          └ pass, fail, fail, pass -- not monotone in data volume
+```
+
+**C2 confirmed, C1 refuted.** Two disjoint halves of the same corpus, built the same way at the
+same size, both fail; a quarter-subset of one of them passes decisively and their union passes.
+The two halves even land in the same place on their own validation (1.7390 against 1.7414), so
+this reproduces across content rather than depending on it.
+
+**This corrects §4.5.** That section read the result as "a strict superset of a passing training
+set produced a failing model", which invited "the added lines broke it". They did not: the lines
+that were *not* added produce the same failure. Nothing about which lines are present explains
+this, and §4.6 already showed nothing about their measurable properties does either.
+
+What the arms share at the failure size is the size. With exposure equalised (§4.6) and batch
+order varied (DATA-5 §5) both excluded, what is left is an interaction between this corpus scale
+and this model/optimiser -- a U-shape in data volume, not a property of data. Naming a mechanism
+for it is exactly the move §5.4 forbids until one is tested, so it stays unnamed.
+
+All four rows carry measured controls, not substituted floors (`measurement/panel.py`): every arm's
+context shuffle costs it 7.0-13.8 BPC and every arm beats an identically-shaped random-weight model
+(8.0486), so none of these numbers is a byte histogram. The window selection is stable to
+re-phasing within 0.02 BPC.
+
 ## 5. Application
 
 1. **Report the gate, not the ranking.** Three BPC numbers invited a curve; PASS/PASS/FAIL against

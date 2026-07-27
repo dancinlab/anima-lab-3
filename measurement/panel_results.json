@@ -24,6 +24,19 @@
     "ratio_over_worst_control": 19.684555074410678,
     "controls_collapsed": true
   },
+  "v25": {
+    "bpc": 0.40509544060082503,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "63cebac97ad5877c",
+    "ctrl_shuffle_bpc": 14.576465289239389,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 0.40047108643671486,
+    "stability_delta": 0.004624354164110167,
+    "collapse_delta_shuffle": 14.171369848638564,
+    "collapse_delta_init": 7.643553700792384,
+    "ratio_over_worst_control": 19.86852562313637,
+    "controls_collapsed": true
+  },
   "s50": {
     "bpc": 4.500112811486393,
     "ckpt_step": 6750,
@@ -35,6 +48,19 @@
     "collapse_delta_shuffle": 7.360459833039415,
     "collapse_delta_init": 3.548536329906816,
     "ratio_over_worst_control": 1.78854386068929,
+    "controls_collapsed": true
+  },
+  "v50": {
+    "bpc": 4.342988977956926,
+    "ckpt_step": 2750,
+    "ckpt_sha256_16": "b31828aa2cfc9054",
+    "ctrl_shuffle_bpc": 11.854821695165775,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.34130108647678,
+    "stability_delta": 0.001687891480146142,
+    "collapse_delta_shuffle": 7.511832717208849,
+    "collapse_delta_init": 3.705660163436283,
+    "ratio_over_worst_control": 1.8532511093729596,
     "controls_collapsed": true
   },
   "s100": {
@@ -50,6 +76,71 @@
     "ratio_over_worst_control": 4.054205566534938,
     "controls_collapsed": true
   },
+  "v100": {
+    "bpc": 2.0878642004971395,
+    "ckpt_step": 5250,
+    "ckpt_sha256_16": "299403ede452a781",
+    "ctrl_shuffle_bpc": 11.954573739453679,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 2.0622057856756397,
+    "stability_delta": 0.025658414821499775,
+    "collapse_delta_shuffle": 9.866709538956538,
+    "collapse_delta_init": 5.96078494089607,
+    "ratio_over_worst_control": 3.8549677414253054,
+    "controls_collapsed": true
+  },
+  "p50": {
+    "bpc": 4.500112811486393,
+    "ckpt_step": 6750,
+    "ckpt_sha256_16": "c514d321ab0c4cf3",
+    "ctrl_shuffle_bpc": 11.860572644525808,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.5206279662239615,
+    "stability_delta": 0.020515154737568153,
+    "collapse_delta_shuffle": 7.360459833039415,
+    "collapse_delta_init": 3.548536329906816,
+    "ratio_over_worst_control": 1.78854386068929,
+    "controls_collapsed": true
+  },
+  "p50f": {
+    "bpc": 5.0761101512076685,
+    "ckpt_step": 12000,
+    "ckpt_sha256_16": "f8b00039bc7ef8bd",
+    "ctrl_shuffle_bpc": 12.790966710929217,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 5.097128957138288,
+    "stability_delta": 0.021018805930619777,
+    "collapse_delta_shuffle": 7.714856559721548,
+    "collapse_delta_init": 2.972538990185541,
+    "ratio_over_worst_control": 1.5855938704321335,
+    "controls_collapsed": true
+  },
+  "p100": {
+    "bpc": 1.9852592596266048,
+    "ckpt_step": 7000,
+    "ckpt_sha256_16": "5a79a1cf91273f48",
+    "ctrl_shuffle_bpc": 12.248025092387632,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 1.973041381679431,
+    "stability_delta": 0.012217877947173772,
+    "collapse_delta_shuffle": 10.262765832761026,
+    "collapse_delta_init": 6.0633898817666045,
+    "ratio_over_worst_control": 4.054205566534938,
+    "controls_collapsed": true
+  },
+  "p100f": {
+    "bpc": 2.3377233668754513,
+    "ckpt_step": 12000,
+    "ckpt_sha256_16": "0c336d54bc7f0e07",
+    "ctrl_shuffle_bpc": 12.999897104105319,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 2.305989376706921,
+    "stability_delta": 0.03173399016853029,
+    "collapse_delta_shuffle": 10.662173737229867,
+    "collapse_delta_init": 5.710925774517758,
+    "ratio_over_worst_control": 3.4429433590984946,
+    "controls_collapsed": true
+  },
   "e50": {
     "bpc": 4.3133545936421775,
     "ckpt_step": 6750,
@@ -63,6 +154,19 @@
     "ratio_over_worst_control": 1.8659836483781793,
     "controls_collapsed": true
   },
+  "e50f": {
+    "bpc": 5.292279218916175,
+    "ckpt_step": 23300,
+    "ckpt_sha256_16": "273407f2a47986db",
+    "ctrl_shuffle_bpc": 13.132544055045436,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 5.312049989745145,
+    "stability_delta": 0.01977077082897072,
+    "collapse_delta_shuffle": 7.840264836129261,
+    "collapse_delta_init": 2.7563699224770346,
+    "ratio_over_worst_control": 1.5208285142297389,
+    "controls_collapsed": true
+  },
   "e100": {
     "bpc": 2.0089266951207527,
     "ckpt_step": 17750,
@@ -74,6 +178,45 @@
     "collapse_delta_shuffle": 10.775158237523346,
     "collapse_delta_init": 6.039722446272457,
     "ratio_over_worst_control": 4.006442425670201,
+    "controls_collapsed": true
+  },
+  "e100f": {
+    "bpc": 2.6264998719420856,
+    "ckpt_step": 46600,
+    "ckpt_sha256_16": "d70676b021ac5e0c",
+    "ctrl_shuffle_bpc": 14.279531610092933,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 2.5895373129203376,
+    "stability_delta": 0.03696255902174794,
+    "collapse_delta_shuffle": 11.653031738150847,
+    "collapse_delta_init": 5.422149269451124,
+    "ratio_over_worst_control": 3.0644011170051497,
+    "controls_collapsed": true
+  },
+  "c50": {
+    "bpc": 4.0473032909164575,
+    "ckpt_step": 3500,
+    "ckpt_sha256_16": "2d5b3d748197c01c",
+    "ctrl_shuffle_bpc": 11.016950941264867,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.048645008192706,
+    "stability_delta": 0.001341717276248211,
+    "collapse_delta_shuffle": 6.969647650348409,
+    "collapse_delta_init": 4.001345850476752,
+    "ratio_over_worst_control": 1.9886449230175436,
+    "controls_collapsed": true
+  },
+  "c50f": {
+    "bpc": 4.92048775846698,
+    "ckpt_step": 12000,
+    "ckpt_sha256_16": "7b8ca0c41b587a44",
+    "ctrl_shuffle_bpc": 12.730576142463804,
+    "ctrl_init_bpc": 8.04864914139321,
+    "stability_alt_phase_bpc": 4.921559898312458,
+    "stability_delta": 0.0010721398454780484,
+    "collapse_delta_shuffle": 7.810088383996823,
+    "collapse_delta_init": 3.128161382926229,
+    "ratio_over_worst_control": 1.6357421329914728,
     "controls_collapsed": true
   }
 }
