@@ -1,0 +1,81 @@
+{
+  "_setup": {
+    "G0_bar": 0.5,
+    "G0_need": "4/5",
+    "G2_need": 3,
+    "ngram_tokens": 4,
+    "gen_bytes": 256,
+    "temp": 0.8,
+    "decode_seed": 20260727,
+    "vocab": 223226,
+    "corpus_regime": "CONSTRUCTED (corpus_regime.py) -- p9: a pass here certifies the instrument, not a faculty"
+  },
+  "_control_retrieval": {
+    "novel_ngrams": 0,
+    "valid": true
+  },
+  "_control_positive": {
+    "kwr_per_seed": [
+      0.8928571428571429,
+      0.95,
+      0.8888888888888888,
+      0.8846153846153846,
+      0.9714285714285714
+    ],
+    "kwr_mean": 0.9175579975579975,
+    "valid": true,
+    "_note": "real held-out text; MUST clear the bar or lambda2 is void"
+  },
+  "nf9_20k": {
+    "kwr_per_seed": [
+      0.9655172413793104,
+      0.9655172413793104,
+      0.92,
+      0.9354838709677419,
+      0.9722222222222222
+    ],
+    "kwr_mean": 0.951748115189717,
+    "seeds_over_bar": 5,
+    "G0": true,
+    "novel_ngrams": 32,
+    "G2": true,
+    "samples": [
+      "문제'죠.⏎A: 통합정보이론에서는 Φ 값이 의식의 양을 나타낸다고 해요.⏎B: 맞아요. Φ가 높을수록 의식 수준이 높다는 거죠",
+      "l.⏎⏎A: 이 모델의 architecture가 정말 흥미로워요.⏎B: 네, PureField 방식은 기존 transforme",
+      "요. Byte-level은 convergence가 느리지만 multilingual에 강해요.⏎B: 특히 Korean은 UTF-",
+      "��이 존재할 수 있어요. 한강의 기적이라 불리는 경제 성장은 세계적으로도 유례가 없어요. 사실은, 1 + 2 = 2, 2 +",
+      "rch.randn(256)  # → (512, 256)⏎torch.cat([torch.randn(32, 64)  # → (64"
+    ],
+    "novel_examples": [
+      "torch.cat([torch.randn(32, 64) # →",
+      "# → (64, 62)",
+      "→ (24, 64) torch"
+    ],
+    "ckpt_step": 20000,
+    "ckpt_sha256_16": "39982e87c3232638"
+  },
+  "_control_before_backbone": {
+    "kwr_per_seed": [
+      0.1,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "kwr_mean": 0.02,
+    "seeds_over_bar": 0,
+    "G0": false,
+    "novel_ngrams": 0,
+    "G2": false,
+    "samples": [
+      "$w ������\"�jF;a\\y\u0007��\fu�DҸVW\u0004��V�cr0\u001b��\tc��\u0004�Q�1�\u0012�uMB��}�$��c��y�\u0013kVN",
+      "+��hF\u001bK�\u0002\"�\u0011\u0019�\u0000�(�\u0014\u0005�~3\b7\u0014d\u001bk,3�MHČ��~6ePo\u0007XF�h1���b�:o�Ȗ��Ug1m\u0000��֣,~̉",
+      "�O�0AQ��\u001ey��Ӫ>�\u0015\u0007�nW�$���Vs�\u00051�( >X�g6L��k:\"~�\u001e�I縕+�.p�v[0��W\u00054O��FӇ\u0005\u0014",
+      "c*�6\u0005\r\u0007{!2�''t��1�o��ƾ�-ۙ}}�������P�B\tM��`YFἌ�0�h=W��@H! \u0005�b��mj\b.��_-",
+      "\u0015��q{����W\u000b�e�\u000f�<<���^~\u00046pq\u001b\u0015׉o���?�pڅF\u000f�����?^p�6�ϖ h�\u0012I#�b���FO��\u0015��"
+    ],
+    "novel_examples": [],
+    "valid": true,
+    "_note": "anti-Goodhart: this MUST fail G0"
+  }
+}
