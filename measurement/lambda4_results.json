@@ -1,0 +1,50 @@
+{
+  "_setup": {
+    "freq_band": [
+      50,
+      5000
+    ],
+    "min_token_bytes": 6,
+    "lines_per_group": 192,
+    "seed": 20260728,
+    "corpus": "corpus_natural_ko_dedup.txt",
+    "regime": "NATURAL",
+    "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN"
+  },
+  "nat": {
+    "value_novel_cooccurrence": 4.817599958088868,
+    "ctrl_seen_cooccurrence": 4.57652655924418,
+    "ctrl_broken_composition": 4.992717021427427,
+    "midpoint": 4.7846217903358035,
+    "lambda4": false,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "f86a7d3ad5fe252c"
+  },
+  "natf": {
+    "value_novel_cooccurrence": 4.3399995647707135,
+    "ctrl_seen_cooccurrence": 4.0838015529887475,
+    "ctrl_broken_composition": 4.504454950629997,
+    "midpoint": 4.294128251809372,
+    "lambda4": false,
+    "ckpt_step": 12000,
+    "ckpt_sha256_16": "ff95e0e7892a8db1"
+  },
+  "nat25": {
+    "value_novel_cooccurrence": 5.801590740802826,
+    "ctrl_seen_cooccurrence": 5.752190300850117,
+    "ctrl_broken_composition": 5.968443593478911,
+    "midpoint": 5.860316947164514,
+    "lambda4": true,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "18add2da8d1ffa69"
+  },
+  "nat50": {
+    "value_novel_cooccurrence": 6.023895271666003,
+    "ctrl_seen_cooccurrence": 5.95909749728741,
+    "ctrl_broken_composition": 6.20630631987408,
+    "midpoint": 6.082701908580745,
+    "lambda4": true,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "dd057b2a075e6ac3"
+  }
+}
