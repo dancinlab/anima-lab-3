@@ -1,0 +1,12 @@
+[device] cuda
+[fresh] 73,182,745 bytes of prose disjoint from the trained corpus, appended to the held-out pool
+[atoms] 12,659 tokens in the 50-5000 frequency band of 1,198,056 total
+[pairs] 6,102,977 band pairs co-occur somewhere in train
+[lines] novel-cooccurrence 13,929 · seen-cooccurrence 68,750 · atoms with a seen partner 12,659
+[paired] SEEN control built on 192 of 192 value lines (same sentence, one atom swapped for a train co-occurring partner)
+[matched] damage-matched controls: 55,716 paired samples from 13,929 lines x 4 draws (one swap each side, frequency within 2x)
+[nat] novel=4.8502 · seen=4.9116 · broken=4.9623 · mid=4.9370 · pos=-1.213 · Δbroken=+0.1121 t=5.0 · MATCHED seen-swap=4.9289 novel-swap=4.9363 cost=+0.0074 t=+8.1 (clustered over 13929 lines; unclustered would read +8.4) → λ4 FAIL · sha f86a7d3ad5fe252c
+[natf] novel=4.3482 · seen=4.3619 · broken=4.4651 · mid=4.4135 · pos=-0.133 · Δbroken=+0.1169 t=5.7 · MATCHED seen-swap=4.4245 novel-swap=4.4304 cost=+0.0059 t=+7.4 (clustered over 13929 lines; unclustered would read +7.6) → λ4 FAIL · sha ff95e0e7892a8db1
+[nat25] novel=5.8810 · seen=6.2183 · broken=5.9836 · mid=6.1010 · pos=1.437 · Δbroken=+0.1026 t=3.5 · MATCHED seen-swap=6.0433 novel-swap=6.0525 cost=+0.0091 t=+7.7 (clustered over 13929 lines; unclustered would read +8.1) → λ4 FAIL · sha 18add2da8d1ffa69
+[nat50] novel=6.0050 · seen=6.2235 · broken=6.1460 · mid=6.1847 · pos=2.819 · Δbroken=+0.1410 t=4.8 · MATCHED seen-swap=6.2326 novel-swap=6.2548 cost=+0.0222 t=+16.0 (clustered over 13929 lines; unclustered would read +16.9) → λ4 FAIL · sha dd057b2a075e6ac3
+[json] logs/lambda4.json

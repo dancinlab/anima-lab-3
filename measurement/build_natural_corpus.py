@@ -92,8 +92,12 @@ def keep(line):
 
 def main():
     dump, out_path, target_mb = sys.argv[1], sys.argv[2], float(sys.argv[3])
+    # Optional 4th arg: skip this many MB of extracted prose before writing. Used
+    # to cut a FRESH slice the trained corpus never contained -- lines the model
+    # provably never saw, without retraining anything to get them.
+    skip = int(float(sys.argv[4]) * (1 << 20)) if len(sys.argv) > 4 else 0
     target = int(target_mb * (1 << 20))
-    written, pages, kept_lines = 0, 0, 0
+    written, pages, kept_lines, skipped = 0, 0, 0, 0
     buf = b""
     with bz2.open(dump, "rb") as f, open(out_path, "wb") as out:
         for chunk in iter(lambda: f.read(1 << 22), b""):
@@ -109,6 +113,9 @@ def main():
                     line = RE_WS.sub(b" ", html.unescape(
                         line.decode("utf8", "replace")).encode("utf8")).strip()
                     if keep(line):
+                        if skipped < skip:
+                            skipped += len(line) + 1
+                            continue
                         out.write(line + b"\n")
                         written += len(line) + 1
                         kept_lines += 1

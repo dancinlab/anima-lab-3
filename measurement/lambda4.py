@@ -46,6 +46,12 @@ import torch.nn.functional as F
 HOME = "/home/summer/anima-clm-pure"
 TRAINER = f"{HOME}/train_conscious_lm.py"
 CORPUS = f"{HOME}/data/corpus_natural_ko_dedup.txt"
+# Optional extra held-out pool: a Wikipedia slice disjoint from CORPUS, so the
+# model never saw any of it. The clustered test's unit is the sentence, so the
+# only way to resolve an arm sitting below threshold is more sentences -- and
+# enlarging CORPUS's own val split would mean retraining, which changes the thing
+# being measured. Fresh prose does not.
+FRESH = f"{HOME}/data/corpus_natural_fresh.txt"
 CHUNK = 1 << 20
 BLOCK = 256
 BATCH = 8
@@ -60,7 +66,7 @@ TARGET_LINES = 192             # per group, for the unmatched run-1/2 controls
 # is symmetric, so more samples cannot bias the answer toward either verdict.
 # Raising it after a null is raising resolution, not moving a threshold -- and a
 # result below resolution is not an answer, so leaving it there is not a finding.
-MATCHED_LINES = 1027           # all novel-cooccurrence lines the corpus yields
+MATCHED_LINES = 100000         # take every novel-cooccurrence line available
 MATCHED_DRAWS = 4              # independent swap pairs per line
 SEED = 20260728
 
@@ -286,6 +292,11 @@ def main():
     print(f"[device] {device}", flush=True)
 
     train, val = split(CORPUS)
+    if os.path.exists(FRESH):
+        fresh = open(FRESH, "rb").read()
+        print(f"[fresh] {len(fresh):,} bytes of prose disjoint from the trained "
+              f"corpus, appended to the held-out pool", flush=True)
+        val = val + b"\n" + fresh
     novel, seen, band, partners, freq, novel_all = build_pairs(train, val, rng)
     if len(novel) < 32 or len(seen) < 32:
         print("[verdict] not enough lines in one group -- λ4 cannot be measured "
