@@ -1,0 +1,40 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 261,
+    "keep_rate": 0.9808429118773946,
+    "kept_alt": 256,
+    "tested_alt": 259,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "ratio_prospective": 3.0
+  },
+  "nat": {
+    "bpc": 1.565725493227533,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "f86a7d3ad5fe252c",
+    "ctrl_shuffle_bpc": 13.378752913172438,
+    "ctrl_init_bpc": 8.120394584910033,
+    "stability_alt_phase_bpc": 1.552955324572053,
+    "stability_delta": 0.012770168655479974,
+    "collapse_delta_shuffle": 11.813027419944905,
+    "collapse_delta_init": 6.5546690916824994,
+    "ratio_over_worst_control": 5.186346278472434,
+    "controls_collapsed": true
+  },
+  "natf": {
+    "bpc": 1.563496767367773,
+    "ckpt_step": 12000,
+    "ckpt_sha256_16": "ff95e0e7892a8db1",
+    "ctrl_shuffle_bpc": 13.446074317974128,
+    "ctrl_init_bpc": 8.120394584910033,
+    "stability_alt_phase_bpc": 1.550840327614634,
+    "stability_delta": 0.012656439753139015,
+    "collapse_delta_shuffle": 11.882577550606355,
+    "collapse_delta_init": 6.556897817542259,
+    "ratio_over_worst_control": 5.193739286446452,
+    "controls_collapsed": true
+  }
+}

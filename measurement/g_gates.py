@@ -92,6 +92,19 @@ ARMS = {
 SELECT = sys.argv[2:] or list(ARMS)
 
 
+# The natural-corpus family. Selected with LAMBDA_FAMILY=natural rather than a
+# fourth copy of this file: arm_nat trained on different bytes, so its honest
+# vocabulary and its corpus-absence test must both come from ITS OWN corpus.
+# Scoring known-word-ratio against a vocabulary the model never trained on
+# would read as byte salad no matter how good the model is.
+if os.environ.get("LAMBDA_FAMILY") == "natural":
+    NAT = f"{HOME}/data/corpus_natural_ko_dedup.txt"
+    CORPUS = NAT
+    ARMS = {"nat": f"{HOME}/checkpoints/arm_nat/best.pt",
+            "natf": f"{HOME}/checkpoints/arm_nat/final.pt"}
+    SELECT = sys.argv[2:] or list(ARMS)
+
+
 def load_trainer(path):
     spec = spec_from_file_location("clm_trainer", path)
     mod = module_from_spec(spec)

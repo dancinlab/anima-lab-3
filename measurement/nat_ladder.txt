@@ -1,0 +1,19 @@
+===== λ0/λ1 (panel) =====
+[device] cuda
+[split] screening corpus_natural_ko_dedup.txt: train=66,060,288
+[select] primary 256/261 = 98.1% · alt-phase 256/259 = 98.8% (8s)
+[nat] value=1.5657 · shuffle=13.3788 (Δ+11.8130) · init=8.1204 (Δ+6.5547) · alt-phase=1.5530 (|Δ|0.0128) · ratio=5.19x · sha f86a7d3ad5fe252c
+[natf] value=1.5635 · shuffle=13.4461 (Δ+11.8826) · init=8.1204 (Δ+6.5569) · alt-phase=1.5508 (|Δ|0.0127) · ratio=5.19x · sha ff95e0e7892a8db1
+[json] logs/panel_nat.json
+===== λ2/λ3 (g_gates) =====
+[device] cuda
+[vocab] 1,234,245 distinct whitespace tokens in train
+[seeds] 5 x 128B prefixes from the held-out split
+[ctrl] POSITIVE control (real held-out text) kwr=0.839 → VALID -- the instrument reads
+[ctrl] retrieval control novel n-grams = 0 (VALID -- absence test works)
+[nat] G0 kwr mean=0.802 · 5/5 over 0.5 → PASS | G2 novel=52 → PASS · sha f86a7d3ad5fe252c (5s)
+        sample: �주(範江州 主節生)로 나왔다.⏎조선 오카시 전북도에 있던 한족이 조선 시대에서 사용하여 무소속의 일생을 대신하고 전역하였다.
+[natf] G0 kwr mean=0.805 · 5/5 over 0.5 → PASS | G2 novel=55 → PASS · sha ff95e0e7892a8db1 (5s)
+        sample: �주(範江州臣)와 함께 등을 지냈다. 오창을 전북특별자치도 옹주군 중앙동에 효율정에 보존하였다.⏎오창의전에 고림한 자치 전력은
+[ctrl] before-backbone (random weights) G0 kwr=0.000 → FAIL -- correct, metric is not reading the corpus
+[json] logs/g_gates_nat.json

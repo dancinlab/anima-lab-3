@@ -97,6 +97,20 @@ ARMS = {
 SELECT = sys.argv[2:] or list(ARMS)
 
 
+# The natural-corpus family. Selected with LAMBDA_FAMILY=natural rather than a
+# fourth copy of this file: arm_nat trained on different bytes, so its honest
+# span must be novel against ITS OWN train split, not against the constructed
+# corpora it never saw. Screening the wrong corpus would score it on material it
+# memorised and quietly invert the result.
+if os.environ.get("LAMBDA_FAMILY") == "natural":
+    NAT = f"{HOME}/data/corpus_natural_ko_dedup.txt"
+    SCREEN_CORPORA = [NAT]
+    VAL_CORPUS = NAT
+    ARMS = {"nat": f"{HOME}/checkpoints/arm_nat/best.pt",
+            "natf": f"{HOME}/checkpoints/arm_nat/final.pt"}
+    SELECT = sys.argv[2:] or list(ARMS)
+
+
 def load_trainer(path):
     spec = spec_from_file_location("clm_trainer", path)
     mod = module_from_spec(spec)

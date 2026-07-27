@@ -299,6 +299,15 @@ Judging rules:
    ⇒ corpus_natural_ko_dedup 위에서 낸 λ 등급만 능력 증거가 될 수 있다. 기존 25행은
    전부 constructed 위에서 측정됐으므로 여전히 계측기 확인이다(p9).
 
+   ✅ 첫 자연 코퍼스 팔(arm_nat, arm_s100 과 seed 포함 전 플래그 동일, 코퍼스만 다름):
+      λ0 SPAN   창 채택률 98.1% (구성 코퍼스 16.6%) · 재위상 편차 0.013
+      λ1 SCREEN 1.5657 BPC = 자기 bigram floor 3.3634 의 47% PASS
+                최악통제 대비 5.19x (구성 코퍼스 100% 팔은 3.9~4.1x)
+      λ2 COHER  kwr 0.802 · 5/5 PASS   λ3 NOVEL  부재 4-gram 52 PASS
+      통제 전부 유효: positive 0.839 · retrieval 0 · before-backbone 0.000 FAIL
+      ⇒ 이 두 행은 Λ REGIME=NATURAL 위에서 나왔으므로 **계측기 확인이 아니라
+        능력에 대한 증거로 인용할 수 있는 이 리포 최초의 결과**다.
+
 λ0 SPAN — 채점 구간이 회상 불가한가
    bar: 창의 3×64B 프로브가 모든 train split 에 부재 · keep rate 를 행별로 기록
    통제: 위상 재선택(rho-align)으로 점수가 안 움직일 것 (|Δ| 작음)

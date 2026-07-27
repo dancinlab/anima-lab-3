@@ -72,6 +72,10 @@ FLOORS = {
     "50c":  {"unigram": 6.0275, "bigram": 3.5934, "corpus": "corpus_merged_50c.txt"},
     "100":  {"unigram": 6.0195, "bigram": 3.6010, "corpus": "corpus_merged_dedup.txt"},
     "v2":   {"unigram": 5.9548, "bigram": 3.4920, "corpus": "corpus_v2.txt"},
+    # The only NATURAL corpus here (Λ REGIME). Lower floors than the constructed
+    # family despite 3.4x the vocabulary -- encyclopedic Korean prose is more
+    # predictable byte-to-byte than a mix of Korean, English, logs and numbers.
+    "nat":  {"unigram": 5.4355, "bigram": 3.3634, "corpus": "corpus_natural_ko_dedup.txt"},
 }
 
 # arm key -> (corpus, human label). The suffix convention comes from
@@ -107,6 +111,10 @@ ARMS = {
     "nf9_12k": ("v2", "nf9 300M @12,000"),
     "nf9_14k": ("v2", "nf9 300M @14,000"),
     "nf9_20k": ("v2", "nf9 300M @20,000 (controls measured on CPU)"),
+    # NATURAL corpus arm -- the first rows whose λ grades can be read as evidence
+    # about a faculty rather than as an instrument check (p9).
+    "nat":   ("nat", "natural corpus best"),
+    "natf":  ("nat", "natural corpus final"),
 }
 
 # Context-shuffle measurements, keyed by the corpus they were run on
@@ -134,6 +142,7 @@ P7_P9_NOTE = ("verdicts here are a SCREEN, not a faculty claim: BPC is a perplex
               "means the model beat pair statistics on material it cannot recall -- nothing more.")
 PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, when present
 PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
+PANEL_NAT_JSON = "measurement/panel_nat_results.json"  # the natural-corpus arm
 
 
 def load_scores(paths):
@@ -228,6 +237,7 @@ def main():
         "measurement/phase_ablation_eval.json",
         "measurement/panel_results.json",
         "measurement/panel_nf9_results.json",
+        "measurement/panel_nat_results.json",
     ]
     srcs = [s for s in srcs if Path(s).exists()]
     scores, keep_rate = load_scores(srcs)
@@ -239,7 +249,7 @@ def main():
     print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
 
     panel = {}
-    for pj in (PANEL_JSON, PANEL_NF9_JSON):
+    for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON):
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
     uncovered = sorted(set(scores) - set(ARMS))
