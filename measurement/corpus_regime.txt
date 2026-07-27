@@ -1,3 +1,15 @@
+[corpus_v4.txt]
+  lines=1,794,556 distinct=580,427 · repetition=3.09x
+  speaker-prefixed 'A:'/'B:' = 2.1%
+  top-10 lines cover 6.90% of the file
+  vocab: first 10% has 59,363 of the full 149,041 = 39.8% (a template exhausts early)
+  most common: [('  [합의 형성 중...]', 35598), ('참가자:', 12997), ('  - 민준 (철학자)', 9803)]
+[corpus_v5.txt]
+  lines=1,672,382 distinct=341,549 · repetition=4.90x
+  speaker-prefixed 'A:'/'B:' = 11.8%
+  top-10 lines cover 13.14% of the file
+  vocab: first 10% has 55,761 of the full 134,464 = 41.5% (a template exhausts early)
+  most common: [('Φ가 하락하려 했으나 래칫이 �', 28810), ('세포 쌍 1개가 합의에 도달했�', 22367), ('텐션이 0.007로 하락하면서 항�', 22210)]
 [corpus_v2.txt]
   lines=1,028,596 distinct=541,506 · repetition=1.90x
   speaker-prefixed 'A:'/'B:' = 35.0%
