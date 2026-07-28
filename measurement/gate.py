@@ -131,6 +131,8 @@ ARMS = {
     "natdrop37v": ("nat", "natural · dropout 0.37 · seed 7331"),
     "n25drop37":  ("nat25", "natural 25% · dropout 0.37 · seed 1337"),
     "n25drop37v": ("nat25", "natural 25% · dropout 0.37 · seed 7331"),
+    "n25drop42":  ("nat25", "natural 25% · dropout 0.42 · seed 1337"),
+    "n25drop42v": ("nat25", "natural 25% · dropout 0.42 · seed 7331"),
     "nat25":  ("nat25", "natural 25% best"),
     "nat25f": ("nat25", "natural 25% final"),
     "nat50":  ("nat50", "natural 50% best"),

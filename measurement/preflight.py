@@ -44,6 +44,7 @@ SEED_SIBLINGS = {
     "natdrop35": "natdrop35v", "natdrop35v": "natdrop35",
     "natdrop37": "natdrop37v", "natdrop37v": "natdrop37",
     "n25drop37": "n25drop37v", "n25drop37v": "n25drop37",
+    "n25drop42": "n25drop42v", "n25drop42v": "n25drop42",
 }
 
 
