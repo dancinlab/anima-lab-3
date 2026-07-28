@@ -105,7 +105,10 @@ if os.environ.get("LAMBDA_FAMILY") == "natural":
             "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
             "nat25f": f"{HOME}/checkpoints/arm_nat25/final.pt",
             "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
-            "nat50f": f"{HOME}/checkpoints/arm_nat50/final.pt"}
+            "nat50f": f"{HOME}/checkpoints/arm_nat50/final.pt",
+            "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
+            "natdrop": f"{HOME}/checkpoints/arm_nat_drop3/best.pt",
+            "natdrop5": f"{HOME}/checkpoints/arm_nat_drop5/best.pt"}
     SELECT = sys.argv[2:] or list(ARMS)
 
 
@@ -182,7 +185,7 @@ def generate(model, prefix, n_bytes, device, gen):
 def build(clm, cfg, device, state=None):
     m = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
                         n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                        block_size=BLOCK, dropout=0.0)
+                        block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
     if state is not None:
         m.load_state_dict(state, strict=False)
     return m.to(device).eval()

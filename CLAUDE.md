@@ -410,14 +410,28 @@ Judging rules:
        0.5  BPC 7.0527  벌점 −0.0042  t=−6.3  PASS
      벌점이 단조 감소하다 0 을 지나 음으로 넘어간다. 바닥은 없었다(D2 반증).
 
-     ⚠️ 값이 아니라 맞바꿈으로 읽어야 한다: 전체 BPC 는 4.93 → 7.05 로 크게 나빠진다.
-       λ1 SCREEN 은 자기 bigram floor 3.3634 를 기준으로 하므로 7.05 는 그 두 배로
-       **λ1 을 떨어뜨린다.** 즉 dropout 0.5 는 λ4 를 사면서 λ1 을 판다.
-       한 등급을 통과시키려 다른 등급을 깨는 설정은 사다리 통과가 아니다 —
-       사다리는 전 등급이 동시에 PASS 여야 한다. 이 팔은 '레버가 실재한다'는 증명이지
-       해답이 아니다.
+     ⚠️ 맞바꿈은 실재하나 **등급이 다르다**. 처음에 "λ1 을 떨어뜨린다" 고 적었는데
+       그건 λ4 의 7.05 를 bigram floor 와 비교한 것이었고, 두 수는 span 이 다르다
+       (λ4 는 패딩된 교체통제 줄, λ1 은 신규성통제 창). 추론을 버리고 실측했다:
 
-   ⇒ **λ4 미도달 · 확정** (λ4 단독 PASS 는 λ1 을 깨고 얻은 것이라 사다리 통과 아님). NULL 은 하나도 남지 않았다. 통제를 모두 건 뒤에도 네 팔
+         arm       λ1 BPC(floor 3.3634)  λ2 kwr   λ3   λ4     전 등급
+         nat        1.5590  46%  PASS     0.802    P   FAIL     ✗
+         natctx     1.5109  45%  PASS     0.763    P   FAIL     ✗
+         natdrop    1.7309  51%  PASS     0.797    P   FAIL     ✗
+         natdrop5   2.0676  61%  PASS     0.362    F   PASS     ✗
+
+       natdrop5 는 λ1 을 **통과한다**(61%). 깨지는 것은 λ2 COHERENCE 와 λ3 NOVELTY 다
+       — kwr 0.802 → 0.362, 부재 n-gram 51 → 1. 즉 dropout 0.5 는 모델을 단어를
+       못 만드는 상태로 만들었고, **단어를 안 만드는 모델은 조합도 안 만든다.**
+       λ4 의 음수 벌점은 합성 능력의 신호가 아니라 그 붕괴의 신호다.
+
+     ★ 여기서 사다리의 구조적 성질이 하나 드러난다: **등급에는 선행조건이 있다.**
+       λ4(조합)는 λ2(단어를 만듦)를 전제한다. λ2 를 떨어뜨린 팔의 λ4 PASS 는 통과가
+       아니라 인공물이다. 규칙으로 등록한다 — 낮은 등급이 FAIL 인 팔의 높은 등급은
+       PASS 로 세지 않는다.
+
+   ⇒ **λ4 미도달 · 확정.** 어떤 팔도 전 등급을 동시에 통과하지 못한다 — λ2/λ3 를
+     지키는 팔은 λ4 에서 실패하고, λ4 를 통과하는 팔은 λ2/λ3 가 무너진다. NULL 은 하나도 남지 않았다. 통제를 모두 건 뒤에도 네 팔
      전부 처음 보는 조합에 실재하는 벌점을 낸다. 완전한 합성이 아니다.
      효과 크기가 +0.0059~+0.0222 BPC 로 작고 모델 크기와 거의 무관하다 — 학습
      바이트가 3.8 배 늘어도 벌점이 사라지지 않는다. 1~3차에서 두 번 냈던
@@ -518,7 +532,11 @@ substituted floor, with any UNMEASURABLE rows listed explicitly. PASS/FAIL
 counts are the science and are not the target.
 
 Judging rule (λ-ladder): a rung is PASSED when its frozen bar is met AND every
-control on that rung collapses. **A FAIL is not attainment, and neither is a
+control on that rung collapses AND every rung it presupposes also passes on that
+arm. Rungs have prerequisites: λ4 (does it combine?) presupposes λ2 (does it
+produce words at all?), and a λ4 PASS on an arm that fails λ2 is an artefact of
+the collapse, not a capability -- measured, not argued (arm_nat_drop5: λ4 PASS
+with kwr 0.362 and one corpus-absent n-gram). **A FAIL is not attainment, and neither is a
 NULL.** The ladder is PASSED only when every rung reads PASS on every arm; a
 rung with one failing arm is a rung that is not passed, and a rung whose effect
 sits below its own resolution is not answered at all. Recording either as

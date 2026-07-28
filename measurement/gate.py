@@ -120,6 +120,9 @@ ARMS = {
     # about a faculty rather than as an instrument check (p9).
     "nat":   ("nat", "natural corpus best"),
     "natf":  ("nat", "natural corpus final"),
+    "natctx":   ("nat", "natural · context 512"),
+    "natdrop":  ("nat", "natural · dropout 0.3"),
+    "natdrop5": ("nat", "natural · dropout 0.5"),
     "nat25":  ("nat25", "natural 25% best"),
     "nat25f": ("nat25", "natural 25% final"),
     "nat50":  ("nat50", "natural 50% best"),

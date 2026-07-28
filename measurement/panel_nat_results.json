@@ -88,5 +88,44 @@
     "collapse_delta_init": 6.571359895085121,
     "ratio_over_worst_control": 5.245607622054817,
     "controls_collapsed": true
+  },
+  "natctx": {
+    "bpc": 1.5108711510953214,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "55f8c645fd9d7b48",
+    "ctrl_shuffle_bpc": 13.541354813339597,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 1.5211110491850426,
+    "stability_delta": 0.010239898089721144,
+    "collapse_delta_shuffle": 12.030483662244276,
+    "collapse_delta_init": 6.608290726666821,
+    "ratio_over_worst_control": 5.373828120204739,
+    "controls_collapsed": true
+  },
+  "natdrop": {
+    "bpc": 1.7308673057378152,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "c42400fd94403a8f",
+    "ctrl_shuffle_bpc": 13.54086582366753,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 1.7411474773273565,
+    "stability_delta": 0.01028017158954131,
+    "collapse_delta_shuffle": 11.809998517929715,
+    "collapse_delta_init": 6.388294572024327,
+    "ratio_over_worst_control": 4.6908055001369355,
+    "controls_collapsed": true
+  },
+  "natdrop5": {
+    "bpc": 2.067571053864004,
+    "ckpt_step": 11000,
+    "ckpt_sha256_16": "153127c87f3e07e0",
+    "ctrl_shuffle_bpc": 13.653595678789541,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 2.0760113765524464,
+    "stability_delta": 0.008440322688442414,
+    "collapse_delta_shuffle": 11.586024624925537,
+    "collapse_delta_init": 6.051590823898138,
+    "ratio_over_worst_control": 3.9269082736424235,
+    "controls_collapsed": true
   }
 }
