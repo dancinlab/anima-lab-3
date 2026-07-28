@@ -144,18 +144,18 @@
         "detail": "결론을 먼저 내고 통제를 나중에 붙이면 그 통제가 결론을 죽인다. λ4 에서 세 번 연속 발생: 1차(다른 줄끼리 비교, 줄 난이도 미통제) → 2차(같은 줄 한 단어 교체, 교체 손상 미통제) → 3차(손상 맞춤)에서야 실측이 남았고 앞의 두 결론은 전부 철회됐다. 계측기를 먼저 세우고 결론을 나중에 낸다.",
         "guard": "measurement/lambda4.py 상단에 세 설계와 각각이 왜 못 쓰는지를 보존 · 새 팔은 결과를 보기 전에 채점기에 배선한다",
         "value": "결론을 먼저 내고 통제를 나중에 붙이면 그 통제가 결론을 죽인다 — λ4 에서 3연속 발생, 앞선 두 결론 전부 철회",
-        "threshold": "새 팔은 결과를 보기 전에 채점기에 배선한다 · 폐기한 설계도 왜 못 쓰는지와 함께 파일에 보존",
+        "threshold": "measurement/preflight.py P1 — 채점기가 최신 결과보다 나중에 수정됐으면 표시",
         "source": "measurement/lambda4.py",
-        "state": "in-prog"
+        "state": "pos-conv"
       },
       {
         "id": "SINGLE_SEED_IS_NOT_A_RESULT",
         "detail": "단일 seed 통과를 결과로 적었다가 복제에서 철회한 것이 두 번(DATA-5 §5 선례, λ4 dropout 0.4). 0.4 에서 λ2 의 '바를 넘은 씨앗 수'가 5/5 ↔ 3/5 로 갈렸고 평균은 3% 만 움직였다 — 이산 문턱이 seed 잡음 위에 있었다.",
         "guard": "새 통과 주장은 seed 쌍을 설계에 넣어 발사한다(사후 복제가 아니라)",
         "value": "단일 seed 통과를 결과로 적었다가 복제에서 철회한 것이 두 번 — 0.4 에서 λ2 의 바 통과 씨앗수가 5/5↔3/5 로 갈렸고 평균은 3% 만 움직였다",
-        "threshold": "새 통과 주장은 seed 쌍을 사후 복제가 아니라 설계에 넣어 발사한다",
+        "threshold": "measurement/preflight.py P2 — seed 형제가 등록된 팔은 양쪽 통과해야 PASS 인정",
         "source": "measurement/gate.py",
-        "state": "in-prog"
+        "state": "pos-conv"
       },
       {
         "id": "CONTROL_THAT_CANNOT_DISTINGUISH",
@@ -189,9 +189,9 @@
         "detail": "λ4 가 낸 7.05 를 bigram floor 와 비교해 'dropout 0.5 는 λ1 을 판다'고 적었다. 두 수는 span 이 다르다(λ4 는 패딩된 교체통제 줄, λ1 은 신규성통제 창) — 비교할 수 없는 것을 비교했고, 실측하니 λ1 은 통과하고 λ2/λ3 가 깨지고 있었다.",
         "guard": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다",
         "value": "λ4 가 낸 7.05 를 bigram floor 와 비교해 'dropout 0.5 는 λ1 을 판다'고 적었다 — 두 수는 span 이 다르고, 실측하니 λ1 은 통과하고 λ2/λ3 가 깨지고 있었다",
-        "threshold": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다",
+        "threshold": "measurement/preflight.py P3 — 결과 파일별 span 지문을 나열해 교차비교를 보이게 함",
         "source": "CLAUDE.md",
-        "state": "in-prog"
+        "state": "pos-conv"
       },
       {
         "id": "INLINE_SSH_QUOTING_SILENT_NOOP",
