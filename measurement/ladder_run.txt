@@ -3,7 +3,7 @@
 [split] screening corpus_nat_25.txt: train=17,203,691
 [split] screening corpus_nat_50.txt: train=33,327,893
 [split] screening corpus_natural_ko_dedup.txt: train=66,060,288
-[select] primary 256/950 = 26.9% · alt-phase 256/924 = 27.7% (25s)
+[select] primary 256/950 = 26.9% · alt-phase 256/924 = 27.7% (26s)
 [nat] value=1.5590 · shuffle=13.3970 (Δ+11.8380) · init=8.1192 (Δ+6.5601) · alt-phase=1.5681 (|Δ|0.0090) · ratio=5.21x · sha f86a7d3ad5fe252c
 [natf] value=1.5576 · shuffle=13.4674 (Δ+11.9098) · init=8.1192 (Δ+6.5616) · alt-phase=1.5657 (|Δ|0.0081) · ratio=5.21x · sha ff95e0e7892a8db1
 [nat25] value=1.5602 · shuffle=13.4105 (Δ+11.8503) · init=8.1192 (Δ+6.5590) · alt-phase=1.5696 (|Δ|0.0095) · ratio=5.20x · sha 18add2da8d1ffa69
@@ -17,6 +17,8 @@
 [natdrop4v] value=1.8295 · shuffle=13.5556 (Δ+11.7262) · init=8.1192 (Δ+6.2897) · alt-phase=1.8355 (|Δ|0.0060) · ratio=4.44x · sha 5a9dfc05945981cd
 [natdrop35] value=1.7667 · shuffle=13.4997 (Δ+11.7330) · init=8.1192 (Δ+6.3525) · alt-phase=1.7721 (|Δ|0.0054) · ratio=4.60x · sha f6889a34de66f9bb
 [natdrop35v] value=1.7717 · shuffle=13.4086 (Δ+11.6369) · init=8.1192 (Δ+6.3475) · alt-phase=1.7812 (|Δ|0.0095) · ratio=4.58x · sha 83b276503d45a222
+[natdrop37] value=1.7848 · shuffle=13.4844 (Δ+11.6995) · init=8.1192 (Δ+6.3343) · alt-phase=1.7950 (|Δ|0.0102) · ratio=4.55x · sha beb7b950d819cefa
+[natdrop37v] value=1.7807 · shuffle=13.3874 (Δ+11.6067) · init=8.1192 (Δ+6.3384) · alt-phase=1.7877 (|Δ|0.0069) · ratio=4.56x · sha 03057eef4c8a8d27
 [json] logs/panel_nat.json
 ===== λ2/λ3 =====
 [device] cuda
@@ -32,17 +34,17 @@
         sample: �사(策池寺)의 아들로 나왔다. 조선(典具)은 인천(李川)의 연호이다.⏎아버지 유어선에 의해 둘러싸인 음식은 대부분의 전자기적
 [nat25f] G0 kwr mean=0.712 · 5/5 over 0.5 → PASS | G2 novel=36 → PASS · sha 84d4ca142094dc0c (9s)
         sample: �사(策江寺)의 아들로 나왔다. 조선(宋具)은 인천(李川)과 인천(沙川)의 시호에서 살고 있다. 천주교 오종시에서 고림했던 제
-[nat50] G0 kwr mean=0.765 · 5/5 over 0.5 → PASS | G2 novel=50 → PASS · sha dd057b2a075e6ac3 (5s)
+[nat50] G0 kwr mean=0.765 · 5/5 over 0.5 → PASS | G2 novel=50 → PASS · sha dd057b2a075e6ac3 (9s)
         sample: �삼조를 내려받고 결성삼조에 추대하여 인조를 모신 것은 한백선(多城聖)이고, 육예(孝跴)은 송신(宋人)이다.⏎좡은 龍壽, 11
-[nat50f] G0 kwr mean=0.813 · 5/5 over 0.5 → PASS | G2 novel=60 → PASS · sha 5907749cff6db01a (5s)
+[nat50f] G0 kwr mean=0.813 · 5/5 over 0.5 → PASS | G2 novel=60 → PASS · sha 5907749cff6db01a (9s)
         sample: �주(經池羅臣)에 합류한다. 지름은 1964년의 전북특별자치도 현청 송신시대 이후에 3개 현을 관할하는 사람이 이곳에 있던 제
-[natctx] G0 kwr mean=0.763 · 5/5 over 0.5 → PASS | G2 novel=43 → PASS · sha 55f8c645fd9d7b48 (5s)
+[natctx] G0 kwr mean=0.763 · 5/5 over 0.5 → PASS | G2 novel=43 → PASS · sha 55f8c645fd9d7b48 (9s)
         sample: �주(策池相英)에 해당한다⏎276년 서기법 제137호는 (장학교) 한림교 사목에 이상으로 교제된 무소속의 일반적인 비중의 사목
-[natdrop] G0 kwr mean=0.797 · 5/5 over 0.5 → PASS | G2 novel=51 → PASS · sha c42400fd94403a8f (5s)
+[natdrop] G0 kwr mean=0.797 · 5/5 over 0.5 → PASS | G2 novel=51 → PASS · sha c42400fd94403a8f (9s)
         sample: �사(綸江寺)의 우하로 등장하였다.⏎1964년 10월 6일 (음력 5월 5일)은 조선 시대에서 사용하여 뮤직층의 음력을 대비한
-[natdrop5] G0 kwr mean=0.362 · 1/5 over 0.5 → FAIL | G2 novel=1 → FAIL · sha 153127c87f3e07e0 (5s)
+[natdrop5] G0 kwr mean=0.362 · 1/5 over 0.5 → FAIL | G2 novel=1 → FAIL · sha 153127c87f3e07e0 (9s)
         sample: �이 있는 재유에 해당한다. 지방(賕忘)이라고는 분장(轿畅 李元)의 이목식이면에 사고 희성되었다. 하으면서 이곳에 종여 제 오
-[natdrop4] G0 kwr mean=0.632 · 5/5 over 0.5 → PASS | G2 novel=21 → PASS · sha 3f2ee38a0ec916dd (7s)
+[natdrop4] G0 kwr mean=0.632 · 5/5 over 0.5 → PASS | G2 novel=21 → PASS · sha 3f2ee38a0ec916dd (9s)
         sample: �을 지냈다.⏎해우하마시를 시작되는 범한 압사는 (장해군) 해방송 연주 시작으로 사용하기 때문에 대한 이법률의 낙이 서사하는 
 [natdrop4v] G0 kwr mean=0.611 · 3/5 over 0.5 → FAIL | G2 novel=19 → PASS · sha 5a9dfc05945981cd (9s)
         sample: �의 전술사 이에 대부에는 신이라나나 한국 사망림의 경주 전거에 이르용해 전지사가 하는 것으로 불러지는 사망한 향선의 비교가 
@@ -50,6 +52,10 @@
         sample: �주의를 내려 왕조과에 대해 이를 꾸준하였다. 서(新篽)는 한백군 연주왕에 위치해 고정에 비해 이른 사이처럼 고려 한다.⏎신옷
 [natdrop35v] G0 kwr mean=0.609 · 5/5 over 0.5 → PASS | G2 novel=15 → PASS · sha 83b276503d45a222 (9s)
         sample: �주의 정치 이외에 대한 산요이다.⏎1964년에 전라남에 금종 후보굽 연주 시내에서 사용하여 뮤지지컬 음식은 대비에는 사용할 
+[natdrop37] G0 kwr mean=0.684 · 4/5 over 0.5 → PASS | G2 novel=29 → PASS · sha beb7b950d819cefa (9s)
+        sample: �사(綸江公)이라고 부른다.⏎지방(賕忠)은 형제(公面)이다.⏎상영으로 중국인 서효위(3군 형성)을 중국 오종위원이던 양종서(中
+[natdrop37v] G0 kwr mean=0.702 · 5/5 over 0.5 → PASS | G2 novel=32 → PASS · sha 03057eef4c8a8d27 (9s)
+        sample: �주의를 내는 '우하마시를 다음 넓고 있다.⏎전북도에 금(公綌)는 도시의 당을 효전하는 보장을 위한 비슷하였다고 부품에 제작할
 [ctrl] before-backbone (random weights) G0 kwr=0.000 → FAIL -- correct, metric is not reading the corpus
 [json] logs/g_gates_nat.json
 ===== λ4 =====
@@ -71,5 +77,7 @@
 [natdrop4v] novel=6.5724 · seen=6.8558 · broken=6.6239 · mid=6.7398 · pos=1.222 · Δbroken=+0.0515 t=2.8 · MATCHED seen-swap=6.7532 novel-swap=6.7501 cost=-0.0031 t=-4.7 (clustered over 13929 lines; unclustered would read -4.8) → λ4 PASS · sha 5a9dfc05945981cd
 [natdrop35] novel=6.8849 · seen=7.2286 · broken=6.9344 · mid=7.0815 · pos=1.168 · Δbroken=+0.0495 t=2.8 · MATCHED seen-swap=7.0692 novel-swap=7.0689 cost=-0.0003 t=-0.4 (clustered over 13929 lines; unclustered would read -0.4) → λ4 NULL (|cost| below resolution -- no penalty either way) · sha f6889a34de66f9bb
 [natdrop35v] novel=6.9631 · seen=7.3827 · broken=7.0001 · mid=7.1914 · pos=1.097 · Δbroken=+0.0370 t=1.7 · MATCHED seen-swap=7.1915 novel-swap=7.1875 cost=-0.0040 t=-5.0 (clustered over 13929 lines; unclustered would read -5.1) → λ4 PASS · sha 83b276503d45a222
+[natdrop37] novel=7.0832 · seen=7.4308 · broken=7.1294 · mid=7.2801 · pos=1.153 · Δbroken=+0.0462 t=2.3 · MATCHED seen-swap=7.2826 novel-swap=7.2798 cost=-0.0029 t=-3.8 (clustered over 13929 lines; unclustered would read -3.9) → λ4 PASS · sha beb7b950d819cefa
+[natdrop37v] novel=6.9146 · seen=7.3545 · broken=6.9325 · mid=7.1435 · pos=1.042 · Δbroken=+0.0179 t=0.9 · MATCHED seen-swap=7.1651 novel-swap=7.1601 cost=-0.0050 t=-6.5 (clustered over 13929 lines; unclustered would read -6.6) → λ4 PASS · sha 03057eef4c8a8d27
 [json] logs/lambda4.json
 LADDER_DONE
