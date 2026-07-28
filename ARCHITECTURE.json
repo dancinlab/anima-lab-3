@@ -1,0 +1,179 @@
+{
+  "name": "anima-lab-3 — byte-level ConsciousLM 연구 리포",
+  "id": "anima-lab-3",
+  "role": "설계 SSOT. 현재 상태만 담는다 — 이력은 git + 가설 문서, 진행은 ING.jsonl.",
+  "detail": "바이트 단위 언어모델(ConsciousLM)을 처음부터 학습시키고, 그 결과를 믿을 수 있게 재는 계측 체계를 만드는 리포. 이 리포의 중심 산출물은 모델이 아니라 판정 체계다 — 어떤 수치가 언제 결과로 인정되는지를 코드로 강제한다. 형제 리포 dancinlab/anima 의 ρ-AXON 패널 계약(값+통제 붕괴+비율)을 이식해 λ-사다리로 재구성했다.",
+  "children": [
+    {
+      "name": "λ-사다리 — 능력 판정 체계",
+      "id": "lambda-ladder",
+      "type": "gate",
+      "role": "이 리포의 능력 기준 SSOT. 바 정의는 CLAUDE.md '## λ-사다리', 실행은 measurement/.",
+      "detail": "형제 anima 의 G0~G6 을 그대로 쓰지 않는다 — 그 사다리는 G3/G4 가 게이트가 아니라 빈 번호로 남아 있어 번호를 빌리면 구멍까지 들어온다. 채점 가능한 등급만 연속으로 둔다. 바는 anima/CONDITIONS.md 에서 동결 이관했고 재조정은 tune-to-green 이므로 금지. 등급에는 선행조건이 있다: λ4 는 λ2 를 전제하며, λ2 가 FAIL 인 팔의 λ4 PASS 는 인공물이라 계상하지 않는다.",
+      "verdict": "🧱 미도달 — 전 등급을 재현 가능하게 통과하는 팔이 없다. λ0~λ3 는 서지만 λ4 가 정규화 강도에 따라 λ2 와 맞바꿈 관계에 있고, 통과점이 seed 에 따라 이동한다.",
+      "children": [
+        {
+          "name": "Λ REGIME — 전제 (등급 아님)",
+          "id": "lambda-regime",
+          "type": "gate",
+          "detail": "코퍼스 성격을 natural/constructed 로 표기한다. 판정 근거는 출처이고 measurement/corpus_regime.py 의 신호(줄반복·top10 점유·어휘성장)는 뒷받침일 뿐이다 — 수치 문턱으로 자연성을 정의하면 그 문턱을 맞추는 합성 코퍼스를 만들 수 있고 그것이 p9 가 막으려는 일이다.",
+          "verdict": "🟢 natural 확보 — corpus_natural_ko_dedup(위키백과 kowiki 2026-07-06, CC BY-SA, 351,839 줄, 어휘 1,329k, 줄반복 1.00x). 기존 corpus_v2/v4/v5 는 전부 CONSTRUCTED(줄반복 1.90/3.09/4.90x, v5 최다줄은 이 엔진의 텔레메트리 28,810 회). 명시 편향: register 가 백과 산문 하나뿐."
+        },
+        {
+          "name": "λ0 SPAN — 채점 구간이 회상 불가한가",
+          "id": "lambda0-span",
+          "type": "gate",
+          "detail": "창의 3×64B 프로브가 모든 train split 에 부재해야 하고 keep rate 를 행별로 기록한다. 줄 단위 중복제거는 자격 없음 — 32B 친숙도를 79.5%→91.8% 로 반대 방향으로 움직였다(DATA-3). 통제: 위상 재선택(rho-align)으로 점수가 안 움직일 것.",
+          "verdict": "🟢 PASS 전 팔 — 재위상 편차 ≤0.037. 자연 코퍼스는 창 채택률 98.1%, 구성 코퍼스는 16.6%."
+        },
+        {
+          "name": "λ1 SCREEN — 쌍 통계를 넘었는가 (verdict 아님, 선별)",
+          "id": "lambda1-screen",
+          "type": "gate",
+          "detail": "신규성통제 BPC < 자기 train-split bigram floor ∧ 자기 unigram floor 미만 ∧ 문맥섞기로 악화 ∧ 동일구조 무학습망 대비 개선. p7(perplexity 는 verdict 가 아니다)에 따라 이것은 선별이지 능력 주장이 아니다. 비율 요건 3× 는 사전등록 상태로 보고만 한다.",
+          "verdict": "🟢 판정 완료 35행 — 25% 및 100% 계열 PASS, 50% 계열 FAIL, 300M nf9 FAIL. 코퍼스 통계(floor)와 forward 통제(비율)라는 독립 2경로가 전 팔에서 같은 분할."
+        },
+        {
+          "name": "λ2 COHERENCE — 내놓는 것이 말인가",
+          "id": "lambda2-coherence",
+          "type": "gate",
+          "detail": "known-word-ratio ≥ 0.50 on ≥4/5 seeds. 통제: before-backbone(동일구조 무학습망)이 반드시 FAIL — 통과하면 지표가 모델이 아니라 코퍼스를 읽는 것이므로 전 행 무효. positive 통제(실제 held-out 텍스트)가 바를 넘어야 계측기가 읽힌다는 증거가 된다.",
+          "verdict": "🟢 PASS — 자연 코퍼스 전 팔(kwr 0.609~0.813). 통제 유효(positive 0.839 · before-backbone 0.000 FAIL). ⚠️ dropout 0.4 이상에서 바 근처로 내려가고 0.5 에서 붕괴(0.362, 1/5)."
+        },
+        {
+          "name": "λ3 NOVELTY — 코퍼스에 없는 말을 만드는가",
+          "id": "lambda3-novelty",
+          "type": "gate",
+          "detail": "코퍼스 부재 + 일관 n-gram(토큰 4개) ≥ 3. 통제: retrieval-control = 0 — 실제 train 구간을 복사한 대조가 부재 n-gram 을 하나라도 내면 부재 판정 자체가 깨진 것이므로 전 행 무효. 질의와 건초더미를 모두 공백 정규화해야 부재 판정이 공백 판정이 아니게 된다.",
+          "verdict": "🟢 PASS — 자연 코퍼스 전 팔(부재 4-gram 15~32). retrieval 통제 0 유효."
+        },
+        {
+          "name": "λ4 RECOMBINATION — 함께 본 적 없는 원자쌍을 다루는가",
+          "id": "lambda4-recombination",
+          "type": "gate",
+          "detail": "손상 맞춤 설계: 양쪽 모두 한 단어만 교체하고 빈도를 2배 이내로 맞춘 뒤, 새 단어가 상대 원자와 train 에서 공기했는지만 다르게 한다(SEEN-SWAP vs NOVEL-SWAP). 손상이 상쇄되고 공기만 남는다. 원자쌍은 자연 코퍼스에서 발견한 것이지 저자가 지은 것이 아니다 — 손으로 지은 쌍 집합은 정의상 합성이라 Λ REGIME 이 안 뒤집힌다. 해상도 요건: 짝지은 차이가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL. 문장 단위 군집 검정(한 문장 내 다중 추출은 비독립).",
+          "verdict": "🧱 미도달 — 기본 설정(dropout 0.1)에서 네 팔 전부 FAIL(+0.0059~+0.0222 BPC, t=7.4~16.0). 데이터 3.8배·문맥 2배 모두 레버가 아니었고(전체 BPC 는 크게 움직였는데 이 벌점만 불변), 정규화만이 레버다. 그러나 λ4 를 통과시키는 강도가 λ2 를 불안정하게 만든다."
+        }
+      ]
+    },
+    {
+      "name": "측정 유효성 — 수치가 판정 가능한 상태인가",
+      "id": "measurement-validity",
+      "type": "gate",
+      "role": "'모든 측정 통과' 의 정의. 전 등급 PASS 가 아니라 전 수치가 판정 가능한 상태여야 한다는 뜻.",
+      "detail": "FAIL 을 지우려 바를 옮기는 것이 tune-to-green 이므로 '모든 팔 PASS' 는 목표가 될 수 없다. 재는 것은 수치가 판정 가능한 상태인가다.",
+      "verdict": "🟢 ALL MEASUREMENTS PASS — 미판정 0 · 측정가능하나 미측정 0 · 대체 floor 0 · UNMEASURABLE 2(nf9_12k/14k, ckpt 회전소실+span 영수증 미보존).",
+      "children": [
+        {
+          "name": "V1~V3 — 통제·안정성·구간",
+          "id": "validity-v1-v3",
+          "detail": "V1 통제는 forward pass 로 실측하고 해석적 floor 로 대체하지 않는다. V2 안정성 검사(rho-align)는 같아야 하는 것이므로 통과한 통제로 세지 않는다. V3 채점 구간은 3×64B 프로브가 전 train split 에 부재해야 한다."
+        },
+        {
+          "name": "V4~V7 — 출처·동결·2경로·인용범위",
+          "id": "validity-v4-v7",
+          "detail": "V4 모든 행이 ckpt sha 를 싣는다(step 번호는 파일을 특정 못 함). V5 바는 측정 전 동결. V6 2경로 divergence 는 표본오차부터 확인. V7 p7/p9 에 따라 인용 범위를 함께 적는다."
+        },
+        {
+          "name": "3등급 — TERMINAL · DIRECTIONAL · UNMEASURABLE",
+          "id": "validity-tiers",
+          "detail": "DIRECTIONAL 은 측정 가능하나 미측정이라 잔여작업이고, UNMEASURABLE 은 ckpt 회전소실로 영구 불가라 잔여작업이 아니되 PASS 승격도 아니다. 둘을 합치면 작업을 숨기거나 없는 작업을 만들어낸다."
+        }
+      ]
+    },
+    {
+      "name": "measurement/ — 계측기",
+      "id": "measurement-tools",
+      "role": "모든 판정이 나오는 곳. 폴더 가이드는 measurement/CLAUDE.md.",
+      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). 코퍼스 도구가 그 밑에서 Λ REGIME 을 대고, 채점기를 따로 띄우면 서로 GPU 를 물어 run_ladder.sh 로 순차 실행한다.",
+      "children": [
+        {
+          "name": "gate.py — 판정기",
+          "id": "tool-gate",
+          "detail": "결합 게이트 C1∧C2∧C3 로 전 팔을 판정하고, 미등록 채점팔은 [UNCOVERED] 로 보고하며 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다."
+        },
+        {
+          "name": "panel.py · panel_nf9.py — 통제 실측",
+          "id": "tool-panel",
+          "detail": "rho-init(동일구조 무학습망 8.0486) · rho-shuffle(문맥 순열) · rho-align(재위상 안정성). 300M 은 CPU 로 돌린다."
+        },
+        {
+          "name": "g_gates.py · lambda4.py — 행동 등급",
+          "id": "tool-behavioural",
+          "detail": "g_gates.py 가 λ2/λ3(known-word-ratio · 코퍼스 부재 n-gram), lambda4.py 가 λ4(손상 맞춤 교체쌍)."
+        },
+        {
+          "name": "corpus_regime.py · build_natural_corpus.py — 코퍼스",
+          "id": "tool-corpus",
+          "detail": "regime 이 Λ REGIME 신호를 재고, build 가 위키 덤프에서 산문을 추출한다. skip 인자로 학습 코퍼스와 겹치지 않는 신선 구간을 뜬다."
+        },
+        {
+          "name": "LAMBDA_FAMILY 전환",
+          "id": "tool-family",
+          "detail": "환경변수로 코퍼스족을 바꾼다. 팔마다 자기 train 으로 신규성을 걸러야 하고, 엉뚱한 코퍼스로 거르면 벌지 않은 통과를 읽는다."
+        },
+        {
+          "name": "폐기했으나 보존한 계측기",
+          "id": "measurement-discarded",
+          "detail": "common_span_eval.py(줄 필터로 만든 공통 span — 80~86% 회상 가능해 폐기) · lambda4.py 내 1·2차 설계(다른 줄끼리 비교 → 줄 난이도 미통제 / 원문 vs 한 단어 교체 → 손상 미통제). 왜 못 쓰는지가 결과이므로 지운다."
+        }
+      ]
+    },
+    {
+      "name": "docs/hypotheses/ — 가설 원장",
+      "id": "hypotheses",
+      "role": "사전등록 → 반증 → 판정. 가설당 한 문서, 결과는 문서 안에 update-in-place.",
+      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이며 자연 코퍼스에서 재현되지 않는다(크기별 PASS/FAIL/FAIL/PASS 가 자연에서는 평평) · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관."
+    },
+    {
+      "name": "학습기 · 모델",
+      "id": "trainers",
+      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시 내장) · train_conscious_lm_nf8.py 는 300M 포크 · conscious_lm.py 가 모델 정의 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
+      "verdict": "🟢 안정 — NaN/발산 0 (자연 코퍼스 전 팔)."
+    },
+    {
+      "name": "실행 호스트",
+      "id": "hosts",
+      "detail": "summer(192.168.50.60, LAN — tailscale 주소는 불통) 가 28M 팔 학습·채점 · aiden(192.168.50.119) 이 300M nf9 학습. 원격 실행은 반드시 호스트 스크립트 경유 — ssh 안에서 tmux/따옴표를 조립하면 전달 중 깨져 조용한 no-op 이 되고, 이 세션에서 실행 결과를 두 번 잃었다. 300M 평가는 CPU 로 — 학습 작업이 카드의 8.9/12.2 GB 를 쓰고 있어 동시 GPU 평가는 이틀치 학습을 OOM 으로 날린다."
+    }
+  ],
+  "convergence": {
+    "records": [
+      {
+        "id": "CONTROL_AFTER_CONCLUSION",
+        "detail": "결론을 먼저 내고 통제를 나중에 붙이면 그 통제가 결론을 죽인다. λ4 에서 세 번 연속 발생: 1차(다른 줄끼리 비교, 줄 난이도 미통제) → 2차(같은 줄 한 단어 교체, 교체 손상 미통제) → 3차(손상 맞춤)에서야 실측이 남았고 앞의 두 결론은 전부 철회됐다. 계측기를 먼저 세우고 결론을 나중에 낸다.",
+        "guard": "measurement/lambda4.py 상단에 세 설계와 각각이 왜 못 쓰는지를 보존 · 새 팔은 결과를 보기 전에 채점기에 배선한다"
+      },
+      {
+        "id": "SINGLE_SEED_IS_NOT_A_RESULT",
+        "detail": "단일 seed 통과를 결과로 적었다가 복제에서 철회한 것이 두 번(DATA-5 §5 선례, λ4 dropout 0.4). 0.4 에서 λ2 의 '바를 넘은 씨앗 수'가 5/5 ↔ 3/5 로 갈렸고 평균은 3% 만 움직였다 — 이산 문턱이 seed 잡음 위에 있었다.",
+        "guard": "새 통과 주장은 seed 쌍을 설계에 넣어 발사한다(사후 복제가 아니라)"
+      },
+      {
+        "id": "CONTROL_THAT_CANNOT_DISTINGUISH",
+        "detail": "vocab 은 bytes 인데 생성 토큰을 str 로 비교해 kwr 이 전 팔 0.000 이었고, anti-Goodhart 통제도 0.000 이라(그게 정상이라서) 아무것도 울리지 않았다. 구분할 수 없는 통제는 통제가 아니다.",
+        "guard": "measurement/g_gates.py 의 positive 통제(정답을 아는 실제 텍스트가 바를 넘어야 함) — 계측기가 읽히는지부터 증명한다"
+      },
+      {
+        "id": "SILENT_SKIP_IS_THE_DEFECT",
+        "detail": "gate.py 가 ARMS 에 없는 채점팔을 말없이 건너뛰어, 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했다.",
+        "guard": "measurement/gate.py 의 [UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다"
+      },
+      {
+        "id": "STEP_NUMBER_IS_NOT_A_FILE",
+        "detail": "체크포인트를 step 번호로만 지목해 잘못된 주장을 한 번 냈다. 오귀속 가드를 넣자 즉시 값을 했다 — p50/s50 과 p100/s100 의 best.pt 가 바이트 동일(위상 전환 이전이라 같은 런)이어서, 절제 표의 'best 에서 동일'이 독립 재현이 아님이 드러났다.",
+        "guard": "모든 판정 행이 ckpt sha256 을 싣는다(measurement/panel.py · lambda4.py · g_gates.py)"
+      },
+      {
+        "id": "INFERRED_NUMBER_ACROSS_SPANS",
+        "detail": "λ4 가 낸 7.05 를 bigram floor 와 비교해 'dropout 0.5 는 λ1 을 판다'고 적었다. 두 수는 span 이 다르다(λ4 는 패딩된 교체통제 줄, λ1 은 신규성통제 창) — 비교할 수 없는 것을 비교했고, 실측하니 λ1 은 통과하고 λ2/λ3 가 깨지고 있었다.",
+        "guard": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다"
+      },
+      {
+        "id": "INLINE_SSH_QUOTING_SILENT_NOOP",
+        "detail": "ssh 안에서 tmux 명령과 따옴표를 조립하면 전달 중 깨져 조용한 no-op 이 되고, 겹친 대기자들이 서로의 실행을 pkill 로 죽여 결과를 두 번 잃었다.",
+        "guard": "원격 실행은 호스트에 스크립트를 두고 그것만 호출 · 채점기는 하나의 순차 스크립트(run_ladder.sh)로 묶어 서로 GPU 를 물지 않게 한다"
+      }
+    ]
+  }
+}
