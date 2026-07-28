@@ -142,37 +142,65 @@
       {
         "id": "CONTROL_AFTER_CONCLUSION",
         "detail": "결론을 먼저 내고 통제를 나중에 붙이면 그 통제가 결론을 죽인다. λ4 에서 세 번 연속 발생: 1차(다른 줄끼리 비교, 줄 난이도 미통제) → 2차(같은 줄 한 단어 교체, 교체 손상 미통제) → 3차(손상 맞춤)에서야 실측이 남았고 앞의 두 결론은 전부 철회됐다. 계측기를 먼저 세우고 결론을 나중에 낸다.",
-        "guard": "measurement/lambda4.py 상단에 세 설계와 각각이 왜 못 쓰는지를 보존 · 새 팔은 결과를 보기 전에 채점기에 배선한다"
+        "guard": "measurement/lambda4.py 상단에 세 설계와 각각이 왜 못 쓰는지를 보존 · 새 팔은 결과를 보기 전에 채점기에 배선한다",
+        "value": "결론을 먼저 내고 통제를 나중에 붙이면 그 통제가 결론을 죽인다 — λ4 에서 3연속 발생, 앞선 두 결론 전부 철회",
+        "threshold": "새 팔은 결과를 보기 전에 채점기에 배선한다 · 폐기한 설계도 왜 못 쓰는지와 함께 파일에 보존",
+        "source": "measurement/lambda4.py",
+        "state": "in-prog"
       },
       {
         "id": "SINGLE_SEED_IS_NOT_A_RESULT",
         "detail": "단일 seed 통과를 결과로 적었다가 복제에서 철회한 것이 두 번(DATA-5 §5 선례, λ4 dropout 0.4). 0.4 에서 λ2 의 '바를 넘은 씨앗 수'가 5/5 ↔ 3/5 로 갈렸고 평균은 3% 만 움직였다 — 이산 문턱이 seed 잡음 위에 있었다.",
-        "guard": "새 통과 주장은 seed 쌍을 설계에 넣어 발사한다(사후 복제가 아니라)"
+        "guard": "새 통과 주장은 seed 쌍을 설계에 넣어 발사한다(사후 복제가 아니라)",
+        "value": "단일 seed 통과를 결과로 적었다가 복제에서 철회한 것이 두 번 — 0.4 에서 λ2 의 바 통과 씨앗수가 5/5↔3/5 로 갈렸고 평균은 3% 만 움직였다",
+        "threshold": "새 통과 주장은 seed 쌍을 사후 복제가 아니라 설계에 넣어 발사한다",
+        "source": "measurement/gate.py",
+        "state": "in-prog"
       },
       {
         "id": "CONTROL_THAT_CANNOT_DISTINGUISH",
         "detail": "vocab 은 bytes 인데 생성 토큰을 str 로 비교해 kwr 이 전 팔 0.000 이었고, anti-Goodhart 통제도 0.000 이라(그게 정상이라서) 아무것도 울리지 않았다. 구분할 수 없는 통제는 통제가 아니다.",
-        "guard": "measurement/g_gates.py 의 positive 통제(정답을 아는 실제 텍스트가 바를 넘어야 함) — 계측기가 읽히는지부터 증명한다"
+        "guard": "measurement/g_gates.py 의 positive 통제(정답을 아는 실제 텍스트가 바를 넘어야 함) — 계측기가 읽히는지부터 증명한다",
+        "value": "vocab 은 bytes 인데 생성 토큰을 str 로 비교해 kwr 이 전 팔 0.000 이었고, anti-Goodhart 통제도 0.000 이라 아무것도 울리지 않았다",
+        "threshold": "positive 통제 — 정답을 아는 실제 held-out 텍스트가 바를 넘어야 계측기가 읽힌다는 증거가 된다",
+        "source": "measurement/g_gates.py",
+        "state": "pos-conv"
       },
       {
         "id": "SILENT_SKIP_IS_THE_DEFECT",
         "detail": "gate.py 가 ARMS 에 없는 채점팔을 말없이 건너뛰어, 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했다.",
-        "guard": "measurement/gate.py 의 [UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다"
+        "guard": "measurement/gate.py 의 [UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다",
+        "value": "ARMS 에 없는 채점팔을 말없이 건너뛰어 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했다",
+        "threshold": "[UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다",
+        "source": "measurement/gate.py",
+        "state": "pos-conv"
       },
       {
         "id": "STEP_NUMBER_IS_NOT_A_FILE",
         "detail": "체크포인트를 step 번호로만 지목해 잘못된 주장을 한 번 냈다. 오귀속 가드를 넣자 즉시 값을 했다 — p50/s50 과 p100/s100 의 best.pt 가 바이트 동일(위상 전환 이전이라 같은 런)이어서, 절제 표의 'best 에서 동일'이 독립 재현이 아님이 드러났다.",
-        "guard": "모든 판정 행이 ckpt sha256 을 싣는다(measurement/panel.py · lambda4.py · g_gates.py)"
+        "guard": "모든 판정 행이 ckpt sha256 을 싣는다(measurement/panel.py · lambda4.py · g_gates.py)",
+        "value": "체크포인트를 step 번호로만 지목해 잘못된 주장을 냈다. sha 를 넣자 p50/s50 과 p100/s100 의 best.pt 가 바이트 동일임이 드러나 절제표의 독립성 주장이 무너졌다",
+        "threshold": "모든 판정 행이 ckpt sha256 을 싣는다",
+        "source": "measurement/panel.py",
+        "state": "pos-conv"
       },
       {
         "id": "INFERRED_NUMBER_ACROSS_SPANS",
         "detail": "λ4 가 낸 7.05 를 bigram floor 와 비교해 'dropout 0.5 는 λ1 을 판다'고 적었다. 두 수는 span 이 다르다(λ4 는 패딩된 교체통제 줄, λ1 은 신규성통제 창) — 비교할 수 없는 것을 비교했고, 실측하니 λ1 은 통과하고 λ2/λ3 가 깨지고 있었다.",
-        "guard": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다"
+        "guard": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다",
+        "value": "λ4 가 낸 7.05 를 bigram floor 와 비교해 'dropout 0.5 는 λ1 을 판다'고 적었다 — 두 수는 span 이 다르고, 실측하니 λ1 은 통과하고 λ2/λ3 가 깨지고 있었다",
+        "threshold": "다른 계측기의 수치를 서로 비교하지 않는다 — 궁금하면 그 계측기로 다시 잰다",
+        "source": "CLAUDE.md",
+        "state": "in-prog"
       },
       {
         "id": "INLINE_SSH_QUOTING_SILENT_NOOP",
         "detail": "ssh 안에서 tmux 명령과 따옴표를 조립하면 전달 중 깨져 조용한 no-op 이 되고, 겹친 대기자들이 서로의 실행을 pkill 로 죽여 결과를 두 번 잃었다.",
-        "guard": "원격 실행은 호스트에 스크립트를 두고 그것만 호출 · 채점기는 하나의 순차 스크립트(run_ladder.sh)로 묶어 서로 GPU 를 물지 않게 한다"
+        "guard": "원격 실행은 호스트에 스크립트를 두고 그것만 호출 · 채점기는 하나의 순차 스크립트(run_ladder.sh)로 묶어 서로 GPU 를 물지 않게 한다",
+        "value": "ssh 인자 안에서 tmux/따옴표를 조립하면 전달 중 깨져 조용한 no-op 이 되고, 겹친 대기자들이 서로의 실행을 pkill 로 죽여 결과를 세 번 잃었다",
+        "threshold": "원격 실행은 scripts/run_remote.sh 경유 · 채점기는 scripts/run_ladder.sh 로 순차 실행",
+        "source": "scripts/run_remote.sh",
+        "state": "pos-conv"
       }
     ]
   }
