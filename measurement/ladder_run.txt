@@ -15,6 +15,8 @@
 [natdrop5] value=2.0676 · shuffle=13.6536 (Δ+11.5860) · init=8.1192 (Δ+6.0516) · alt-phase=2.0760 (|Δ|0.0084) · ratio=3.93x · sha 153127c87f3e07e0
 [natdrop4] value=1.8158 · shuffle=13.5257 (Δ+11.7099) · init=8.1192 (Δ+6.3034) · alt-phase=1.8253 (|Δ|0.0095) · ratio=4.47x · sha 3f2ee38a0ec916dd
 [natdrop4v] value=1.8295 · shuffle=13.5556 (Δ+11.7262) · init=8.1192 (Δ+6.2897) · alt-phase=1.8355 (|Δ|0.0060) · ratio=4.44x · sha 5a9dfc05945981cd
+[natdrop35] value=1.7667 · shuffle=13.4997 (Δ+11.7330) · init=8.1192 (Δ+6.3525) · alt-phase=1.7721 (|Δ|0.0054) · ratio=4.60x · sha f6889a34de66f9bb
+[natdrop35v] value=1.7717 · shuffle=13.4086 (Δ+11.6369) · init=8.1192 (Δ+6.3475) · alt-phase=1.7812 (|Δ|0.0095) · ratio=4.58x · sha 83b276503d45a222
 [json] logs/panel_nat.json
 ===== λ2/λ3 =====
 [device] cuda
@@ -22,13 +24,13 @@
 [seeds] 5 x 128B prefixes from the held-out split
 [ctrl] POSITIVE control (real held-out text) kwr=0.839 → VALID -- the instrument reads
 [ctrl] retrieval control novel n-grams = 0 (VALID -- absence test works)
-[nat] G0 kwr mean=0.802 · 5/5 over 0.5 → PASS | G2 novel=52 → PASS · sha f86a7d3ad5fe252c (5s)
+[nat] G0 kwr mean=0.802 · 5/5 over 0.5 → PASS | G2 novel=52 → PASS · sha f86a7d3ad5fe252c (10s)
         sample: �주(範江州 主節生)로 나왔다.⏎조선 오카시 전북도에 있던 한족이 조선 시대에서 사용하여 무소속의 일생을 대신하고 전역하였다.
-[natf] G0 kwr mean=0.805 · 5/5 over 0.5 → PASS | G2 novel=55 → PASS · sha ff95e0e7892a8db1 (5s)
+[natf] G0 kwr mean=0.805 · 5/5 over 0.5 → PASS | G2 novel=55 → PASS · sha ff95e0e7892a8db1 (9s)
         sample: �주(範江州臣)와 함께 등을 지냈다. 오창을 전북특별자치도 옹주군 중앙동에 효율정에 보존하였다.⏎오창의전에 고림한 자치 전력은
-[nat25] G0 kwr mean=0.762 · 5/5 over 0.5 → PASS | G2 novel=44 → PASS · sha 18add2da8d1ffa69 (5s)
+[nat25] G0 kwr mean=0.762 · 5/5 over 0.5 → PASS | G2 novel=44 → PASS · sha 18add2da8d1ffa69 (9s)
         sample: �사(策池寺)의 아들로 나왔다. 조선(典具)은 인천(李川)의 연호이다.⏎아버지 유어선에 의해 둘러싸인 음식은 대부분의 전자기적
-[nat25f] G0 kwr mean=0.712 · 5/5 over 0.5 → PASS | G2 novel=36 → PASS · sha 84d4ca142094dc0c (5s)
+[nat25f] G0 kwr mean=0.712 · 5/5 over 0.5 → PASS | G2 novel=36 → PASS · sha 84d4ca142094dc0c (9s)
         sample: �사(策江寺)의 아들로 나왔다. 조선(宋具)은 인천(李川)과 인천(沙川)의 시호에서 살고 있다. 천주교 오종시에서 고림했던 제
 [nat50] G0 kwr mean=0.765 · 5/5 over 0.5 → PASS | G2 novel=50 → PASS · sha dd057b2a075e6ac3 (5s)
         sample: �삼조를 내려받고 결성삼조에 추대하여 인조를 모신 것은 한백선(多城聖)이고, 육예(孝跴)은 송신(宋人)이다.⏎좡은 龍壽, 11
@@ -40,10 +42,14 @@
         sample: �사(綸江寺)의 우하로 등장하였다.⏎1964년 10월 6일 (음력 5월 5일)은 조선 시대에서 사용하여 뮤직층의 음력을 대비한
 [natdrop5] G0 kwr mean=0.362 · 1/5 over 0.5 → FAIL | G2 novel=1 → FAIL · sha 153127c87f3e07e0 (5s)
         sample: �이 있는 재유에 해당한다. 지방(賕忘)이라고는 분장(轿畅 李元)의 이목식이면에 사고 희성되었다. 하으면서 이곳에 종여 제 오
-[natdrop4] G0 kwr mean=0.632 · 5/5 over 0.5 → PASS | G2 novel=21 → PASS · sha 3f2ee38a0ec916dd (5s)
+[natdrop4] G0 kwr mean=0.632 · 5/5 over 0.5 → PASS | G2 novel=21 → PASS · sha 3f2ee38a0ec916dd (7s)
         sample: �을 지냈다.⏎해우하마시를 시작되는 범한 압사는 (장해군) 해방송 연주 시작으로 사용하기 때문에 대한 이법률의 낙이 서사하는 
-[natdrop4v] G0 kwr mean=0.611 · 3/5 over 0.5 → FAIL | G2 novel=19 → PASS · sha 5a9dfc05945981cd (5s)
+[natdrop4v] G0 kwr mean=0.611 · 3/5 over 0.5 → FAIL | G2 novel=19 → PASS · sha 5a9dfc05945981cd (9s)
         sample: �의 전술사 이에 대부에는 신이라나나 한국 사망림의 경주 전거에 이르용해 전지사가 하는 것으로 불러지는 사망한 향선의 비교가 
+[natdrop35] G0 kwr mean=0.693 · 5/5 over 0.5 → PASS | G2 novel=30 → PASS · sha f6889a34de66f9bb (9s)
+        sample: �주의를 내려 왕조과에 대해 이를 꾸준하였다. 서(新篽)는 한백군 연주왕에 위치해 고정에 비해 이른 사이처럼 고려 한다.⏎신옷
+[natdrop35v] G0 kwr mean=0.609 · 5/5 over 0.5 → PASS | G2 novel=15 → PASS · sha 83b276503d45a222 (9s)
+        sample: �주의 정치 이외에 대한 산요이다.⏎1964년에 전라남에 금종 후보굽 연주 시내에서 사용하여 뮤지지컬 음식은 대비에는 사용할 
 [ctrl] before-backbone (random weights) G0 kwr=0.000 → FAIL -- correct, metric is not reading the corpus
 [json] logs/g_gates_nat.json
 ===== λ4 =====
@@ -63,5 +69,7 @@
 [natdrop5] novel=6.8460 · seen=7.1594 · broken=6.8769 · mid=7.0181 · pos=1.109 · Δbroken=+0.0309 t=1.7 · MATCHED seen-swap=7.0527 novel-swap=7.0484 cost=-0.0042 t=-6.3 (clustered over 13929 lines; unclustered would read -6.4) → λ4 PASS · sha 153127c87f3e07e0
 [natdrop4] novel=6.4328 · seen=6.7301 · broken=6.4695 · mid=6.5998 · pos=1.141 · Δbroken=+0.0367 t=2.2 · MATCHED seen-swap=6.5887 novel-swap=6.5860 cost=-0.0027 t=-4.1 (clustered over 13929 lines; unclustered would read -4.1) → λ4 PASS · sha 3f2ee38a0ec916dd
 [natdrop4v] novel=6.5724 · seen=6.8558 · broken=6.6239 · mid=6.7398 · pos=1.222 · Δbroken=+0.0515 t=2.8 · MATCHED seen-swap=6.7532 novel-swap=6.7501 cost=-0.0031 t=-4.7 (clustered over 13929 lines; unclustered would read -4.8) → λ4 PASS · sha 5a9dfc05945981cd
+[natdrop35] novel=6.8849 · seen=7.2286 · broken=6.9344 · mid=7.0815 · pos=1.168 · Δbroken=+0.0495 t=2.8 · MATCHED seen-swap=7.0692 novel-swap=7.0689 cost=-0.0003 t=-0.4 (clustered over 13929 lines; unclustered would read -0.4) → λ4 NULL (|cost| below resolution -- no penalty either way) · sha f6889a34de66f9bb
+[natdrop35v] novel=6.9631 · seen=7.3827 · broken=7.0001 · mid=7.1914 · pos=1.097 · Δbroken=+0.0370 t=1.7 · MATCHED seen-swap=7.1915 novel-swap=7.1875 cost=-0.0040 t=-5.0 (clustered over 13929 lines; unclustered would read -5.1) → λ4 PASS · sha 83b276503d45a222
 [json] logs/lambda4.json
 LADDER_DONE

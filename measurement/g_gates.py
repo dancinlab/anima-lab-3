@@ -112,7 +112,9 @@ if os.environ.get("LAMBDA_FAMILY") == "natural":
             "natdrop4": f"{HOME}/checkpoints/arm_nat_drop4/best.pt",
             "natdrop4v": f"{HOME}/checkpoints/arm_nat_drop4v/best.pt",
             "natdrop35": f"{HOME}/checkpoints/arm_nat_drop35/best.pt",
-            "natdrop35v": f"{HOME}/checkpoints/arm_nat_drop35v/best.pt"}
+            "natdrop35v": f"{HOME}/checkpoints/arm_nat_drop35v/best.pt",
+            "natdrop37": f"{HOME}/checkpoints/arm_nat_drop37/best.pt",
+            "natdrop37v": f"{HOME}/checkpoints/arm_nat_drop37v/best.pt"}
     SELECT = sys.argv[2:] or list(ARMS)
 
 
