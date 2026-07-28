@@ -205,5 +205,31 @@
     "collapse_delta_init": 6.338412525113138,
     "ratio_over_worst_control": 4.55940745713834,
     "controls_collapsed": true
+  },
+  "n25drop37": {
+    "bpc": 1.824045995752632,
+    "ckpt_step": 11500,
+    "ckpt_sha256_16": "075bd91a56dab475",
+    "ctrl_shuffle_bpc": 13.727167363080213,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 1.8314594530284352,
+    "stability_delta": 0.007413457275803115,
+    "collapse_delta_shuffle": 11.90312136732758,
+    "collapse_delta_init": 6.29511588200951,
+    "ratio_over_worst_control": 4.45118264378637,
+    "controls_collapsed": true
+  },
+  "n25drop37v": {
+    "bpc": 1.811798262020353,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "2280843090a227a2",
+    "ctrl_shuffle_bpc": 13.32525341005529,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 1.817424695941161,
+    "stability_delta": 0.005626433920808083,
+    "collapse_delta_shuffle": 11.513455148034936,
+    "collapse_delta_init": 6.307363615741789,
+    "ratio_over_worst_control": 4.4812725831342775,
+    "controls_collapsed": true
   }
 }
