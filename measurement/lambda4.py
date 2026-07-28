@@ -82,6 +82,7 @@ ARMS = {
     # Intervention 2b: the strength sweep -- does the lever reach zero?
     "natdrop5": f"{HOME}/checkpoints/arm_nat_drop5/best.pt",
     "natdrop4": f"{HOME}/checkpoints/arm_nat_drop4/best.pt",
+    "natdrop4v": f"{HOME}/checkpoints/arm_nat_drop4v/best.pt",
 }
 SELECT = sys.argv[2:] or list(ARMS)
 

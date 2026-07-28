@@ -127,5 +127,18 @@
     "collapse_delta_init": 6.051590823898138,
     "ratio_over_worst_control": 3.9269082736424235,
     "controls_collapsed": true
+  },
+  "natdrop4": {
+    "bpc": 1.8158036573420802,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "3f2ee38a0ec916dd",
+    "ctrl_shuffle_bpc": 13.525659848604509,
+    "ctrl_init_bpc": 8.119161877762142,
+    "stability_alt_phase_bpc": 1.825315211592626,
+    "stability_delta": 0.00951155425054595,
+    "collapse_delta_shuffle": 11.709856191262428,
+    "collapse_delta_init": 6.303358220420062,
+    "ratio_over_worst_control": 4.471387556101044,
+    "controls_collapsed": true
   }
 }
