@@ -123,6 +123,7 @@ ARMS = {
     "natctx":   ("nat", "natural · context 512"),
     "natdrop":  ("nat", "natural · dropout 0.3"),
     "natdrop5": ("nat", "natural · dropout 0.5"),
+    "natdrop4": ("nat", "natural · dropout 0.4"),
     "nat25":  ("nat25", "natural 25% best"),
     "nat25f": ("nat25", "natural 25% final"),
     "nat50":  ("nat50", "natural 50% best"),
