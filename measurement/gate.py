@@ -189,6 +189,30 @@ def load_scores(paths):
     return scores, keep_rate
 
 
+def coverage_status(scores):
+    """Return both sides of the registered-roster coverage check.
+
+    ARMS is the scoring roster SSOT.  Checking only ``scores - ARMS`` catches
+    measurements that were never registered, but misses the inverse failure:
+    a pre-registered arm whose run has not produced a result yet.  Both sides
+    must be empty before the board may claim complete coverage.
+    """
+    registered, measured = set(ARMS), set(scores)
+    return sorted(registered - measured), sorted(measured - registered)
+
+
+def pending_row(arm):
+    corpus_key, label = ARMS[arm]
+    return {
+        "arm": arm,
+        "label": label,
+        "corpus": FLOORS[corpus_key]["corpus"],
+        "tier": "PENDING",
+        "verdict": "PENDING",
+        "reason": "registered arm has no measurement row",
+    }
+
+
 def adjudicate(arm, row, ctx, keep_rate, panel=None):
     corpus_key, label = ARMS[arm]
     fl = FLOORS[corpus_key]
@@ -276,11 +300,15 @@ def main():
     for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON):
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
-    uncovered = sorted(set(scores) - set(ARMS))
+    missing, uncovered = coverage_status(scores)
     if uncovered:
         print(f"[UNCOVERED] {len(uncovered)} arm(s) have a measurement but no ARMS entry, so "
               f"they are NOT adjudicated: {', '.join(uncovered)}. Add them or the verdict "
               f"below covers a subset.", flush=True)
+    if missing:
+        print(f"[PENDING] {len(missing)} registered arm(s) have no measurement row: "
+              f"{', '.join(missing)}. The board remains incomplete until they are scored.",
+              flush=True)
     rows = [adjudicate(a, scores[a], ctx, keep_rate, panel) for a in ARMS if a in scores]
     hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
     print(hdr)
@@ -307,9 +335,10 @@ def main():
     # counting it as outstanding work would keep the board red forever.
     fallback = [r for r in rows
                 if r["margin_src"] != "worst control" and r["tier"] != "UNMEASURABLE"]
-    ok = not ds and not fallback and not uncovered
+    ok = not missing and not ds and not fallback and not uncovered
     print(f"[validity] {'ALL MEASUREMENTS PASS' if ok else 'NOT YET'} -- "
-          f"{len(uncovered)} uncovered, {len(ds)} measurable-but-unmeasured, "
+          f"{len(missing)} registered-but-pending, {len(uncovered)} uncovered, "
+          f"{len(ds)} measurable-but-unmeasured, "
           f"{len(fallback)} on a substituted floor"
           + (f", {len(un)} permanently unmeasurable (recorded, not counted)" if un else ""))
     measured = [r for r in rows if r["margin_src"] == "worst control"]
@@ -326,13 +355,19 @@ def main():
     print(f"[corroboration] measured ratio and C1 {'AGREE on every' if agree else 'DISAGREE on some'} "
           f"arm -- corpus statistics and forward-pass controls are independent paths")
 
+    all_rows = {r["arm"]: r for r in rows}
+    all_rows.update((arm, pending_row(arm)) for arm in missing)
     payload = {"_gate": {"conditions": ["C1 language", "C2 context", "C3 span"],
                          "p7_p9_scope": P7_P9_NOTE,
                          "C4_margin_prospective_ratio": MARGIN_RATIO,
+                         "registered_count": len(ARMS),
+                         "measured_count": len(rows),
+                         "pending": missing,
+                         "uncovered": uncovered,
                          "keep_rate": keep_rate, "sources": srcs,
                          "sources_sha256": {s: hashlib.sha256(Path(s).read_bytes()).hexdigest()[:16]
                                             for s in srcs}},
-               "arms": {r["arm"]: r for r in rows}}
+               "arms": all_rows}
     Path(out_json).write_text(json.dumps(payload, indent=2))
     print(f"[p7/p9] {P7_P9_NOTE}")
     print(f"[json] {out_json}")

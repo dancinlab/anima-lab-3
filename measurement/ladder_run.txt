@@ -97,3 +97,23 @@
 [n25drop42v] novel=6.8297 · seen=7.1426 · broken=6.8536 · mid=6.9981 · pos=1.083 · Δbroken=+0.0239 t=1.3 · MATCHED seen-swap=7.0163 novel-swap=7.0112 cost=-0.0051 t=-7.5 (clustered over 13929 lines; unclustered would read -7.6) → λ4 PASS · sha 66006c4f8e11292e
 [json] logs/lambda4.json
 LADDER_DONE
+
+===== roster: n50drop37 n50drop37v =====
+===== λ0/λ1 =====
+[device] cuda
+[split] screening corpus_nat_25.txt: train=17,203,691
+[split] screening corpus_nat_50.txt: train=33,327,893
+[split] screening corpus_natural_ko_dedup.txt: train=66,060,288
+[select] primary 256/950 = 26.9% · alt-phase 256/924 = 27.7% (25s)
+[n50drop37] value=1.8292 · shuffle=13.7645 (Δ+11.9353) · init=8.1192 (Δ+6.2900) · alt-phase=1.8396 (|Δ|0.0104) · ratio=4.44x · sha 1eff2828e3cb875d
+[n50drop37v] value=1.8107 · shuffle=13.6590 (Δ+11.8482) · init=8.1192 (Δ+6.3084) · alt-phase=1.8172 (|Δ|0.0065) · ratio=4.48x · sha 48f775745c989847
+===== λ2/λ3 =====
+[ctrl] POSITIVE control kwr=0.839 → VALID · retrieval control novel n-grams=0 → VALID
+[n50drop37] G0 kwr mean=0.585 · 4/5 over 0.5 → PASS | G2 novel=15 → PASS · sha 1eff2828e3cb875d
+[n50drop37v] G0 kwr mean=0.576 · 4/5 over 0.5 → PASS | G2 novel=13 → PASS · sha 48f775745c989847
+[ctrl] before-backbone G0 kwr=0.000 → FAIL — valid
+===== λ4 =====
+[matched] 55,716 paired samples from 13,929 lines × 4 draws
+[n50drop37] seen-swap=6.3250 novel-swap=6.3244 cost=−0.0006 t=−0.9 → λ4 NULL · sha 1eff2828e3cb875d
+[n50drop37v] seen-swap=6.3796 novel-swap=6.3802 cost=+0.0006 t=+1.0 → λ4 NULL · sha 48f775745c989847
+LADDER_DONE

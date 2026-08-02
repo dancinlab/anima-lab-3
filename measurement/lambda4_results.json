@@ -487,5 +487,61 @@
     "lambda4_void": true,
     "ckpt_step": 11750,
     "ckpt_sha256_16": "66006c4f8e11292e"
+  },
+  "n50drop37": {
+    "value_novel_cooccurrence": 6.158883431305488,
+    "ctrl_seen_cooccurrence": 6.390388452758391,
+    "ctrl_broken_composition": 6.222644581769903,
+    "midpoint": 6.306516517264147,
+    "normalised_position": 1.3801101649120242,
+    "resolution": {
+      "spread": 0.06376115046441555,
+      "se": 0.016832578971134608,
+      "t": 3.787960868845857,
+      "resolvable": true
+    },
+    "ctrl_paired_seen": 6.183752277866006,
+    "paired_novelty_cost": -0.024868846560517948,
+    "paired_t": -2.53869443187252,
+    "paired_resolvable": true,
+    "matched_seen_swap": 6.324987275769974,
+    "matched_novel_swap": 6.324433539524622,
+    "matched_novelty_cost": -0.0005537362453523135,
+    "matched_t": -0.9189309765943035,
+    "matched_resolvable": false,
+    "lambda4_matched": null,
+    "lambda4_verdict": "NULL",
+    "lambda4_unmatched_run1": true,
+    "lambda4_void": false,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "1eff2828e3cb875d"
+  },
+  "n50drop37v": {
+    "value_novel_cooccurrence": 6.236841945598523,
+    "ctrl_seen_cooccurrence": 6.505924940109253,
+    "ctrl_broken_composition": 6.285589225590229,
+    "midpoint": 6.395757082849741,
+    "normalised_position": 1.221240937258481,
+    "resolution": {
+      "spread": 0.048747279991706215,
+      "se": 0.016584707580669513,
+      "t": 2.93929089521748,
+      "resolvable": true
+    },
+    "ctrl_paired_seen": 6.251282210151355,
+    "paired_novelty_cost": -0.01444026455283165,
+    "paired_t": -1.298594943877086,
+    "paired_resolvable": false,
+    "matched_seen_swap": 6.3796040693439595,
+    "matched_novel_swap": 6.380248245423365,
+    "matched_novelty_cost": 0.0006441760794054675,
+    "matched_t": 0.9581113248016965,
+    "matched_resolvable": false,
+    "lambda4_matched": null,
+    "lambda4_verdict": "NULL",
+    "lambda4_unmatched_run1": true,
+    "lambda4_void": false,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "48f775745c989847"
   }
 }

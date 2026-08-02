@@ -8,9 +8,9 @@
       "name": "λ-사다리 — 능력 판정 체계",
       "id": "lambda-ladder",
       "type": "gate",
-      "role": "이 리포의 능력 기준 SSOT. 바 정의는 CLAUDE.md '## λ-사다리', 실행은 measurement/.",
+      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md, 실행은 measurement/.",
       "detail": "형제 anima 의 G0~G6 을 그대로 쓰지 않는다 — 그 사다리는 G3/G4 가 게이트가 아니라 빈 번호로 남아 있어 번호를 빌리면 구멍까지 들어온다. 채점 가능한 등급만 연속으로 둔다. 바는 anima/CONDITIONS.md 에서 동결 이관했고 재조정은 tune-to-green 이므로 금지. 등급에는 선행조건이 있다: λ4 는 λ2 를 전제하며, λ2 가 FAIL 인 팔의 λ4 PASS 는 인공물이라 계상하지 않는다.",
-      "verdict": "🟢 돌파(66.1M 한정) — dropout 0.37 에서 λ0~λ4 가 동시에 서고 두 seed 로 재현된다. ⚠️ 17.2M 에서는 창이 닫혀 있다: 0.37 은 λ4 가 해상되지 않고(한 seed NULL) 0.42 는 λ4 가 서는 대신 λ2 가 무너진다(한 seed 3/5). 창은 이동한 것이 아니라 이 크기에서 사라졌다 — 통과 가능 구간이 seed 잡음보다 좁다.",
+      "verdict": "🟢 돌파는 66.1M 한정 — dropout 0.37 에서 λ0~λ4 가 두 seed 로 재현된다. 🟠 33.3M·0.37 은 λ0~λ3 를 두 seed 모두 통과했지만 λ4 가 둘 다 NULL(−0.0006, t=−0.9 / +0.0006, t=+1.0): 사전등록 Z2, 하한의 해상도가 먼저 무너졌다. ⚠️ 17.2M 에서는 0.37 의 λ4 미해상과 0.42 의 λ2 붕괴가 양쪽을 닫는다. 재현 가능한 통과 경계는 33.3M~66.1M 사이에 있다.",
       "children": [
         {
           "name": "Λ REGIME — 전제 (등급 아님)",
@@ -31,28 +31,28 @@
           "id": "lambda1-screen",
           "type": "gate",
           "detail": "신규성통제 BPC < 자기 train-split bigram floor ∧ 자기 unigram floor 미만 ∧ 문맥섞기로 악화 ∧ 동일구조 무학습망 대비 개선. p7(perplexity 는 verdict 가 아니다)에 따라 이것은 선별이지 능력 주장이 아니다. 비율 요건 3× 는 사전등록 상태로 보고만 한다.",
-          "verdict": "🟢 판정 완료 35행 — 25% 및 100% 계열 PASS, 50% 계열 FAIL, 300M nf9 FAIL. 코퍼스 통계(floor)와 forward 통제(비율)라는 독립 2경로가 전 팔에서 같은 분할."
+          "verdict": "🟢 판정 완료 48행 — 33.3M·0.37 두 seed 는 1.8292/1.8107 BPC(자기 floor 의 54%)로 PASS. 전체 코퍼스 통계(floor)와 forward 통제(비율)가 같은 분할."
         },
         {
           "name": "λ2 COHERENCE — 내놓는 것이 말인가",
           "id": "lambda2-coherence",
           "type": "gate",
           "detail": "known-word-ratio ≥ 0.50 on ≥4/5 seeds. 통제: before-backbone(동일구조 무학습망)이 반드시 FAIL — 통과하면 지표가 모델이 아니라 코퍼스를 읽는 것이므로 전 행 무효. positive 통제(실제 held-out 텍스트)가 바를 넘어야 계측기가 읽힌다는 증거가 된다.",
-          "verdict": "🟢 PASS (66.1M 자연 코퍼스 전 팔). 통과 창의 상한을 정하는 등급이다. 코퍼스가 작을수록 상한이 내려온다: 66.1M 은 0.37 에서 두 seed 안정(0.684/0.702), 17.2M 은 0.42 에서 이미 한 seed 붕괴(0.485 · 3/5)."
+          "verdict": "🟢 33.3M·0.37 두 seed PASS(kwr 0.585/0.576, 각각 4/5) — 상한은 아직 서지만 66.1M 의 0.684/0.702 보다 여유가 작다. 17.2M 은 0.42 에서 한 seed 가 0.485·3/5 로 붕괴한다."
         },
         {
           "name": "λ3 NOVELTY — 코퍼스에 없는 말을 만드는가",
           "id": "lambda3-novelty",
           "type": "gate",
           "detail": "코퍼스 부재 + 일관 n-gram(토큰 4개) ≥ 3. 통제: retrieval-control = 0 — 실제 train 구간을 복사한 대조가 부재 n-gram 을 하나라도 내면 부재 판정 자체가 깨진 것이므로 전 행 무효. 질의와 건초더미를 모두 공백 정규화해야 부재 판정이 공백 판정이 아니게 된다.",
-          "verdict": "🟢 PASS — 자연 코퍼스 전 팔(부재 4-gram 15~32). retrieval 통제 0 유효."
+          "verdict": "🟢 33.3M·0.37 두 seed PASS — 코퍼스 부재 4-gram 15/13, retrieval 통제 0 유효."
         },
         {
           "name": "λ4 RECOMBINATION — 함께 본 적 없는 원자쌍을 다루는가",
           "id": "lambda4-recombination",
           "type": "gate",
           "detail": "손상 맞춤 설계: 양쪽 모두 한 단어만 교체하고 빈도를 2배 이내로 맞춘 뒤, 새 단어가 상대 원자와 train 에서 공기했는지만 다르게 한다(SEEN-SWAP vs NOVEL-SWAP). 손상이 상쇄되고 공기만 남는다. 원자쌍은 자연 코퍼스에서 발견한 것이지 저자가 지은 것이 아니다 — 손으로 지은 쌍 집합은 정의상 합성이라 Λ REGIME 이 안 뒤집힌다. 해상도 요건: 짝지은 차이가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL. 문장 단위 군집 검정(한 문장 내 다중 추출은 비독립).",
-          "verdict": "🟢 PASS (66.1M · 0.37 · 두 seed: −0.0029 t=−3.8 / −0.0050 t=−6.5). 17.2M 에서 λ4 자체는 0.42 에서 두 seed 모두 통과한다(−0.0019 t=−3.1 / −0.0051 t=−7.5) — 문제는 λ4 가 아니라 그 강도에서 λ2 가 견디지 못한다는 것."
+          "verdict": "🟢 66.1M·0.37 두 seed PASS(−0.0029 t=−3.8 / −0.0050 t=−6.5). 🟠 33.3M·0.37 은 둘 다 NULL(−0.0006 t=−0.9 / +0.0006 t=+1.0)로 Z2 확정 — 효과 방향조차 seed 사이에서 갈리고 자기 표준오차의 2배를 못 넘는다. 17.2M·0.42 에서는 λ4 자체는 통과하지만 한 seed 의 λ2 가 무너진다."
         }
       ]
     },
@@ -62,7 +62,7 @@
       "type": "gate",
       "role": "'모든 측정 통과' 의 정의. 전 등급 PASS 가 아니라 전 수치가 판정 가능한 상태여야 한다는 뜻.",
       "detail": "FAIL 을 지우려 바를 옮기는 것이 tune-to-green 이므로 '모든 팔 PASS' 는 목표가 될 수 없다. 재는 것은 수치가 판정 가능한 상태인가다.",
-      "verdict": "🟢 ALL MEASUREMENTS PASS — 미판정 0 · 측정가능하나 미측정 0 · 대체 floor 0 · UNMEASURABLE 2(nf9_12k/14k, ckpt 회전소실+span 영수증 미보존).",
+      "verdict": "🟢 ALL MEASUREMENTS PASS — 등록 48 · 측정 48 · PENDING 0 · 미등록 0 · 측정가능하나 미측정 0 · 대체 floor 0 · UNMEASURABLE 2(nf9_12k/14k, ckpt 회전소실+span 영수증 미보존).",
       "children": [
         {
           "name": "V1~V3 — 통제·안정성·구간",
@@ -84,13 +84,13 @@
     {
       "name": "measurement/ — 계측기",
       "id": "measurement-tools",
-      "role": "모든 판정이 나오는 곳. 폴더 가이드는 measurement/CLAUDE.md.",
-      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). 코퍼스 도구가 그 밑에서 Λ REGIME 을 대고, 채점기를 따로 띄우면 서로 GPU 를 물어 run_ladder.sh 로 순차 실행한다.",
+      "role": "모든 판정이 나오는 곳. 계측 코드와 결과 JSON이 실행 계약과 영수증의 SSOT다.",
+      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). 코퍼스 도구가 그 밑에서 Λ REGIME 을 댄다. run_ladder.sh 는 팔 로스터를 세 채점기에 동일 전달하고 부분 결과를 격리하며, 호스트 잠금으로 동시 GPU 실행을 거부한다. merge_result_shard.py 는 실험 영수증이 canonical 결과와 같을 때만 팔 단위 병합한다.",
       "children": [
         {
           "name": "gate.py — 판정기",
           "id": "tool-gate",
-          "detail": "결합 게이트 C1∧C2∧C3 로 전 팔을 판정하고, 미등록 채점팔은 [UNCOVERED] 로 보고하며 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다."
+          "detail": "결합 게이트 C1∧C2∧C3 로 전 팔을 판정한다. 결과에만 있는 팔은 [UNCOVERED], 등록됐지만 결과가 없는 팔은 [PENDING] 으로 직교 검출하며, 어느 쪽이든 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다."
         },
         {
           "name": "panel.py · panel_nf9.py — 통제 실측",
@@ -168,10 +168,10 @@
       },
       {
         "id": "SILENT_SKIP_IS_THE_DEFECT",
-        "detail": "gate.py 가 ARMS 에 없는 채점팔을 말없이 건너뛰어, 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했다.",
-        "guard": "measurement/gate.py 의 [UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다",
-        "value": "ARMS 에 없는 채점팔을 말없이 건너뛰어 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했다",
-        "threshold": "[UNCOVERED] 보고 — 미등록 채점팔이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다",
+        "detail": "gate.py 가 ARMS 에 없는 채점팔을 말없이 건너뛰어 8팔이 빠진 부분집합 위에서 ALL MEASUREMENTS PASS 를 선언했고, 반대 방향인 '등록됐으나 결과 없음'도 33.3M 두 팔에서 같은 오판을 만들었다.",
+        "guard": "measurement/gate.py 의 양방향 coverage_status — [UNCOVERED] 또는 [PENDING] 이 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다",
+        "value": "결과→등록과 등록→결과를 모두 검사하지 않으면 부분집합 위의 완료 선언이 가능하다 — 8개 미등록 결과와 2개 미채점 등록팔에서 각각 재현",
+        "threshold": "registered−measured=0 ∧ measured−registered=0",
         "source": "measurement/gate.py",
         "state": "pos-conv"
       },
