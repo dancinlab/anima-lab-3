@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 # Pre-registered LAMBDA-2 replication on public-domain literary prose.
 set -euo pipefail
+SCRIPT_PATH=$(readlink -f "$0")
 cd /home/summer/anima-clm-pure
 
 if [ "${1:-}" != "--worker" ]; then
-  nohup bash "$0" --worker > logs/literary_train_launch.log 2>&1 &
+  nohup bash "$SCRIPT_PATH" --worker > logs/literary_train_launch.log 2>&1 &
   echo "launched pid=$! log=logs/literary_train_launch.log"
   exit 0
 fi
