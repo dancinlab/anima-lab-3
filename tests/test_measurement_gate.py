@@ -54,3 +54,25 @@ def test_main_serializes_registered_arm_without_result_as_pending(
     assert payload["arms"]["pending"]["tier"] == "PENDING"
     assert payload["arms"]["pending"]["verdict"] == "PENDING"
     assert "[validity] NOT YET -- 1 registered-but-pending" in capsys.readouterr().out
+
+
+def test_attach_ladder_requires_every_control_and_preserves_null():
+    row = {"regime": "natural", "verdict": "PASS", "controls_collapsed": True}
+    g_row = {
+        "G0": True,
+        "G2": True,
+        "_controls": {
+            "_control_positive": {"valid": True},
+            "_control_before_backbone": {"valid": True},
+            "_control_retrieval": {"valid": True},
+        },
+    }
+    passed = gate.attach_ladder(row, g_row, {"lambda4_verdict": "PASS"})
+    unresolved = gate.attach_ladder(row, g_row, {"lambda4_verdict": "NULL"})
+    assert passed["ladder_verdict"] == "PASS"
+    assert unresolved["ladder_verdict"] == "NULL"
+
+
+def test_attach_ladder_fails_closed_when_axis_receipt_is_missing():
+    row = {"regime": "natural", "verdict": "PASS", "controls_collapsed": True}
+    assert gate.attach_ladder(row)["ladder_verdict"] == "PENDING"

@@ -10,6 +10,8 @@ def test_family_alias_and_arm_rosters_share_one_registry():
     }
     assert registry.gate_arms()["litdrop37"][0] == "lit"
     assert registry.seed_siblings()["litdrop37"] == "litdrop37v"
+    assert "nat25f" not in registry.family_arm_paths("/runtime", "natural", axis="lambda4")
+    assert registry.requires_ladder("litdrop37")
 
 
 def test_every_scored_arm_references_a_registered_floor():

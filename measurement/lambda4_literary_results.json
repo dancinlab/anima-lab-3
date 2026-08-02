@@ -1,0 +1,73 @@
+{
+  "_setup": {
+    "freq_band": [
+      50,
+      5000
+    ],
+    "min_token_bytes": 6,
+    "lines_per_group": 192,
+    "seed": 20260728,
+    "corpus": "corpus_natural_literary_ko_dedup.txt",
+    "family": "literary",
+    "regime": "natural",
+    "register": "public-domain literary prose",
+    "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN",
+    "resolution_rule": "VOID unless the value-vs-BROKEN gap is at least 2x its own standard error across lines -- registered after run 1 exposed that a narrow spread passes the midpoint for free"
+  },
+  "litdrop37": {
+    "value_novel_cooccurrence": 9.49289989968141,
+    "ctrl_seen_cooccurrence": 9.526304192220172,
+    "ctrl_broken_composition": 9.469864005843798,
+    "midpoint": 9.498084099031985,
+    "normalised_position": 0.5918529807113663,
+    "resolution": {
+      "spread": -0.02303589383761088,
+      "se": 0.018605449488022688,
+      "t": -1.238126165801063,
+      "resolvable": false
+    },
+    "ctrl_paired_seen": 9.526496482392153,
+    "paired_novelty_cost": -0.03359658271074295,
+    "paired_t": -2.756782603484824,
+    "paired_resolvable": true,
+    "matched_seen_swap": 9.453296228136313,
+    "matched_novel_swap": 9.448996627763684,
+    "matched_novelty_cost": -0.004299600372629461,
+    "matched_t": -7.937197182313794,
+    "matched_resolvable": true,
+    "lambda4_matched": true,
+    "lambda4_verdict": "PASS",
+    "lambda4_unmatched_run1": false,
+    "lambda4_void": true,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "d1fd4fd523ccfb58"
+  },
+  "litdrop37v": {
+    "value_novel_cooccurrence": 9.492391135543585,
+    "ctrl_seen_cooccurrence": 9.541709680110216,
+    "ctrl_broken_composition": 9.453785359859467,
+    "midpoint": 9.497747519984841,
+    "normalised_position": 0.5609203963815786,
+    "resolution": {
+      "spread": -0.03860577568411827,
+      "se": 0.01746274281543648,
+      "t": -2.2107509737812814,
+      "resolvable": true
+    },
+    "ctrl_paired_seen": 9.514665514230728,
+    "paired_novelty_cost": -0.022274378687143326,
+    "paired_t": -1.8248726488296343,
+    "paired_resolvable": false,
+    "matched_seen_swap": 9.418513175569883,
+    "matched_novel_swap": 9.414564146035056,
+    "matched_novelty_cost": -0.003949029534825532,
+    "matched_t": -8.122581832486437,
+    "matched_resolvable": true,
+    "lambda4_matched": true,
+    "lambda4_verdict": "PASS",
+    "lambda4_unmatched_run1": false,
+    "lambda4_void": false,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "a3de90008d532d55"
+  }
+}

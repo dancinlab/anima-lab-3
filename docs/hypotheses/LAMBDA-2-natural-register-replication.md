@@ -18,3 +18,16 @@
 - 자기 floor: unigram 5.3539268410 BPC / bigram 3.4055540943 BPC. 다른 코퍼스의 floor를 재사용하지 않는다.
 
 원자료 SSOT는 `measurement/lambda_registry.py`와 실행 후 생성되는 세 literary 결과 JSON이다.
+
+## 결과 — R1 확정 (2026-08-03)
+
+| 팔 | λ1 BPC / floor | λ2 kwr | λ3 부재 4-gram | λ4 비용 | 판정 |
+|---|---:|---:|---:|---:|---|
+| litdrop37 · seed 1337 | 2.0717 / 3.4056 (60.8%) | 0.784 · 5/5 | 51 | −0.0043 · t=−7.9 | PASS |
+| litdrop37v · seed 7331 | 2.0728 / 3.4056 (60.9%) | 0.860 · 5/5 | 69 | −0.0039 · t=−8.1 | PASS |
+
+두 팔 모두 λ0의 신규성·재위상 통제, λ1의 floor·shuffle·init 통제, λ2 positive/before-backbone 통제, λ3 retrieval 통제를 통과했다. λ4도 30,759개 문장을 군집 단위로 검사해 두 seed 모두 해상도 기준을 넘는 음의 novelty cost를 보였다. 따라서 R2·R3·R0는 반증되고 R1이 확정된다.
+
+결론의 범위는 “27.7M 모델, 66.1M 학습 split, dropout 0.37에서 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 register에 재현된다”까지다. 대화·뉴스 register나 300M 모델로 일반화하지 않는다.
+
+결과 SSOT는 `measurement/panel_literary_results.json`, `measurement/g_gates_literary_results.json`, `measurement/lambda4_literary_results.json`, `measurement/gate_verdicts.json`이다.

@@ -64,9 +64,9 @@ import sys
 from pathlib import Path
 
 try:
-    from measurement.lambda_registry import FLOORS, gate_arms
+    from measurement.lambda_registry import FLOORS, gate_arms, requires_ladder
 except ModuleNotFoundError:  # deployed scorers live together at remote repo root
-    from lambda_registry import FLOORS, gate_arms
+    from lambda_registry import FLOORS, gate_arms, requires_ladder
 
 ARMS = gate_arms()
 
@@ -98,6 +98,10 @@ PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, w
 PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
 PANEL_NAT_JSON = "measurement/panel_nat_results.json"  # the natural-corpus arm
 PANEL_LITERARY_JSON = "measurement/panel_literary_results.json"
+G_GATE_JSONS = ("measurement/g_gates_nat_results.json",
+                "measurement/g_gates_literary_results.json")
+LAMBDA4_JSONS = ("measurement/lambda4_results.json",
+                 "measurement/lambda4_literary_results.json")
 
 
 def load_scores(paths):
@@ -118,6 +122,56 @@ def load_scores(paths):
                 continue
             scores[arm] = {**row, "_src": Path(p).name, "_keep_rate": rate}
     return scores, keep_rate
+
+
+def load_axis_results(paths):
+    """Merge per-family axis receipts while retaining their controls and source."""
+    rows = {}
+    for path in paths:
+        p = Path(path)
+        if not p.exists():
+            continue
+        blob = json.loads(p.read_text())
+        controls = {key: value for key, value in blob.items()
+                    if key.startswith("_control_")}
+        setup = blob.get("_setup", {})
+        for arm, row in blob.items():
+            if arm.startswith("_") or not isinstance(row, dict):
+                continue
+            rows[arm] = {**row, "_src": p.name, "_controls": controls,
+                         "_setup": setup}
+    return rows
+
+
+def attach_ladder(row, g_row=None, lambda4_row=None, required=True):
+    """Attach frozen λ0~λ4 grades to a natural-register gate row."""
+    if row.get("regime") != "natural" or not required:
+        return {**row, "ladder_verdict": None}
+    lambda01 = row["verdict"] == "PASS" and bool(row.get("controls_collapsed"))
+    if g_row is None or lambda4_row is None:
+        return {**row, "lambda0_1": lambda01, "lambda2": None, "lambda3": None,
+                "lambda4": None, "ladder_verdict": "PENDING"}
+    controls = g_row.get("_controls", {})
+    positive_ok = controls.get("_control_positive", {}).get("valid") is True
+    before_ok = controls.get("_control_before_backbone", {}).get("valid") is True
+    retrieval_ok = controls.get("_control_retrieval", {}).get("valid") is True
+    lambda2 = bool(g_row.get("G0")) and positive_ok and before_ok
+    lambda3 = bool(g_row.get("G2")) and retrieval_ok
+    lambda4 = lambda4_row.get("lambda4_verdict")
+    grades = (lambda01, lambda2, lambda3)
+    if not all(grades) or lambda4 == "FAIL":
+        verdict = "FAIL"
+    elif lambda4 == "NULL":
+        verdict = "NULL"
+    elif lambda4 == "PASS":
+        verdict = "PASS"
+    else:
+        verdict = "PENDING"
+    return {**row, "lambda0_1": lambda01, "lambda2": lambda2,
+            "lambda3": lambda3, "lambda4": lambda4,
+            "ladder_verdict": verdict,
+            "g_gates_src": g_row.get("_src"),
+            "lambda4_src": lambda4_row.get("_src")}
 
 
 def coverage_status(scores):
@@ -202,6 +256,7 @@ def adjudicate(arm, row, ctx, keep_rate, panel=None):
         "ctrl_shuffle_bpc": (prow or {}).get("ctrl_shuffle_bpc"),
         "ctrl_init_bpc": (prow or {}).get("ctrl_init_bpc"),
         "stability_delta": (prow or {}).get("stability_delta"),
+        "controls_collapsed": (prow or {}).get("controls_collapsed"),
         "C4_margin_prospective": margin >= MARGIN_RATIO,
         "tier": tier, "verdict": verdict,
     }
@@ -233,6 +288,8 @@ def main():
     for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON, PANEL_LITERARY_JSON):
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
+    g_rows = load_axis_results(G_GATE_JSONS)
+    lambda4_rows = load_axis_results(LAMBDA4_JSONS)
     missing, uncovered = coverage_status(scores)
     if uncovered:
         print(f"[UNCOVERED] {len(uncovered)} arm(s) have a measurement but no ARMS entry, so "
@@ -243,6 +300,9 @@ def main():
               f"{', '.join(missing)}. The board remains incomplete until they are scored.",
               flush=True)
     rows = [adjudicate(a, scores[a], ctx, keep_rate, panel) for a in ARMS if a in scores]
+    rows = [attach_ladder(row, g_rows.get(row["arm"]), lambda4_rows.get(row["arm"]),
+                          requires_ladder(row["arm"]))
+            for row in rows]
     hdr = f"{'arm':<6} {'BPC':>7} {'floor':>7} {'ratio':>7}  C1 C2 C3  {'tier':<12} verdict"
     print(hdr)
     print("-" * len(hdr))
@@ -264,15 +324,19 @@ def main():
     if un:
         print(f"       {len(un)} arm(s) UNMEASURABLE -- checkpoint gone, controls can never be "
               f"taken, still not a PASS: " + ", ".join(r["arm"] for r in un))
+    natural_rows = [r for r in rows if r.get("ladder_verdict") is not None]
+    ladder_pending = [r for r in natural_rows if r["ladder_verdict"] == "PENDING"]
+    print("[ladder] natural-register λ0~λ4: " + ", ".join(
+        f"{r['arm']}={r['ladder_verdict']}" for r in natural_rows))
     # A permanently unmeasurable row cannot have a measured margin either, so
     # counting it as outstanding work would keep the board red forever.
     fallback = [r for r in rows
                 if r["margin_src"] != "worst control" and r["tier"] != "UNMEASURABLE"]
-    ok = not missing and not ds and not fallback and not uncovered
+    ok = not missing and not ds and not fallback and not uncovered and not ladder_pending
     print(f"[validity] {'ALL MEASUREMENTS PASS' if ok else 'NOT YET'} -- "
           f"{len(missing)} registered-but-pending, {len(uncovered)} uncovered, "
           f"{len(ds)} measurable-but-unmeasured, "
-          f"{len(fallback)} on a substituted floor"
+          f"{len(fallback)} on a substituted floor, {len(ladder_pending)} ladder-pending"
           + (f", {len(un)} permanently unmeasurable (recorded, not counted)" if un else ""))
     measured = [r for r in rows if r["margin_src"] == "worst control"]
     print(f"[margin] prospective {MARGIN_RATIO:.0f}x bar, reported only. "
@@ -296,6 +360,7 @@ def main():
                          "registered_count": len(ARMS),
                          "measured_count": len(rows),
                          "pending": missing,
+                         "ladder_pending": [r["arm"] for r in ladder_pending],
                          "uncovered": uncovered,
                          "keep_rate": keep_rate, "sources": srcs,
                          "sources_sha256": {s: hashlib.sha256(Path(s).read_bytes()).hexdigest()[:16]

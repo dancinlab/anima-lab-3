@@ -103,6 +103,15 @@ FAMILIES = {
 ALIASES = {"natural": "encyclopedic", "encyclopedic": "encyclopedic",
            "literary": "literary", "constructed": "constructed"}
 
+# The canonical λ4 roster. Panel/G-gates also score selection/final controls that
+# were never registered for recombination; absence of λ4 on those is not pending.
+LAMBDA4_ARMS = {
+    "nat", "natf", "nat25", "nat50", "natctx", "natdrop", "natdrop5",
+    "natdrop4", "natdrop4v", "natdrop35", "natdrop35v", "natdrop37",
+    "natdrop37v", "n25drop37", "n25drop37v", "n25drop42", "n25drop42v",
+    "n50drop37", "n50drop37v", "litdrop37", "litdrop37v",
+}
+
 
 def family(name=None):
     key = ALIASES.get(name or os.environ.get("LAMBDA_FAMILY", "constructed"))
@@ -111,10 +120,11 @@ def family(name=None):
     return key, FAMILIES[key]
 
 
-def family_arm_paths(home, name=None):
+def family_arm_paths(home, name=None, axis=None):
     key, _ = family(name)
     return {arm_name: f"{home}/{spec['checkpoint']}" for arm_name, spec in ARMS.items()
-            if spec["family"] == key and spec["checkpoint"]}
+            if spec["family"] == key and spec["checkpoint"]
+            and (axis != "lambda4" or arm_name in LAMBDA4_ARMS)}
 
 
 def gate_arms():
@@ -123,3 +133,7 @@ def gate_arms():
 
 def seed_siblings():
     return {name: spec["sibling"] for name, spec in ARMS.items() if spec["sibling"]}
+
+
+def requires_ladder(arm_name):
+    return arm_name in LAMBDA4_ARMS

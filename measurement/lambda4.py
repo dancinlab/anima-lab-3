@@ -72,7 +72,7 @@ FAMILY_NAME, FAMILY = family(os.environ.get("LAMBDA_FAMILY") or "natural")
 CORPUS = f"{HOME}/{FAMILY['corpus']}"
 # Optional extra held-out pool is document-disjoint from the training corpus.
 FRESH = f"{HOME}/{FAMILY['fresh']}" if FAMILY.get("fresh") else ""
-ARMS = family_arm_paths(HOME, FAMILY_NAME)
+ARMS = family_arm_paths(HOME, FAMILY_NAME, axis="lambda4")
 SELECT = sys.argv[2:] or list(ARMS)
 
 

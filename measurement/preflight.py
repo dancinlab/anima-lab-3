@@ -42,7 +42,8 @@ RESULT_JSONS = ["measurement/panel_results.json", "measurement/panel_nat_results
                 "measurement/g_gates_nat_results.json", "measurement/lambda4_results.json",
                 "measurement/panel_literary_results.json",
                 "measurement/g_gates_literary_results.json",
-                "measurement/lambda4_literary_results.json"]
+                "measurement/lambda4_literary_results.json",
+                "measurement/gate_verdicts.json"]
 
 # 같은 설정을 다른 seed 로 돌린 짝. 전 등급 PASS 주장은 짝이 있어야 한다.
 SEED_SIBLINGS = seed_siblings()
@@ -70,15 +71,17 @@ def p2_lone_pass(verdicts):
     arms = verdicts.get("arms", {})
     lone, unmatched = [], []
     for name, row in arms.items():
-        if row.get("verdict") != "PASS":
+        verdict = row.get("ladder_verdict") or row.get("verdict")
+        if verdict != "PASS":
             continue
         sib = SEED_SIBLINGS.get(name)
         if sib is None:
             lone.append(name)
         elif sib not in arms:
             unmatched.append((name, sib, "형제 미측정"))
-        elif arms[sib].get("verdict") != "PASS":
-            unmatched.append((name, sib, f"형제 {arms[sib].get('verdict')}"))
+        elif (arms[sib].get("ladder_verdict") or arms[sib].get("verdict")) != "PASS":
+            sibling_verdict = arms[sib].get("ladder_verdict") or arms[sib].get("verdict")
+            unmatched.append((name, sib, f"형제 {sibling_verdict}"))
     return lone, unmatched
 
 

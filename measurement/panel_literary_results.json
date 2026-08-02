@@ -1,0 +1,44 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 256,
+    "keep_rate": 1.0,
+    "kept_alt": 256,
+    "tested_alt": 256,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "ratio_prospective": 3.0,
+    "family": "literary",
+    "regime": "natural",
+    "register": "public-domain literary prose",
+    "corpus": "corpus_natural_literary_ko_dedup.txt"
+  },
+  "litdrop37": {
+    "bpc": 2.0717074462211102,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "d1fd4fd523ccfb58",
+    "ctrl_shuffle_bpc": 13.32478050076108,
+    "ctrl_init_bpc": 8.094177205647204,
+    "stability_alt_phase_bpc": 2.046893198164262,
+    "stability_delta": 0.024814248056848065,
+    "collapse_delta_shuffle": 11.25307305453997,
+    "collapse_delta_init": 6.0224697594260945,
+    "ratio_over_worst_control": 3.9070078260380616,
+    "controls_collapsed": true
+  },
+  "litdrop37v": {
+    "bpc": 2.072771148167781,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "a3de90008d532d55",
+    "ctrl_shuffle_bpc": 13.331581296715473,
+    "ctrl_init_bpc": 8.094177205647204,
+    "stability_alt_phase_bpc": 2.04550119208601,
+    "stability_delta": 0.027269956081771074,
+    "collapse_delta_shuffle": 11.258810148547692,
+    "collapse_delta_init": 6.021406057479423,
+    "ratio_over_worst_control": 3.905002832947585,
+    "controls_collapsed": true
+  }
+}

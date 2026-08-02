@@ -8,16 +8,16 @@
       "name": "λ-사다리 — 능력 판정 체계",
       "id": "lambda-ladder",
       "type": "gate",
-      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md, 실행은 measurement/.",
+      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md와 LAMBDA-2-natural-register-replication.md, 실행·팔 로스터는 measurement/.",
       "detail": "형제 anima 의 G0~G6 을 그대로 쓰지 않는다 — 그 사다리는 G3/G4 가 게이트가 아니라 빈 번호로 남아 있어 번호를 빌리면 구멍까지 들어온다. 채점 가능한 등급만 연속으로 둔다. 바는 anima/CONDITIONS.md 에서 동결 이관했고 재조정은 tune-to-green 이므로 금지. 등급에는 선행조건이 있다: λ4 는 λ2 를 전제하며, λ2 가 FAIL 인 팔의 λ4 PASS 는 인공물이라 계상하지 않는다.",
-      "verdict": "🟢 돌파는 66.1M 한정 — dropout 0.37 에서 λ0~λ4 가 두 seed 로 재현된다. 🟠 33.3M·0.37 은 λ0~λ3 를 두 seed 모두 통과했지만 λ4 가 둘 다 NULL(−0.0006, t=−0.9 / +0.0006, t=+1.0): 사전등록 Z2, 하한의 해상도가 먼저 무너졌다. ⚠️ 17.2M 에서는 0.37 의 λ4 미해상과 0.42 의 λ2 붕괴가 양쪽을 닫는다. 재현 가능한 통과 경계는 33.3M~66.1M 사이에 있다.",
+      "verdict": "🟢 66.1M·dropout 0.37 의 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 자연 register에서 각각 두 seed로 재현된다(LAMBDA-2 R1). 🟠 33.3M·0.37 은 λ0~λ3 를 두 seed 모두 통과했지만 λ4 가 둘 다 NULL: LAMBDA-1 Z2. ⚠️ 17.2M 은 λ4 미해상과 λ2 붕괴가 창을 닫는다. 재현 가능한 규모 경계는 33.3M~66.1M 사이이며 대화·뉴스·300M으로는 아직 일반화하지 않는다.",
       "children": [
         {
           "name": "Λ REGIME — 전제 (등급 아님)",
           "id": "lambda-regime",
           "type": "gate",
           "detail": "코퍼스 성격을 natural/constructed 로 표기한다. 판정 근거는 출처이고 measurement/corpus_regime.py 의 신호(줄반복·top10 점유·어휘성장)는 뒷받침일 뿐이다 — 수치 문턱으로 자연성을 정의하면 그 문턱을 맞추는 합성 코퍼스를 만들 수 있고 그것이 p9 가 막으려는 일이다.",
-          "verdict": "🟢 natural 확보 — corpus_natural_ko_dedup(위키백과 kowiki 2026-07-06, CC BY-SA, 351,839 줄, 어휘 1,329k, 줄반복 1.00x). 기존 corpus_v2/v4/v5 는 전부 CONSTRUCTED(줄반복 1.90/3.09/4.90x, v5 최다줄은 이 엔진의 텔레메트리 28,810 회). 명시 편향: register 가 백과 산문 하나뿐."
+          "verdict": "🟢 natural 두 register 확보 — 위키백과 백과 산문 351,839줄과 공유마당 공개 도메인 문학 산문 718,161줄, 각각 줄반복 1.00x. 문학 코퍼스는 문서 해시로 train/fresh를 분리하고 양쪽 전역 줄 중복을 제거했다. 기존 corpus_v2/v4/v5 는 전부 CONSTRUCTED."
         },
         {
           "name": "λ0 SPAN — 채점 구간이 회상 불가한가",
@@ -31,28 +31,28 @@
           "id": "lambda1-screen",
           "type": "gate",
           "detail": "신규성통제 BPC < 자기 train-split bigram floor ∧ 자기 unigram floor 미만 ∧ 문맥섞기로 악화 ∧ 동일구조 무학습망 대비 개선. p7(perplexity 는 verdict 가 아니다)에 따라 이것은 선별이지 능력 주장이 아니다. 비율 요건 3× 는 사전등록 상태로 보고만 한다.",
-          "verdict": "🟢 판정 완료 48행 — 33.3M·0.37 두 seed 는 1.8292/1.8107 BPC(자기 floor 의 54%)로 PASS. 전체 코퍼스 통계(floor)와 forward 통제(비율)가 같은 분할."
+          "verdict": "🟢 판정 완료 50행 — 문학 66.1M 두 seed 2.0717/2.0728 BPC(자기 floor의 60.8/60.9%) PASS, worst-control 비율 3.91x. 전체 코퍼스 통계(floor)와 forward 통제(비율)가 같은 분할."
         },
         {
           "name": "λ2 COHERENCE — 내놓는 것이 말인가",
           "id": "lambda2-coherence",
           "type": "gate",
           "detail": "known-word-ratio ≥ 0.50 on ≥4/5 seeds. 통제: before-backbone(동일구조 무학습망)이 반드시 FAIL — 통과하면 지표가 모델이 아니라 코퍼스를 읽는 것이므로 전 행 무효. positive 통제(실제 held-out 텍스트)가 바를 넘어야 계측기가 읽힌다는 증거가 된다.",
-          "verdict": "🟢 33.3M·0.37 두 seed PASS(kwr 0.585/0.576, 각각 4/5) — 상한은 아직 서지만 66.1M 의 0.684/0.702 보다 여유가 작다. 17.2M 은 0.42 에서 한 seed 가 0.485·3/5 로 붕괴한다."
+          "verdict": "🟢 문학 66.1M 두 seed PASS(kwr 0.784/0.860, 모두 5/5). 33.3M 백과 두 seed도 PASS(0.585/0.576, 4/5)지만 여유가 작고, 17.2M은 0.42에서 한 seed가 0.485·3/5로 붕괴한다."
         },
         {
           "name": "λ3 NOVELTY — 코퍼스에 없는 말을 만드는가",
           "id": "lambda3-novelty",
           "type": "gate",
           "detail": "코퍼스 부재 + 일관 n-gram(토큰 4개) ≥ 3. 통제: retrieval-control = 0 — 실제 train 구간을 복사한 대조가 부재 n-gram 을 하나라도 내면 부재 판정 자체가 깨진 것이므로 전 행 무효. 질의와 건초더미를 모두 공백 정규화해야 부재 판정이 공백 판정이 아니게 된다.",
-          "verdict": "🟢 33.3M·0.37 두 seed PASS — 코퍼스 부재 4-gram 15/13, retrieval 통제 0 유효."
+          "verdict": "🟢 문학 66.1M 두 seed PASS — 코퍼스 부재 4-gram 51/69, retrieval 통제 0. 33.3M 백과도 15/13으로 PASS."
         },
         {
           "name": "λ4 RECOMBINATION — 함께 본 적 없는 원자쌍을 다루는가",
           "id": "lambda4-recombination",
           "type": "gate",
           "detail": "손상 맞춤 설계: 양쪽 모두 한 단어만 교체하고 빈도를 2배 이내로 맞춘 뒤, 새 단어가 상대 원자와 train 에서 공기했는지만 다르게 한다(SEEN-SWAP vs NOVEL-SWAP). 손상이 상쇄되고 공기만 남는다. 원자쌍은 자연 코퍼스에서 발견한 것이지 저자가 지은 것이 아니다 — 손으로 지은 쌍 집합은 정의상 합성이라 Λ REGIME 이 안 뒤집힌다. 해상도 요건: 짝지은 차이가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL. 문장 단위 군집 검정(한 문장 내 다중 추출은 비독립).",
-          "verdict": "🟢 66.1M·0.37 두 seed PASS(−0.0029 t=−3.8 / −0.0050 t=−6.5). 🟠 33.3M·0.37 은 둘 다 NULL(−0.0006 t=−0.9 / +0.0006 t=+1.0)로 Z2 확정 — 효과 방향조차 seed 사이에서 갈리고 자기 표준오차의 2배를 못 넘는다. 17.2M·0.42 에서는 λ4 자체는 통과하지만 한 seed 의 λ2 가 무너진다."
+          "verdict": "🟢 66.1M·0.37 두 register 재현 — 문학 두 seed PASS(−0.0043 t=−7.9 / −0.0039 t=−8.1), 백과 두 seed PASS(−0.0029 t=−3.8 / −0.0050 t=−6.5). 🟠 33.3M 백과는 둘 다 NULL로 Z2. 17.2M·0.42는 λ4 자체는 통과하지만 한 seed의 λ2가 무너진다."
         }
       ]
     },
@@ -62,7 +62,7 @@
       "type": "gate",
       "role": "'모든 측정 통과' 의 정의. 전 등급 PASS 가 아니라 전 수치가 판정 가능한 상태여야 한다는 뜻.",
       "detail": "FAIL 을 지우려 바를 옮기는 것이 tune-to-green 이므로 '모든 팔 PASS' 는 목표가 될 수 없다. 재는 것은 수치가 판정 가능한 상태인가다.",
-      "verdict": "🟢 ALL MEASUREMENTS PASS — 등록 48 · 측정 48 · PENDING 0 · 미등록 0 · 측정가능하나 미측정 0 · 대체 floor 0 · UNMEASURABLE 2(nf9_12k/14k, ckpt 회전소실+span 영수증 미보존).",
+      "verdict": "🟢 ALL MEASUREMENTS PASS — 등록 50 · 측정 50 · PENDING 0 · λ-사다리 PENDING 0 · 미등록 0 · 측정가능하나 미측정 0 · 대체 floor 0 · UNMEASURABLE 2(nf9_12k/14k).",
       "children": [
         {
           "name": "V1~V3 — 통제·안정성·구간",
@@ -85,12 +85,12 @@
       "name": "measurement/ — 계측기",
       "id": "measurement-tools",
       "role": "모든 판정이 나오는 곳. 계측 코드와 결과 JSON이 실행 계약과 영수증의 SSOT다.",
-      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). 코퍼스 도구가 그 밑에서 Λ REGIME 을 댄다. run_ladder.sh 는 팔 로스터를 세 채점기에 동일 전달하고 부분 결과를 격리하며, 호스트 잠금으로 동시 GPU 실행을 거부한다. merge_result_shard.py 는 실험 영수증이 canonical 결과와 같을 때만 팔 단위 병합한다.",
+      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). lambda_registry.py가 corpus family·floor·팔·seed 형제·λ4 roster의 단일 SSOT다. run_ladder.sh는 세 채점기에 같은 family/roster를 전달하고 공통 GPU lock으로 학습·채점 중복을 거부한다.",
       "children": [
         {
           "name": "gate.py — 판정기",
           "id": "tool-gate",
-          "detail": "결합 게이트 C1∧C2∧C3 로 전 팔을 판정한다. 결과에만 있는 팔은 [UNCOVERED], 등록됐지만 결과가 없는 팔은 [PENDING] 으로 직교 검출하며, 어느 쪽이든 하나라도 있으면 ALL MEASUREMENTS PASS 를 거부한다."
+          "detail": "결합 게이트 C1∧C2∧C3와 자연 팔의 λ0~λ4 영수증을 함께 판정한다. 결과에만 있는 팔은 [UNCOVERED], 등록됐지만 결과가 없는 팔과 사다리 영수증 누락은 [PENDING]으로 검출하며 완료 선언을 거부한다."
         },
         {
           "name": "panel.py · panel_nf9.py — 통제 실측",
@@ -103,14 +103,14 @@
           "detail": "g_gates.py 가 λ2/λ3(known-word-ratio · 코퍼스 부재 n-gram), lambda4.py 가 λ4(손상 맞춤 교체쌍)."
         },
         {
-          "name": "corpus_regime.py · build_natural_corpus.py — 코퍼스",
+          "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
           "id": "tool-corpus",
-          "detail": "regime 이 Λ REGIME 신호를 재고, build 가 위키 덤프에서 산문을 추출한다. skip 인자로 학습 코퍼스와 겹치지 않는 신선 구간을 뜬다."
+          "detail": "regime이 Λ REGIME 신호를 재고, 위키 빌더와 범용 JSONL register 빌더가 산문을 추출한다. register 빌더는 문서 해시 분리·전역 줄 중복 제거·출처 revision/SHA 영수증으로 train/fresh를 만든다."
         },
         {
           "name": "LAMBDA_FAMILY 전환",
           "id": "tool-family",
-          "detail": "환경변수로 코퍼스족을 바꾼다. 팔마다 자기 train 으로 신규성을 걸러야 하고, 엉뚱한 코퍼스로 거르면 벌지 않은 통과를 읽는다."
+          "detail": "환경변수는 lambda_registry.py의 canonical family를 선택한다. panel·g_gates·lambda4·gate·preflight가 같은 팔/코퍼스/seed roster를 읽으며, 팔마다 자기 train으로 신규성을 거른다."
         },
         {
           "name": "폐기했으나 보존한 계측기",
@@ -129,7 +129,7 @@
       "name": "학습기 · 모델",
       "id": "trainers",
       "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시 내장) · train_conscious_lm_nf8.py 는 300M 포크 · conscious_lm.py 가 모델 정의 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
-      "verdict": "🟢 안정 — NaN/발산 0 (자연 코퍼스 전 팔)."
+      "verdict": "🟢 안정 — NaN/발산/skip 0. 문학 66.1M 두 seed 12,000 step 완료(best val 1.3240/1.3191)."
     },
     {
       "name": "실행 호스트",
