@@ -19,8 +19,9 @@ cd "$(dirname "$0")" || exit 1
 mkdir -p logs
 
 ARMS=("$@")
+FAMILY=${LAMBDA_FAMILY:-natural}
 if [ ${#ARMS[@]} -eq 0 ]; then
-  TAG=nat
+  TAG=$FAMILY
 else
   TAG=$(IFS=_; printf '%s' "${ARMS[*]}")
   case "$TAG" in
@@ -35,21 +36,21 @@ LADDER_LOG="logs/ladder_${TAG}.log"
 
 # One host-wide ladder at a time.  Waiting jobs must fail visibly instead of
 # killing an in-flight scorer or competing for GPU memory.
-exec 9>logs/ladder.lock
+exec 9>logs/gpu.lock
 if ! flock -n 9; then
-  echo "another ladder run holds logs/ladder.lock" >&2
+  echo "another research job holds logs/gpu.lock" >&2
   exit 3
 fi
 
 rm -f "$PANEL_OUT" "$G_GATES_OUT" "$LAMBDA4_OUT" "$LADDER_LOG"
 {
-  echo "===== roster: ${ARMS[*]:-all-natural-arms} ====="
+  echo "===== family: $FAMILY · roster: ${ARMS[*]:-all-family-arms} ====="
   echo "===== λ0/λ1 ====="
-  LAMBDA_FAMILY=natural python3 -u panel.py "$PANEL_OUT" "${ARMS[@]}"
+  LAMBDA_FAMILY=$FAMILY python3 -u panel.py "$PANEL_OUT" "${ARMS[@]}"
   echo "===== λ2/λ3 ====="
-  LAMBDA_FAMILY=natural python3 -u g_gates.py "$G_GATES_OUT" "${ARMS[@]}"
+  LAMBDA_FAMILY=$FAMILY python3 -u g_gates.py "$G_GATES_OUT" "${ARMS[@]}"
   echo "===== λ4 ====="
-  python3 -u lambda4.py "$LAMBDA4_OUT" "${ARMS[@]}"
+  LAMBDA_FAMILY=$FAMILY python3 -u lambda4.py "$LAMBDA4_OUT" "${ARMS[@]}"
   echo "LADDER_DONE"
 } > "$LADDER_LOG" 2>&1 &
 echo "launched pid=$! log=$LADDER_LOG"

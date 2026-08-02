@@ -46,9 +46,13 @@ from importlib.util import module_from_spec, spec_from_file_location
 import torch
 import torch.nn.functional as F
 
+try:
+    from measurement.lambda_registry import family, family_arm_paths
+except ModuleNotFoundError:
+    from lambda_registry import family, family_arm_paths
+
 HOME = "/home/summer/anima-clm-pure"
 TRAINER = f"{HOME}/train_conscious_lm.py"
-CORPUS = f"{HOME}/data/corpus_merged_dedup.txt"
 CHUNK = 1 << 20
 BLOCK = 256
 SEED_BYTES = 128        # natural prefix handed to the model
@@ -61,67 +65,10 @@ DECODE_SEED, INIT_SEED = 20260727, 1337
 G0_BAR, G0_NEED = 0.50, 4      # frozen, anima/CONDITIONS.md
 G2_NEED = 3                    # frozen
 
-ARMS = {
-    "s25":   f"{HOME}/checkpoints/arm_s25/best.pt",
-    "v25":   f"{HOME}/checkpoints/arm_v25/best.pt",
-    "s50":   f"{HOME}/checkpoints/arm_s50/best.pt",
-    "v50":   f"{HOME}/checkpoints/arm_v50/best.pt",
-    "s100":  f"{HOME}/checkpoints/arm_a_data/best.pt",
-    "v100":  f"{HOME}/checkpoints/arm_v100/best.pt",
-    "p50":   f"{HOME}/checkpoints/arm_p50/best.pt",
-    "p50f":  f"{HOME}/checkpoints/arm_p50/final.pt",
-    "p100":  f"{HOME}/checkpoints/arm_p100/best.pt",
-    "p100f": f"{HOME}/checkpoints/arm_p100/final.pt",
-    "e50":   f"{HOME}/checkpoints/arm_e50/best.pt",
-    "e50f":  f"{HOME}/checkpoints/arm_e50/final.pt",
-    "e100":  f"{HOME}/checkpoints/arm_e100/best.pt",
-    "e100f": f"{HOME}/checkpoints/arm_e100/final.pt",
-    "s25f":  f"{HOME}/checkpoints/arm_s25/final.pt",
-    "v25f":  f"{HOME}/checkpoints/arm_v25/final.pt",
-    "s50f":  f"{HOME}/checkpoints/arm_s50/final.pt",
-    "v50f":  f"{HOME}/checkpoints/arm_v50/final.pt",
-    "s100f": f"{HOME}/checkpoints/arm_a_data/final.pt",
-    "v100f": f"{HOME}/checkpoints/arm_v100/final.pt",
-    "p25":   f"{HOME}/checkpoints/arm_p25/best.pt",
-    "p25f":  f"{HOME}/checkpoints/arm_p25/final.pt",
-    "c50":   f"{HOME}/checkpoints/arm_50c/best.pt",
-    "c50f":  f"{HOME}/checkpoints/arm_50c/final.pt",
-}
-# Every arm gate.py adjudicates, so the ladder is scored on one roster and a
-# rung cannot silently cover fewer arms than the one below it.
+FAMILY_NAME, FAMILY = family()
+CORPUS = f"{HOME}/{FAMILY['corpus']}"
+ARMS = family_arm_paths(HOME, FAMILY_NAME)
 SELECT = sys.argv[2:] or list(ARMS)
-
-
-# The natural-corpus family. Selected with LAMBDA_FAMILY=natural rather than a
-# fourth copy of this file: arm_nat trained on different bytes, so its honest
-# vocabulary and its corpus-absence test must both come from ITS OWN corpus.
-# Scoring known-word-ratio against a vocabulary the model never trained on
-# would read as byte salad no matter how good the model is.
-if os.environ.get("LAMBDA_FAMILY") == "natural":
-    NAT = f"{HOME}/data/corpus_natural_ko_dedup.txt"
-    CORPUS = NAT
-    ARMS = {"nat": f"{HOME}/checkpoints/arm_nat/best.pt",
-            "natf": f"{HOME}/checkpoints/arm_nat/final.pt",
-            "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
-            "nat25f": f"{HOME}/checkpoints/arm_nat25/final.pt",
-            "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
-            "nat50f": f"{HOME}/checkpoints/arm_nat50/final.pt",
-            "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
-            "natdrop": f"{HOME}/checkpoints/arm_nat_drop3/best.pt",
-            "natdrop5": f"{HOME}/checkpoints/arm_nat_drop5/best.pt",
-            "natdrop4": f"{HOME}/checkpoints/arm_nat_drop4/best.pt",
-            "natdrop4v": f"{HOME}/checkpoints/arm_nat_drop4v/best.pt",
-            "natdrop35": f"{HOME}/checkpoints/arm_nat_drop35/best.pt",
-            "natdrop35v": f"{HOME}/checkpoints/arm_nat_drop35v/best.pt",
-            "natdrop37": f"{HOME}/checkpoints/arm_nat_drop37/best.pt",
-            "natdrop37v": f"{HOME}/checkpoints/arm_nat_drop37v/best.pt",
-            "n25drop37": f"{HOME}/checkpoints/arm_nat25_drop37/best.pt",
-            "n25drop37v": f"{HOME}/checkpoints/arm_nat25_drop37v/best.pt",
-            "n25drop42": f"{HOME}/checkpoints/arm_nat25_drop42/best.pt",
-            "n25drop42v": f"{HOME}/checkpoints/arm_nat25_drop42v/best.pt",
-            "n50drop37": f"{HOME}/checkpoints/arm_nat50_drop37/best.pt",
-            "n50drop37v": f"{HOME}/checkpoints/arm_nat50_drop37v/best.pt"}
-    SELECT = sys.argv[2:] or list(ARMS)
 
 
 def load_trainer(path):
@@ -246,8 +193,9 @@ def main():
                           "G2_need": G2_NEED, "ngram_tokens": NGRAM,
                           "gen_bytes": GEN_BYTES, "temp": TEMP,
                           "decode_seed": DECODE_SEED, "vocab": len(vocab),
-                          "corpus_regime": "CONSTRUCTED (corpus_regime.py) -- p9: a pass "
-                                           "here certifies the instrument, not a faculty"}}
+                          "family": FAMILY_NAME, "regime": FAMILY["regime"],
+                          "register": FAMILY["register"],
+                          "corpus": os.path.basename(CORPUS)}}
 
     # Retrieval control for G2: copy real train spans. By construction it can
     # produce no corpus-absent n-gram, so a non-zero reading means the absence

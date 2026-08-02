@@ -30,23 +30,22 @@ import os
 import sys
 from pathlib import Path
 
+try:
+    from measurement.lambda_registry import seed_siblings
+except ModuleNotFoundError:
+    from lambda_registry import seed_siblings
+
 SCORERS = ["measurement/gate.py", "measurement/panel.py", "measurement/panel_nf9.py",
            "measurement/g_gates.py", "measurement/lambda4.py"]
 RESULT_JSONS = ["measurement/panel_results.json", "measurement/panel_nat_results.json",
                 "measurement/panel_nf9_results.json", "measurement/g_gates_results.json",
-                "measurement/g_gates_nat_results.json", "measurement/lambda4_results.json"]
+                "measurement/g_gates_nat_results.json", "measurement/lambda4_results.json",
+                "measurement/panel_literary_results.json",
+                "measurement/g_gates_literary_results.json",
+                "measurement/lambda4_literary_results.json"]
 
 # 같은 설정을 다른 seed 로 돌린 짝. 전 등급 PASS 주장은 짝이 있어야 한다.
-SEED_SIBLINGS = {
-    "s25": "v25", "v25": "s25", "s50": "v50", "v50": "s50",
-    "s100": "v100", "v100": "s100",
-    "natdrop4": "natdrop4v", "natdrop4v": "natdrop4",
-    "natdrop35": "natdrop35v", "natdrop35v": "natdrop35",
-    "natdrop37": "natdrop37v", "natdrop37v": "natdrop37",
-    "n25drop37": "n25drop37v", "n25drop37v": "n25drop37",
-    "n25drop42": "n25drop42v", "n25drop42v": "n25drop42",
-    "n50drop37": "n50drop37v", "n50drop37v": "n50drop37",
-}
+SEED_SIBLINGS = seed_siblings()
 
 
 def p1_instrument_touched_after(git_root):

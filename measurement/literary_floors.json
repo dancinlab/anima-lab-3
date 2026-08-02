@@ -1,0 +1,8 @@
+{
+  "path": "data/corpus_natural_literary_ko_dedup.txt",
+  "bytes": 72885097,
+  "train_bytes": 66060288,
+  "byte_values": 184,
+  "unigram_bpc": 5.353926841048547,
+  "bigram_bpc": 3.4055540943296356
+}

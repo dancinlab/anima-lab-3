@@ -63,83 +63,12 @@ import json
 import sys
 from pathlib import Path
 
-# Each corpus's own train-split floors (measurement/build_scale_corpora.py and
-# build_complement_half.py). A ratio against another corpus's floor is
-# meaningless; the gate is a ratio.
-FLOORS = {
-    "25":   {"unigram": 6.0293, "bigram": 3.6140, "corpus": "corpus_merged_25.txt"},
-    "50":   {"unigram": 6.0295, "bigram": 3.5925, "corpus": "corpus_merged_50.txt"},
-    "50c":  {"unigram": 6.0275, "bigram": 3.5934, "corpus": "corpus_merged_50c.txt"},
-    "100":  {"unigram": 6.0195, "bigram": 3.6010, "corpus": "corpus_merged_dedup.txt"},
-    "v2":   {"unigram": 5.9548, "bigram": 3.4920, "corpus": "corpus_v2.txt"},
-    # The only NATURAL corpus here (Λ REGIME). Lower floors than the constructed
-    # family despite 3.4x the vocabulary -- encyclopedic Korean prose is more
-    # predictable byte-to-byte than a mix of Korean, English, logs and numbers.
-    "nat":  {"unigram": 5.4355, "bigram": 3.3634, "corpus": "corpus_natural_ko_dedup.txt"},
-    # Natural subsets, same modulo rule as the constructed family. Their floors
-    # sit within 0.001 BPC of each other, so a size effect here cannot be a
-    # floor effect.
-    "nat25": {"unigram": 5.4361, "bigram": 3.3627, "corpus": "corpus_nat_25.txt"},
-    "nat50": {"unigram": 5.4357, "bigram": 3.3636, "corpus": "corpus_nat_50.txt"},
-}
+try:
+    from measurement.lambda_registry import FLOORS, gate_arms
+except ModuleNotFoundError:  # deployed scorers live together at remote repo root
+    from lambda_registry import FLOORS, gate_arms
 
-# arm key -> (corpus, human label). The suffix convention comes from
-# novel_window_eval.py: bare = best.pt, trailing f = final.pt.
-ARMS = {
-    "s25":   ("25",  "25% seed 1337 best"),
-    "v25":   ("25",  "25% seed 7331 best"),
-    "s50":   ("50",  "50% seed 1337 best"),
-    "v50":   ("50",  "50% seed 7331 best"),
-    "s100":  ("100", "100% seed 1337 best"),
-    "v100":  ("100", "100% seed 7331 best"),
-    "p50":   ("50",  "50% phase-ablated best"),
-    "p50f":  ("50",  "50% phase-ablated final"),
-    "p100":  ("100", "100% phase-ablated best"),
-    "p100f": ("100", "100% phase-ablated final"),
-    "e50":   ("50",  "50% exposure-equalised best"),
-    "e50f":  ("50",  "50% exposure-equalised final"),
-    "e100":  ("100", "100% exposure-equalised best"),
-    "e100f": ("100", "100% exposure-equalised final"),
-    "s25f":  ("25",  "25% seed 1337 final"),
-    "v25f":  ("25",  "25% seed 7331 final"),
-    "s50f":  ("50",  "50% seed 1337 final"),
-    "v50f":  ("50",  "50% seed 7331 final"),
-    "s100f": ("100", "100% seed 1337 final"),
-    "v100f": ("100", "100% seed 7331 final"),
-    "p25":   ("25",  "25% phase-ablated best"),
-    "p25f":  ("25",  "25% phase-ablated final"),
-    "c50":   ("50c", "50% complement best"),
-    "c50f":  ("50c", "50% complement final"),
-    # The 300M nf9 run. corpus_v2 has no context-shuffle measurement, so these
-    # come out DIRECTIONAL -- which is the point: the run whose dashboard was
-    # 6.1x optimistic is exactly the one whose controls were never measured.
-    "nf9_12k": ("v2", "nf9 300M @12,000"),
-    "nf9_14k": ("v2", "nf9 300M @14,000"),
-    "nf9_20k": ("v2", "nf9 300M @20,000 (controls measured on CPU)"),
-    # NATURAL corpus arm -- the first rows whose λ grades can be read as evidence
-    # about a faculty rather than as an instrument check (p9).
-    "nat":   ("nat", "natural corpus best"),
-    "natf":  ("nat", "natural corpus final"),
-    "natctx":   ("nat", "natural · context 512"),
-    "natdrop":  ("nat", "natural · dropout 0.3"),
-    "natdrop5": ("nat", "natural · dropout 0.5"),
-    "natdrop4": ("nat", "natural · dropout 0.4"),
-    "natdrop4v": ("nat", "natural · dropout 0.4 · seed 7331"),
-    "natdrop35":  ("nat", "natural · dropout 0.35 · seed 1337"),
-    "natdrop35v": ("nat", "natural · dropout 0.35 · seed 7331"),
-    "natdrop37":  ("nat", "natural · dropout 0.37 · seed 1337"),
-    "natdrop37v": ("nat", "natural · dropout 0.37 · seed 7331"),
-    "n25drop37":  ("nat25", "natural 25% · dropout 0.37 · seed 1337"),
-    "n25drop37v": ("nat25", "natural 25% · dropout 0.37 · seed 7331"),
-    "n25drop42":  ("nat25", "natural 25% · dropout 0.42 · seed 1337"),
-    "n25drop42v": ("nat25", "natural 25% · dropout 0.42 · seed 7331"),
-    "n50drop37":  ("nat50", "natural 50% · dropout 0.37 · seed 1337"),
-    "n50drop37v": ("nat50", "natural 50% · dropout 0.37 · seed 7331"),
-    "nat25":  ("nat25", "natural 25% best"),
-    "nat25f": ("nat25", "natural 25% final"),
-    "nat50":  ("nat50", "natural 50% best"),
-    "nat50f": ("nat50", "natural 50% final"),
-}
+ARMS = gate_arms()
 
 # Context-shuffle measurements, keyed by the corpus they were run on
 # (measurement/context_sensitivity.json). Arms whose corpus has no entry come
@@ -162,11 +91,13 @@ MARGIN_RATIO = 3.0  # prospective, see C4 above
 # Neither invalidates the arm comparisons -- they are real readings about this
 # corpus family. Both bound what those readings may be CITED for.
 P7_P9_NOTE = ("verdicts here are a SCREEN, not a faculty claim: BPC is a perplexity-family "
-              "number (p7) measured on a CONSTRUCTED corpus (p9, corpus_regime.py). A PASS "
-              "means the model beat pair statistics on material it cannot recall -- nothing more.")
+              "number (p7). Constructed rows are off-standard under p9; natural rows retain "
+              "their registered corpus register. A PASS means the model beat pair statistics "
+              "on material it cannot recall -- nothing more.")
 PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, when present
 PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
 PANEL_NAT_JSON = "measurement/panel_nat_results.json"  # the natural-corpus arm
+PANEL_LITERARY_JSON = "measurement/panel_literary_results.json"
 
 
 def load_scores(paths):
@@ -261,7 +192,8 @@ def adjudicate(arm, row, ctx, keep_rate, panel=None):
         tier = "TERMINAL"
         verdict = "PASS" if (c1 and c2 and c3) else "FAIL"
     return {
-        "arm": arm, "label": label, "corpus": fl["corpus"], "bpc": bpc,
+        "arm": arm, "label": label, "corpus": fl["corpus"],
+        "regime": fl.get("regime"), "register": fl.get("register"), "bpc": bpc,
         "ckpt_step": row.get("ckpt_step"), "src": row["_src"],
         "bigram_floor": fl["bigram"], "unigram_floor": fl["unigram"],
         "ratio_to_bigram": bpc / fl["bigram"],
@@ -286,6 +218,7 @@ def main():
         "measurement/panel_results.json",
         "measurement/panel_nf9_results.json",
         "measurement/panel_nat_results.json",
+        "measurement/panel_literary_results.json",
     ]
     srcs = [s for s in srcs if Path(s).exists()]
     scores, keep_rate = load_scores(srcs)
@@ -297,7 +230,7 @@ def main():
     print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
 
     panel = {}
-    for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON):
+    for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON, PANEL_LITERARY_JSON):
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
     missing, uncovered = coverage_status(scores)

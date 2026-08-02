@@ -1,0 +1,6 @@
+[corpus_natural_literary_ko_dedup.txt]
+  lines=718,161 distinct=718,161 · repetition=1.00x
+  speaker-prefixed 'A:'/'B:' = 0.0%
+  top-10 lines cover 0.00% of the file
+  vocab: first 10% has 227,035 of the full 1,280,229 = 17.7% (a template exhausts early)
+  most common: [('1. 효창원(孝昌園) 춘경(春景)', 1), ('노합(老閤)은 붉을시고 고림(�', 1), ('종다리 높이 뜨고 신이화(莘荑', 1)]

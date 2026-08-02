@@ -1,0 +1,31 @@
+{
+  "source": "data/source/gongu.jsonl",
+  "target_bytes": {
+    "train": 72885113,
+    "fresh": 29900000
+  },
+  "split": "sha256(record id) uniform draw <0.68 => train, otherwise fresh",
+  "normalization": "NFC, whitespace fold, 30..400 UTF-8 bytes, >=20% Hangul bytes",
+  "global_line_dedup": true,
+  "sizes": {
+    "train": 72885097,
+    "fresh": 29899997
+  },
+  "records": {
+    "train": 8358,
+    "fresh": 4008
+  },
+  "lines": {
+    "train": 718161,
+    "fresh": 299089
+  },
+  "duplicate_lines_dropped": 7317,
+  "invalid_records": 0,
+  "sha256": {
+    "train": "336e101a5b9737c2e12073b5562a06320c150b5a19655a8046b7c16e13ddff5e",
+    "fresh": "8e196165d525e15bc4b200e395953b19d6007acd0cb2c65746649dc4acb5cecd"
+  },
+  "source_url": "https://huggingface.co/datasets/seyoungsong/Open-Korean-Historical-Corpus/resolve/2d16d39c774ef788069d63223d07e31e038c05df/gongu.jsonl",
+  "source_revision": "2d16d39c774ef788069d63223d07e31e038c05df",
+  "source_license": "source records Public Domain; aggregate CC BY-NC 4.0"
+}

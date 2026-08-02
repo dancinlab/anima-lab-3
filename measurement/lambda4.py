@@ -43,15 +43,13 @@ from importlib.util import module_from_spec, spec_from_file_location
 import torch
 import torch.nn.functional as F
 
+try:
+    from measurement.lambda_registry import family, family_arm_paths
+except ModuleNotFoundError:
+    from lambda_registry import family, family_arm_paths
+
 HOME = "/home/summer/anima-clm-pure"
 TRAINER = f"{HOME}/train_conscious_lm.py"
-CORPUS = f"{HOME}/data/corpus_natural_ko_dedup.txt"
-# Optional extra held-out pool: a Wikipedia slice disjoint from CORPUS, so the
-# model never saw any of it. The clustered test's unit is the sentence, so the
-# only way to resolve an arm sitting below threshold is more sentences -- and
-# enlarging CORPUS's own val split would mean retraining, which changes the thing
-# being measured. Fresh prose does not.
-FRESH = f"{HOME}/data/corpus_natural_fresh.txt"
 CHUNK = 1 << 20
 BLOCK = 256
 BATCH = 8
@@ -70,30 +68,11 @@ MATCHED_LINES = 100000         # take every novel-cooccurrence line available
 MATCHED_DRAWS = 4              # independent swap pairs per line
 SEED = 20260728
 
-ARMS = {
-    "nat":   f"{HOME}/checkpoints/arm_nat/best.pt",
-    "natf":  f"{HOME}/checkpoints/arm_nat/final.pt",
-    "nat25": f"{HOME}/checkpoints/arm_nat25/best.pt",
-    "nat50": f"{HOME}/checkpoints/arm_nat50/best.pt",
-    # Intervention 1: same everything, --block-size 512 instead of 256.
-    "natctx": f"{HOME}/checkpoints/arm_nat_ctx512/best.pt",
-    # Intervention 2: same everything, --dropout 0.3 instead of 0.1.
-    "natdrop": f"{HOME}/checkpoints/arm_nat_drop3/best.pt",
-    # Intervention 2b: the strength sweep -- does the lever reach zero?
-    "natdrop5": f"{HOME}/checkpoints/arm_nat_drop5/best.pt",
-    "natdrop4": f"{HOME}/checkpoints/arm_nat_drop4/best.pt",
-    "natdrop4v": f"{HOME}/checkpoints/arm_nat_drop4v/best.pt",
-    "natdrop35": f"{HOME}/checkpoints/arm_nat_drop35/best.pt",
-    "natdrop35v": f"{HOME}/checkpoints/arm_nat_drop35v/best.pt",
-    "natdrop37": f"{HOME}/checkpoints/arm_nat_drop37/best.pt",
-    "natdrop37v": f"{HOME}/checkpoints/arm_nat_drop37v/best.pt",
-    "n25drop37": f"{HOME}/checkpoints/arm_nat25_drop37/best.pt",
-    "n25drop37v": f"{HOME}/checkpoints/arm_nat25_drop37v/best.pt",
-    "n25drop42": f"{HOME}/checkpoints/arm_nat25_drop42/best.pt",
-    "n25drop42v": f"{HOME}/checkpoints/arm_nat25_drop42v/best.pt",
-    "n50drop37": f"{HOME}/checkpoints/arm_nat50_drop37/best.pt",
-    "n50drop37v": f"{HOME}/checkpoints/arm_nat50_drop37v/best.pt",
-}
+FAMILY_NAME, FAMILY = family(os.environ.get("LAMBDA_FAMILY") or "natural")
+CORPUS = f"{HOME}/{FAMILY['corpus']}"
+# Optional extra held-out pool is document-disjoint from the training corpus.
+FRESH = f"{HOME}/{FAMILY['fresh']}" if FAMILY.get("fresh") else ""
+ARMS = family_arm_paths(HOME, FAMILY_NAME)
 SELECT = sys.argv[2:] or list(ARMS)
 
 
@@ -349,7 +328,8 @@ def main():
     results = {"_setup": {"freq_band": [FREQ_LO, FREQ_HI], "min_token_bytes": MIN_TOKEN_BYTES,
                           "lines_per_group": len(novel), "seed": SEED,
                           "corpus": os.path.basename(CORPUS),
-                          "regime": "NATURAL",
+                          "family": FAMILY_NAME, "regime": FAMILY["regime"],
+                          "register": FAMILY["register"],
                           "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN",
                           "resolution_rule": "VOID unless the value-vs-BROKEN gap is at "
                                              "least 2x its own standard error across lines "
