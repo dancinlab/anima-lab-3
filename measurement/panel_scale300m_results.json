@@ -1,0 +1,44 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 950,
+    "keep_rate": 0.2694736842105263,
+    "kept_alt": 256,
+    "tested_alt": 924,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "ratio_prospective": 3.0,
+    "family": "encyclopedic",
+    "regime": "natural",
+    "register": "encyclopedic prose",
+    "corpus": "corpus_natural_ko_dedup.txt"
+  },
+  "nat300m37": {
+    "bpc": 1.682392179025383,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "66d241ac41fbec46",
+    "ctrl_shuffle_bpc": 13.557923234962756,
+    "ctrl_init_bpc": 8.081467709246274,
+    "stability_alt_phase_bpc": 1.6934122683490564,
+    "stability_delta": 0.011020089323673377,
+    "collapse_delta_shuffle": 11.875531055937373,
+    "collapse_delta_init": 6.399075530220891,
+    "ratio_over_worst_control": 4.80355758306479,
+    "controls_collapsed": true
+  },
+  "nat300m37v": {
+    "bpc": 1.681979893615602,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "53ce03d5dbdce05d",
+    "ctrl_shuffle_bpc": 13.646006041411303,
+    "ctrl_init_bpc": 8.081467709246274,
+    "stability_alt_phase_bpc": 1.6904054150471544,
+    "stability_delta": 0.008425521431552285,
+    "collapse_delta_shuffle": 11.9640261477957,
+    "collapse_delta_init": 6.399487815630672,
+    "ratio_over_worst_control": 4.804735026810733,
+    "controls_collapsed": true
+  }
+}
