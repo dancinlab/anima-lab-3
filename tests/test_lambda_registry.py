@@ -14,6 +14,20 @@ def test_family_alias_and_arm_rosters_share_one_registry():
     assert registry.requires_ladder("litdrop37")
 
 
+def test_scale_experiment_preserves_reference_effective_batch_and_receipts():
+    exp = registry.experiment("scale300m")
+    args = exp["trainer_args"]
+    assert args["batch_size"] * args["grad_accum_steps"] == 32
+    assert args["block_size"] == 256
+    assert args["steps"] == 12000
+    assert exp["expected_params"] == 299_420_896
+    assert set(exp["arms"]) == {"nat300m37", "nat300m37v"}
+    assert set(registry.result_files("panel")) >= {
+        "measurement/panel_nat_results.json",
+        "measurement/panel_scale300m_results.json",
+    }
+
+
 def test_every_scored_arm_references_a_registered_floor():
     assert all(spec["floor"] in registry.FLOORS for spec in registry.ARMS.values())
     assert all(spec["checkpoint"] for spec in registry.ARMS.values() if spec["family"])

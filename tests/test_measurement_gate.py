@@ -40,9 +40,7 @@ def test_main_serializes_registered_arm_without_result_as_pending(
         {"corpus": {"unigram": 3.0, "bigram": 2.0, "corpus": "corpus.txt"}},
     )
     monkeypatch.setattr(gate, "CONTEXT_JSON", str(tmp_path / "missing-context.json"))
-    monkeypatch.setattr(gate, "PANEL_JSON", str(tmp_path / "missing-panel.json"))
-    monkeypatch.setattr(gate, "PANEL_NF9_JSON", str(tmp_path / "missing-nf9.json"))
-    monkeypatch.setattr(gate, "PANEL_NAT_JSON", str(tmp_path / "missing-natural.json"))
+    monkeypatch.setattr(gate, "PANEL_JSONS", (str(tmp_path / "missing-panel.json"),))
     monkeypatch.setattr(sys, "argv", ["gate.py", str(output), str(source)])
 
     gate.main()

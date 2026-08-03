@@ -8,9 +8,9 @@
       "name": "λ-사다리 — 능력 판정 체계",
       "id": "lambda-ladder",
       "type": "gate",
-      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md와 LAMBDA-2-natural-register-replication.md, 실행·팔 로스터는 measurement/.",
+      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md, LAMBDA-2-natural-register-replication.md, LAMBDA-3-300m-scale-replication.md, 실행·팔 로스터는 measurement/.",
       "detail": "형제 anima 의 G0~G6 을 그대로 쓰지 않는다 — 그 사다리는 G3/G4 가 게이트가 아니라 빈 번호로 남아 있어 번호를 빌리면 구멍까지 들어온다. 채점 가능한 등급만 연속으로 둔다. 바는 anima/CONDITIONS.md 에서 동결 이관했고 재조정은 tune-to-green 이므로 금지. 등급에는 선행조건이 있다: λ4 는 λ2 를 전제하며, λ2 가 FAIL 인 팔의 λ4 PASS 는 인공물이라 계상하지 않는다.",
-      "verdict": "🟢 66.1M·dropout 0.37 의 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 자연 register에서 각각 두 seed로 재현된다(LAMBDA-2 R1). 🟠 33.3M·0.37 은 λ0~λ3 를 두 seed 모두 통과했지만 λ4 가 둘 다 NULL: LAMBDA-1 Z2. ⚠️ 17.2M 은 λ4 미해상과 λ2 붕괴가 창을 닫는다. 재현 가능한 규모 경계는 33.3M~66.1M 사이이며 대화·뉴스·300M으로는 아직 일반화하지 않는다.",
+      "verdict": "🟢 66.1M·dropout 0.37 의 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 자연 register에서 각각 두 seed로 재현된다(LAMBDA-2 R1). 🟠 33.3M·0.37 은 λ0~λ3 를 두 seed 모두 통과했지만 λ4 가 둘 다 NULL: LAMBDA-1 Z2. ⚠️ 17.2M 은 λ4 미해상과 λ2 붕괴가 창을 닫는다. 300M parameter·동일 유효 batch/노출 재현은 LAMBDA-3으로 사전등록됐고 아직 PENDING이다.",
       "children": [
         {
           "name": "Λ REGIME — 전제 (등급 아님)",
@@ -128,7 +128,7 @@
     {
       "name": "학습기 · 모델",
       "id": "trainers",
-      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시 내장) · train_conscious_lm_nf8.py 는 300M 포크 · conscious_lm.py 가 모델 정의 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
+      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시·유효 batch 보존용 gradient accumulation 내장) · train_conscious_lm_nf8.py 는 과거 300M 포크 · conscious_lm.py 가 모델 정의 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
       "verdict": "🟢 안정 — NaN/발산/skip 0. 문학 66.1M 두 seed 12,000 step 완료(best val 1.3240/1.3191)."
     },
     {

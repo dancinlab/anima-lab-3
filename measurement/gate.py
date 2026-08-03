@@ -64,9 +64,10 @@ import sys
 from pathlib import Path
 
 try:
-    from measurement.lambda_registry import FLOORS, gate_arms, requires_ladder
+    from measurement.lambda_registry import (FLOORS, gate_arms, requires_ladder,
+                                             result_files)
 except ModuleNotFoundError:  # deployed scorers live together at remote repo root
-    from lambda_registry import FLOORS, gate_arms, requires_ladder
+    from lambda_registry import FLOORS, gate_arms, requires_ladder, result_files
 
 ARMS = gate_arms()
 
@@ -94,14 +95,9 @@ P7_P9_NOTE = ("verdicts here are a SCREEN, not a faculty claim: BPC is a perplex
               "number (p7). Constructed rows are off-standard under p9; natural rows retain "
               "their registered corpus register. A PASS means the model beat pair statistics "
               "on material it cannot recall -- nothing more.")
-PANEL_JSON = "measurement/panel_results.json"      # measured collapse ratios, when present
-PANEL_NF9_JSON = "measurement/panel_nf9_results.json"  # the 300M run, measured on CPU
-PANEL_NAT_JSON = "measurement/panel_nat_results.json"  # the natural-corpus arm
-PANEL_LITERARY_JSON = "measurement/panel_literary_results.json"
-G_GATE_JSONS = ("measurement/g_gates_nat_results.json",
-                "measurement/g_gates_literary_results.json")
-LAMBDA4_JSONS = ("measurement/lambda4_results.json",
-                 "measurement/lambda4_literary_results.json")
+PANEL_JSONS = result_files("panel")
+G_GATE_JSONS = result_files("g_gates")
+LAMBDA4_JSONS = result_files("lambda4")
 
 
 def load_scores(paths):
@@ -270,10 +266,7 @@ def main():
         "measurement/novel_window_epoch_final.json",
         "measurement/nf9_honest_eval.json",
         "measurement/phase_ablation_eval.json",
-        "measurement/panel_results.json",
-        "measurement/panel_nf9_results.json",
-        "measurement/panel_nat_results.json",
-        "measurement/panel_literary_results.json",
+        *PANEL_JSONS,
     ]
     srcs = [s for s in srcs if Path(s).exists()]
     scores, keep_rate = load_scores(srcs)
@@ -285,7 +278,7 @@ def main():
     print(f"[ctx] {CONTEXT_JSON}: {', '.join(ctx) or 'absent'}\n")
 
     panel = {}
-    for pj in (PANEL_JSON, PANEL_NF9_JSON, PANEL_NAT_JSON, PANEL_LITERARY_JSON):
+    for pj in PANEL_JSONS:
         if Path(pj).exists():
             panel.update(json.loads(Path(pj).read_text()))
     g_rows = load_axis_results(G_GATE_JSONS)

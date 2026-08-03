@@ -75,6 +75,8 @@ ARMS = {
     "nat50f": arm("nat50", "natural 50% final", "checkpoints/arm_nat50/final.pt", family="encyclopedic"),
     "litdrop37": arm("lit", "literary · dropout 0.37 · seed 1337", "checkpoints/arm_lit_drop37/best.pt", "litdrop37v", "literary"),
     "litdrop37v": arm("lit", "literary · dropout 0.37 · seed 7331", "checkpoints/arm_lit_drop37v/best.pt", "litdrop37", "literary"),
+    "nat300m37": arm("nat", "300M natural · dropout 0.37 · seed 1337", "checkpoints/arm_nat_300m_drop37/best.pt", "nat300m37v", "encyclopedic"),
+    "nat300m37v": arm("nat", "300M natural · dropout 0.37 · seed 7331", "checkpoints/arm_nat_300m_drop37v/best.pt", "nat300m37", "encyclopedic"),
 }
 
 
@@ -110,6 +112,57 @@ LAMBDA4_ARMS = {
     "natdrop4", "natdrop4v", "natdrop35", "natdrop35v", "natdrop37",
     "natdrop37v", "n25drop37", "n25drop37v", "n25drop42", "n25drop42v",
     "n50drop37", "n50drop37v", "litdrop37", "litdrop37v",
+    "nat300m37", "nat300m37v",
+}
+
+
+# Result receipts are registered once here.  Gate/preflight and the remote
+# experiment runner consume this same roster, so adding a family cannot leave a
+# measurement file invisible to one of the validity checks.
+RESULT_SETS = {
+    "constructed": {"panel": "measurement/panel_results.json"},
+    "nf9": {"panel": "measurement/panel_nf9_results.json"},
+    "encyclopedic": {
+        "panel": "measurement/panel_nat_results.json",
+        "g_gates": "measurement/g_gates_nat_results.json",
+        "lambda4": "measurement/lambda4_results.json",
+    },
+    "literary": {
+        "panel": "measurement/panel_literary_results.json",
+        "g_gates": "measurement/g_gates_literary_results.json",
+        "lambda4": "measurement/lambda4_literary_results.json",
+    },
+    "scale300m": {
+        "panel": "measurement/panel_scale300m_results.json",
+        "g_gates": "measurement/g_gates_scale300m_results.json",
+        "lambda4": "measurement/lambda4_scale300m_results.json",
+    },
+}
+
+
+# Prospective experiments are executable registry entries rather than shell
+# recipes.  `trainer_args` are passed to the canonical trainer unchanged; a
+# physical batch of 4 with eight accumulated micro-batches preserves the 32×256
+# effective batch and optimizer-step schedule of the 27.7M reference arms.
+EXPERIMENTS = {
+    "scale300m": {
+        "hypothesis": "LAMBDA-3",
+        "family": "encyclopedic",
+        "arms": ("nat300m37", "nat300m37v"),
+        "seeds": {"nat300m37": 1337, "nat300m37v": 7331},
+        "trainer": "train_conscious_lm.py",
+        "expected_params": 299_420_896,
+        "corpus_sha256": "10136c7229a242ceef55015d3f0eb88071cb05670c9998128aed874c88e85f87",
+        "fresh_sha256": "f96f00a7c721a6c5870655ead22a2d4290310b08620f0bf00a1e9c50c7647c1b",
+        "trainer_args": {
+            "dim": 896, "layers": 12, "heads": 14,
+            "batch_size": 4, "grad_accum_steps": 8, "block_size": 256,
+            "lr": 1e-4, "max_cells": 16, "val_bytes": 262144,
+            "eval_every": 250, "phase": "language", "dropout": 0.37,
+            "steps": 12000, "save_every": 6000, "log_every": 100,
+        },
+        "results": "scale300m",
+    },
 }
 
 
@@ -137,3 +190,20 @@ def seed_siblings():
 
 def requires_ladder(arm_name):
     return arm_name in LAMBDA4_ARMS
+
+
+def result_files(axis=None):
+    """Canonical result paths, optionally restricted to one measurement axis."""
+    return tuple(
+        spec[key]
+        for spec in RESULT_SETS.values()
+        for key in spec
+        if axis is None or key == axis
+    )
+
+
+def experiment(name):
+    try:
+        return EXPERIMENTS[name]
+    except KeyError as exc:
+        raise ValueError(f"unknown registered experiment: {name}") from exc

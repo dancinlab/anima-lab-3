@@ -31,18 +31,13 @@ import sys
 from pathlib import Path
 
 try:
-    from measurement.lambda_registry import seed_siblings
+    from measurement.lambda_registry import result_files, seed_siblings
 except ModuleNotFoundError:
-    from lambda_registry import seed_siblings
+    from lambda_registry import result_files, seed_siblings
 
 SCORERS = ["measurement/gate.py", "measurement/panel.py", "measurement/panel_nf9.py",
            "measurement/g_gates.py", "measurement/lambda4.py"]
-RESULT_JSONS = ["measurement/panel_results.json", "measurement/panel_nat_results.json",
-                "measurement/panel_nf9_results.json", "measurement/g_gates_results.json",
-                "measurement/g_gates_nat_results.json", "measurement/lambda4_results.json",
-                "measurement/panel_literary_results.json",
-                "measurement/g_gates_literary_results.json",
-                "measurement/lambda4_literary_results.json",
+RESULT_JSONS = [*result_files(), "measurement/g_gates_results.json",
                 "measurement/gate_verdicts.json"]
 
 # 같은 설정을 다른 seed 로 돌린 짝. 전 등급 PASS 주장은 짝이 있어야 한다.

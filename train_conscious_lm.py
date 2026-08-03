@@ -1088,8 +1088,14 @@ def train(args: argparse.Namespace):
         "block_size": args.block_size,
         "lr": args.lr,
         "batch_size": args.batch_size,
+        "grad_accum_steps": args.grad_accum_steps,
+        "effective_batch_size": args.batch_size * args.grad_accum_steps,
         "steps": args.steps,
         "max_cells": args.max_cells,
+        "dropout": args.dropout,
+        "seed": args.seed,
+        "phase": args.phase,
+        "val_bytes": args.val_bytes,
     }
 
     # --- Training state ---
@@ -1114,7 +1120,8 @@ def train(args: argparse.Namespace):
     print(f"\n{'='*100}")
     print(f"  ConsciousLM v5 Training — v4+SE-8(emotion)+SOC+Hebbian+Ratchet (Law 42)")
     print(f"  Phases: mitosis(0-30%) -> language(30-70%) -> combined(70-100%)")
-    print(f"  Steps: {args.steps:,}  Batch: {args.batch_size}  Block: {args.block_size}")
+    print(f"  Steps: {args.steps:,}  Batch: {args.batch_size}×{args.grad_accum_steps}="
+          f"{args.batch_size * args.grad_accum_steps} effective  Block: {args.block_size}")
     print(f"{'='*100}")
     print(f"{'step':>7} | {'phase':>8} | {'loss':>8} | {'ce_fwd':>7} | "
           f"{'phi':>6} | {'tension':>8} | {'cells':>5} | {'lr':>9} | {'skip':>4}")
@@ -1765,12 +1772,66 @@ def train(args: argparse.Namespace):
                   f"mean {sum(cell_lrs) / len(cell_lrs):.2e} over {len(cell_lrs)} cells")
 
         # --- Backward + optimize ---
+        # Large models use a small physical batch on 12 GB cards.  Accumulate
+        # additional micro-batches inside the same optimizer step so scale arms
+        # preserve the reference arm's effective batch, sample exposure and LR
+        # schedule. Cell dynamics run once per optimizer step, as they do in the
+        # physical-batch reference; only the differentiable LM objective is
+        # evaluated on the additional samples.
         optimizer.zero_grad()
         if torch.isnan(total_loss) or torch.isinf(total_loss):
             print(f"  [NaN] Skipping step {step} (loss={total_loss.item()})")
             phi_prev = phi_current
             continue
-        total_loss.backward()
+        (total_loss / args.grad_accum_steps).backward()
+        accum_failed = False
+        for _micro_step in range(1, args.grad_accum_steps):
+            try:
+                x_acc, y_acc = get_batch(
+                    train_data, args.batch_size, args.block_size, device,
+                    generator=data_rng,
+                )
+            except ValueError as e:
+                print(f"[!] {e}")
+                accum_failed = True
+                break
+            model._phi_signal = None
+            logits_acc, _, tensions_acc = model(x_acc)
+            t_acc = torch.stack(tensions_acc, dim=0)
+            if phase == TrainingPhase.COMBINED:
+                ce_acc = tension_weighted_ce(
+                    logits_acc, y_acc, tensions_acc, max_weight=3.0
+                )
+            else:
+                ce_acc = F.cross_entropy(
+                    logits_acc.view(-1, model.vocab_size), y_acc.view(-1)
+                )
+            t_mean_acc = t_acc.mean()
+            t_cv2_acc = (
+                t_acc.var(dim=0).mean() / (t_mean_acc * t_mean_acc + 1e-8)
+            )
+            losses_acc = [
+                ce_acc if phase != TrainingPhase.MITOSIS else ZERO,
+                ZERO,
+                0.1 * torch.exp(-t_cv2_acc),
+                ZERO, ZERO, ZERO,
+                strange_loop_loss(model.self_head(model._last_hidden), tensions_acc)
+                * args.self_loop_weight
+                if args.self_loop_weight > 0.0
+                and getattr(model, "_last_hidden", None) is not None
+                else ZERO,
+            ]
+            micro_loss, _ = loss_ensemble(losses_acc)
+            if torch.isnan(micro_loss) or torch.isinf(micro_loss):
+                print(f"  [NaN] Skipping step {step} micro-batch {_micro_step} "
+                      f"(loss={micro_loss.item()})")
+                accum_failed = True
+                break
+            (micro_loss / args.grad_accum_steps).backward()
+        if accum_failed:
+            optimizer.zero_grad()
+            phi_prev = phi_current
+            continue
         # NF1: Gradient clipping (already present)
         torch.nn.utils.clip_grad_norm_(all_params, 1.0)
         optimizer.step()
@@ -1925,6 +1986,9 @@ Examples:
                         help="Total training steps (default: 50000)")
     parser.add_argument("--batch-size", type=int, default=32,
                         help="Batch size (default: 32)")
+    parser.add_argument("--grad-accum-steps", type=int, default=1,
+                        help="Micro-batches per optimizer step (default: 1). Use to "
+                             "preserve effective batch size on memory-bound models.")
     parser.add_argument("--lr", type=float, default=3e-4,
                         help="Base learning rate (default: 3e-4)")
     parser.add_argument("--phi-self-ref", action="store_true",
@@ -2011,6 +2075,8 @@ Examples:
                              "per-sequence code, 1.39 = clock code, well under 1.39 = honest.")
 
     args = parser.parse_args()
+    if args.grad_accum_steps < 1:
+        parser.error("--grad-accum-steps must be >= 1")
     train(args)
 
 
