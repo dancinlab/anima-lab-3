@@ -1,6 +1,6 @@
 # aiden·summer 연구 보관 — 2026-08
 
-두 학습 호스트를 처분하기 전 `anima-clm-pure`의 재현 필수 산출물을 비공개 Hugging Face 저장소 `dancinlife/anima-lab-research-archive`에 보관했다. 호스트 이름을 revision으로 사용하며 각 revision의 `archive-manifest-sha256.txt`가 파일 집합의 정본이다.
+두 학습 호스트를 처분하기 전 `anima-clm-pure`의 재현 필수 산출물을 비공개 Hugging Face 조직 저장소 `dancinlab/anima-lab-research-archive`에 보관했다. 호스트 이름을 revision으로 사용하며 각 revision의 `archive-manifest-sha256.txt`가 파일 집합의 정본이다.
 
 | revision | 범위 | 파일 | 바이트 | manifest SHA-256 |
 |---|---|---:|---:|---|
@@ -13,7 +13,7 @@
 
 ```bash
 HF_TOKEN="$(secret get huggingface.token)" hf download \
-  dancinlife/anima-lab-research-archive \
+  dancinlab/anima-lab-research-archive \
   --revision summer --local-dir anima-clm-pure-summer
 cd anima-clm-pure-summer
 sha256sum -c archive-manifest-sha256.txt

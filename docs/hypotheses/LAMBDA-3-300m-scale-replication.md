@@ -31,4 +31,4 @@
 
 따라서 S1과 S3는 반증되고 S2가 확정된다. 27.7M에서 두 seed로 재현된 λ4는 동일 코퍼스·노출·dropout의 299,420,896 parameter 구조에서는 seed 불변으로 재현되지 않는다. λ0~λ3의 언어 screen은 규모 변화에도 유지되지만, λ4를 300M의 재현된 능력으로 계상하지 않는다.
 
-체크포인트 SHA-256은 seed 1337 `66d241ac41fbec46de345c5b9862b5f1c0214d4317e81062a2d10d3ae15d6d61`, seed 7331 `53ce03d5dbdce05d661080c6d871fafd77a148071ac5d7f5e4de8e5ad52343bd`다. 원본 체크포인트·코퍼스·로그·영수증은 비공개 Hugging Face archive `dancinlife/anima-lab-research-archive`의 `summer` revision에 보존한다.
+체크포인트 SHA-256은 seed 1337 `66d241ac41fbec46de345c5b9862b5f1c0214d4317e81062a2d10d3ae15d6d61`, seed 7331 `53ce03d5dbdce05d661080c6d871fafd77a148071ac5d7f5e4de8e5ad52343bd`다. 원본 체크포인트·코퍼스·로그·영수증은 비공개 Hugging Face 조직 archive `dancinlab/anima-lab-research-archive`의 `summer` revision에 보존한다.
