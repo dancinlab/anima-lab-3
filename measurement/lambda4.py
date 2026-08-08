@@ -44,6 +44,7 @@ from pathlib import Path
 
 import torch
 import torch.nn.functional as F
+from conscious_lm import CONSCIOUSNESS_INTERVENTIONS, DEFAULT_INTERVENTION_SEED
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
@@ -374,12 +375,12 @@ def main():
     select = args.arms or list(ARMS)
     clm = load_trainer(TRAINER)
     interventions = args.interventions or []
-    unknown = set(interventions) - set(getattr(clm, "CONSCIOUSNESS_INTERVENTIONS", ()))
+    unknown = set(interventions) - set(CONSCIOUSNESS_INTERVENTIONS)
     if unknown:
         raise SystemExit(f"unknown consciousness interventions: {sorted(unknown)}")
     intervention_seed = int(os.environ.get(
         "CONSCIOUSNESS_INTERVENTION_SEED",
-        getattr(clm, "DEFAULT_INTERVENTION_SEED", 20260809),
+        DEFAULT_INTERVENTION_SEED,
     ))
     device = resolve_torch_device(torch)
     rng = random.Random(SEED)
