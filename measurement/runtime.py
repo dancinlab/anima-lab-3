@@ -1,4 +1,15 @@
 """Shared runtime choices for measurement tools."""
+import os
+from pathlib import Path
+
+
+def resolve_project_root(script_file, env=None):
+    """Resolve the active checkout without a retired-host path."""
+    values = os.environ if env is None else env
+    return values.get(
+        "ANIMA_LAB_ROOT",
+        str(Path(script_file).resolve().parent.parent),
+    )
 
 
 def resolve_torch_device(torch):

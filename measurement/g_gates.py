@@ -48,11 +48,15 @@ import torch.nn.functional as F
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
+    from measurement.runtime import resolve_project_root
 except ModuleNotFoundError:
     from lambda_registry import family, family_arm_paths
+    from runtime import resolve_project_root
 
-HOME = "/home/summer/anima-clm-pure"
+HOME = resolve_project_root(__file__)
 TRAINER = f"{HOME}/train_conscious_lm.py"
+if HOME not in sys.path:
+    sys.path.insert(0, HOME)
 CHUNK = 1 << 20
 BLOCK = 256
 SEED_BYTES = 128        # natural prefix handed to the model

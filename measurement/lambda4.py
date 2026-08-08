@@ -47,12 +47,12 @@ import torch.nn.functional as F
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
-    from measurement.runtime import resolve_torch_device
+    from measurement.runtime import resolve_project_root, resolve_torch_device
 except ModuleNotFoundError:
     from lambda_registry import family, family_arm_paths
-    from runtime import resolve_torch_device
+    from runtime import resolve_project_root, resolve_torch_device
 
-HOME = os.environ.get("ANIMA_LAB_ROOT", str(Path(__file__).resolve().parent.parent))
+HOME = resolve_project_root(__file__)
 TRAINER = f"{HOME}/train_conscious_lm.py"
 if HOME not in sys.path:
     sys.path.insert(0, HOME)
