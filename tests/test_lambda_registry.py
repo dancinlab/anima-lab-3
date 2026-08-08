@@ -6,7 +6,7 @@ def test_family_alias_and_arm_rosters_share_one_registry():
     assert key == "encyclopedic"
     assert family["register"] == "encyclopedic prose"
     assert set(registry.family_arm_paths("/runtime", "literary")) == {
-        "litdrop37", "litdrop37v"
+        "litdrop37", "litdrop37v", "litstd37", "litstd37v"
     }
     assert registry.gate_arms()["litdrop37"][0] == "lit"
     assert registry.seed_siblings()["litdrop37"] == "litdrop37v"
@@ -42,3 +42,14 @@ def test_consciousness_causality_experiment_reuses_literary_pair():
     assert [row["axis"] for row in exp["scorers"]] == ["panel", "lambda4", "verdict"]
     assert "measurement/consciousness_causality_verdict.json" in registry.experiment_result_files()
     assert "measurement/consciousness_causality_gate.py" in registry.experiment_scorer_files()
+
+
+def test_standard_ffn_control_is_parameter_matched_and_registered():
+    exp = registry.experiment("ffn_structural_control")
+    assert exp["arms"] == ("litstd37", "litstd37v")
+    assert exp["reference_arms"] == ("litdrop37", "litdrop37v")
+    assert exp["trainer_args"]["ffn_type"] == "standard"
+    assert abs(exp["expected_params"] - exp["reference_params"]) / exp["reference_params"] < 0.0001
+    assert set(exp["reference_checkpoint_sha256"]) == set(exp["reference_arms"])
+    assert "measurement/ffn_control_verdict.json" in registry.experiment_result_files()
+    assert "measurement/ffn_control_gate.py" in registry.experiment_scorer_files()

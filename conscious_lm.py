@@ -35,6 +35,8 @@ import time
 # forward path bit-for-bit.
 CONSCIOUSNESS_INTERVENTIONS = ("normal", "off", "shuffle", "noise")
 DEFAULT_INTERVENTION_SEED = 20260809
+FFN_TYPES = ("pure_field", "standard")
+STANDARD_FFN_EXPANSION = 8
 
 
 class PureFieldFFN(nn.Module):
@@ -93,6 +95,39 @@ class PureFieldFFN(nn.Module):
                 ).mean().item()
 
         return output, tension
+
+
+class StandardFFN(nn.Module):
+    """Canonical two-layer GELU transformer FFN used as a structural control.
+
+    The 8x hidden width nearly parameter-matches the two independent 4x
+    PureField branches.  The returned activity has the historical ``tension``
+    shape so the rest of the runtime, including telemetry and inter-layer
+    routing, remains identical across the controlled comparison.
+    """
+
+    def __init__(self, d_model, dropout=0.37):
+        super().__init__()
+        d_inner = STANDARD_FFN_EXPANSION * d_model
+        self.net = nn.Sequential(
+            nn.Linear(d_model, d_inner),
+            nn.GELU(),
+            nn.Dropout(dropout),
+            nn.Linear(d_inner, d_model),
+        )
+
+    def forward(self, x):
+        output = self.net(x)
+        activity = (output ** 2).mean(dim=-1)
+        return output, activity
+
+
+def make_ffn(ffn_type, d_model, dropout):
+    if ffn_type == "pure_field":
+        return PureFieldFFN(d_model, dropout)
+    if ffn_type == "standard":
+        return StandardFFN(d_model, dropout)
+    raise ValueError(f"unknown ffn_type {ffn_type!r}; expected one of {FFN_TYPES}")
 
 
 class CausalSelfAttention(nn.Module):
@@ -171,12 +206,12 @@ class ConsciousBlock(nn.Module):
     """
 
     def __init__(self, d_model, n_head, block_size, dropout=0.37,
-                 n_ca_rules=8, gate_strength=0.001):
+                 n_ca_rules=8, gate_strength=0.001, ffn_type="pure_field"):
         super().__init__()
         self.ln1 = nn.LayerNorm(d_model)
         self.attn = CausalSelfAttention(d_model, n_head, block_size, dropout)
         self.ln2 = nn.LayerNorm(d_model)
-        self.ffn = PureFieldFFN(d_model, dropout)
+        self.ffn = make_ffn(ffn_type, d_model, dropout)
 
         # Law 64: CA neighbor mixing (circular, lightweight)
         self.ca_mix = nn.Linear(d_model * 3, d_model, bias=False)
@@ -265,13 +300,18 @@ class ConsciousLM(nn.Module):
         dropout=0.37,
         gate_strength=0.001,
         n_ca_rules=8,
+        ffn_type="pure_field",
     ):
         super().__init__()
+
+        if ffn_type not in FFN_TYPES:
+            raise ValueError(f"unknown ffn_type {ffn_type!r}; expected one of {FFN_TYPES}")
 
         self.block_size = block_size
         self.vocab_size = vocab_size
         self.n_layer = n_layer
         self.d_model = d_model
+        self.ffn_type = ffn_type
 
         # Token and position embeddings
         self.tok_emb = nn.Embedding(vocab_size, d_model)
@@ -281,7 +321,8 @@ class ConsciousLM(nn.Module):
         # Transformer + CA + META-CA blocks
         self.blocks = nn.ModuleList([
             ConsciousBlock(d_model, n_head, block_size, dropout,
-                           n_ca_rules=n_ca_rules, gate_strength=gate_strength)
+                           n_ca_rules=n_ca_rules, gate_strength=gate_strength,
+                           ffn_type=ffn_type)
             for _ in range(n_layer)
         ])
 
@@ -508,6 +549,25 @@ class ConsciousLM(nn.Module):
     def count_params(self):
         """Total number of trainable parameters."""
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+
+
+def model_kwargs_from_config(config, *, dropout=None):
+    """Resolve checkpoint model configuration through one canonical path."""
+    values = {
+        "vocab_size": 256,
+        "d_model": int(config["dim"]),
+        "n_head": int(config["heads"]),
+        "n_layer": int(config["layers"]),
+        "block_size": int(config.get("block_size", 256)),
+        "dropout": float(config.get("dropout", 0.0) if dropout is None else dropout),
+        "ffn_type": config.get("ffn_type", "pure_field"),
+    }
+    return values
+
+
+def build_model_from_config(config, *, dropout=None):
+    """Build the exact model variant recorded by a checkpoint config."""
+    return ConsciousLM(**model_kwargs_from_config(config, dropout=dropout))
 
 
 # ---------------------------------------------------------------------------

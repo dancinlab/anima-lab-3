@@ -452,9 +452,7 @@ def main():
         sha = hashlib.sha256(open(path, "rb").read()).hexdigest()[:16]
         ck = torch.load(path, map_location="cpu", weights_only=False)
         cfg = ck.get("config", {}) or {}
-        m = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
-                            n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                            block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
+        m = clm.build_model_from_config(cfg, dropout=0.0)
         m.load_state_dict(ck["model_state"], strict=False)
         m.to(device).eval()
         if interventions:

@@ -75,6 +75,8 @@ ARMS = {
     "nat50f": arm("nat50", "natural 50% final", "checkpoints/arm_nat50/final.pt", family="encyclopedic"),
     "litdrop37": arm("lit", "literary · dropout 0.37 · seed 1337", "checkpoints/arm_lit_drop37/best.pt", "litdrop37v", "literary"),
     "litdrop37v": arm("lit", "literary · dropout 0.37 · seed 7331", "checkpoints/arm_lit_drop37v/best.pt", "litdrop37", "literary"),
+    "litstd37": arm("lit", "literary · standard FFN · dropout 0.37 · seed 1337", "checkpoints/arm_lit_standard_drop37/best.pt", "litstd37v", "literary"),
+    "litstd37v": arm("lit", "literary · standard FFN · dropout 0.37 · seed 7331", "checkpoints/arm_lit_standard_drop37v/best.pt", "litstd37", "literary"),
     "nat300m37": arm("nat", "300M natural · dropout 0.37 · seed 1337", "checkpoints/arm_nat_300m_drop37/best.pt", "nat300m37v", "encyclopedic"),
     "nat300m37v": arm("nat", "300M natural · dropout 0.37 · seed 7331", "checkpoints/arm_nat_300m_drop37v/best.pt", "nat300m37", "encyclopedic"),
 }
@@ -112,6 +114,7 @@ LAMBDA4_ARMS = {
     "natdrop4", "natdrop4v", "natdrop35", "natdrop35v", "natdrop37",
     "natdrop37v", "n25drop37", "n25drop37v", "n25drop42", "n25drop42v",
     "n50drop37", "n50drop37v", "litdrop37", "litdrop37v",
+    "litstd37", "litstd37v",
     "nat300m37", "nat300m37v",
 }
 
@@ -136,6 +139,11 @@ RESULT_SETS = {
         "panel": "measurement/panel_scale300m_results.json",
         "g_gates": "measurement/g_gates_scale300m_results.json",
         "lambda4": "measurement/lambda4_scale300m_results.json",
+    },
+    "ffn_control": {
+        "panel": "measurement/panel_ffn_control_results.json",
+        "g_gates": "measurement/g_gates_ffn_control_results.json",
+        "lambda4": "measurement/lambda4_ffn_control_results.json",
     },
 }
 
@@ -194,6 +202,37 @@ EXPERIMENTS = {
             },
         ),
     },
+    "ffn_structural_control": {
+        "hypothesis": "LAMBDA-5",
+        "family": "literary",
+        "arms": ("litstd37", "litstd37v"),
+        "seeds": {"litstd37": 1337, "litstd37v": 7331},
+        "reference_arms": ("litdrop37", "litdrop37v"),
+        "reference_checkpoint_sha256": {
+            "litdrop37": "d1fd4fd523ccfb58f7408cdffd42687f866d0dc21c966a61ca4e1cfeb92e200d",
+            "litdrop37v": "a3de90008d532d5551bf5ec4d3e41ffa5dd5e1b55d1c86f3890e2a471736ffc9",
+        },
+        "trainer": "train_conscious_lm.py",
+        "expected_params": 27_689_136,
+        "reference_params": 27_691_440,
+        "corpus_sha256": "336e101a5b9737c2e12073b5562a06320c150b5a19655a8046b7c16e13ddff5e",
+        "fresh_sha256": "8e196165d525e15bc4b200e395953b19d6007acd0cb2c65746649dc4acb5cecd",
+        "trainer_args": {
+            "dim": 384, "layers": 6, "heads": 6, "ffn_type": "standard",
+            "batch_size": 32, "grad_accum_steps": 1, "block_size": 256,
+            "lr": 3e-4, "max_cells": 16, "val_bytes": 262144,
+            "eval_every": 250, "phase": "language", "dropout": 0.37,
+            "steps": 12000, "save_every": 6000, "log_every": 100,
+        },
+        "results": "ffn_control",
+        "post_scorers": (
+            {
+                "axis": "verdict",
+                "script": "measurement/ffn_control_gate.py",
+                "output": "measurement/ffn_control_verdict.json",
+            },
+        ),
+    },
 }
 
 
@@ -238,7 +277,7 @@ def experiment_result_files():
     return tuple(
         scorer["output"]
         for spec in EXPERIMENTS.values()
-        for scorer in spec.get("scorers", ())
+        for scorer in (*spec.get("scorers", ()), *spec.get("post_scorers", ()))
     )
 
 
@@ -247,7 +286,7 @@ def experiment_scorer_files():
     return tuple(dict.fromkeys(
         scorer["script"]
         for spec in EXPERIMENTS.values()
-        for scorer in spec.get("scorers", ())
+        for scorer in (*spec.get("scorers", ()), *spec.get("post_scorers", ()))
     ))
 
 

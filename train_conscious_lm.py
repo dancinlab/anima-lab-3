@@ -952,9 +952,11 @@ def train(args: argparse.Namespace):
         n_layer=args.layers,
         block_size=args.block_size,
         dropout=args.dropout,
+        ffn_type=args.ffn_type,
     ).to(device)
     print(f"[model] ConsciousLM: {model.count_params():,} params "
-          f"(d={args.dim}, L={args.layers}, H={args.heads}, ctx={args.block_size})")
+          f"(d={args.dim}, L={args.layers}, H={args.heads}, ctx={args.block_size}, "
+          f"ffn={args.ffn_type})")
 
     # --- Training components ---
     loss_ensemble = LossEnsemble().to(device)
@@ -1093,6 +1095,7 @@ def train(args: argparse.Namespace):
         "steps": args.steps,
         "max_cells": args.max_cells,
         "dropout": args.dropout,
+        "ffn_type": args.ffn_type,
         "seed": args.seed,
         "phase": args.phase,
         "val_bytes": args.val_bytes,
@@ -1980,6 +1983,9 @@ Examples:
                         help="Number of attention heads (default: 4)")
     parser.add_argument("--block-size", type=int, default=256,
                         help="Context window size (default: 256)")
+    parser.add_argument("--ffn-type", choices=("pure_field", "standard"),
+                        default="pure_field",
+                        help="FFN structure: PureField dual branch or canonical standard MLP")
 
     # Training
     parser.add_argument("--steps", type=int, default=50000,

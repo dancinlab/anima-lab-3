@@ -131,9 +131,7 @@ def score(model, x, y, device):
 
 
 def build(clm, cfg, device, state=None):
-    model = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
-                            n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                            block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
+    model = clm.build_model_from_config(cfg, dropout=0.0)
     if state is not None:
         model.load_state_dict(state, strict=False)
     return model.to(device).eval()

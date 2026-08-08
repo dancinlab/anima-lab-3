@@ -227,6 +227,21 @@ def score(name: str, exp: dict) -> dict:
         "path": str(preflight_log.relative_to(ROOT)),
         "sha256": sha256(preflight_log),
     }
+    for scorer in exp.get("post_scorers", ()):
+        output = ROOT / scorer["output"]
+        log_path = ROOT / "logs" / f"{name}_{scorer['axis']}.log"
+        command = [sys.executable, "-u", str(ROOT / scorer["script"]), str(output)]
+        with log_path.open("w") as log:
+            completed = subprocess.run(
+                command, cwd=ROOT, env=env, stdout=log,
+                stderr=subprocess.STDOUT, check=False,
+            )
+        if completed.returncode or not output.is_file():
+            raise SystemExit(f"{scorer['axis']} scorer failed: exit {completed.returncode}")
+        receipts[scorer["axis"]] = {
+            "path": str(output.relative_to(ROOT)),
+            "sha256": sha256(output),
+        }
     return receipts
 
 

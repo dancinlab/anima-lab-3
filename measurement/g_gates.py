@@ -142,9 +142,7 @@ def generate(model, prefix, n_bytes, device, gen):
 
 
 def build(clm, cfg, device, state=None):
-    m = clm.ConsciousLM(vocab_size=256, d_model=int(cfg["dim"]),
-                        n_head=int(cfg["heads"]), n_layer=int(cfg["layers"]),
-                        block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
+    m = clm.build_model_from_config(cfg, dropout=0.0)
     if state is not None:
         m.load_state_dict(state, strict=False)
     return m.to(device).eval()
