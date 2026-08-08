@@ -36,7 +36,7 @@ import torch.nn.functional as F
 # ---------------------------------------------------------------------------
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from conscious_lm import ConsciousLM
+from conscious_lm import ConsciousLM, build_model_from_config
 from mitosis import MitosisEngine, text_to_vector
 try:
     from training_laws import (
