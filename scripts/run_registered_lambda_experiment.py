@@ -90,7 +90,8 @@ def validate(name: str, score_only: bool = False) -> dict:
         completed = ROOT / "logs" / f"{name}_{arm_name}.done.json"
         if score_only and not checkpoint.is_file():
             raise SystemExit(f"score-only requested but checkpoint is missing: {checkpoint}")
-        if not score_only and checkpoint.parent.exists() and not completed.is_file():
+        if (not score_only and not exp.get("measurement_only")
+                and checkpoint.parent.exists() and not completed.is_file()):
             raise SystemExit(
                 f"refusing ambiguous checkpoint directory without completion receipt: "
                 f"{checkpoint.parent}"
