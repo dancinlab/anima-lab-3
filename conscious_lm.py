@@ -252,6 +252,9 @@ class ConsciousLM(nn.Module):
       - Ψ tracking: residual balance + gate self-weakening (Law 69, 71)
     """
 
+    INTERVENTIONS = CONSCIOUSNESS_INTERVENTIONS
+    DEFAULT_INTERVENTION_SEED = DEFAULT_INTERVENTION_SEED
+
     def __init__(
         self,
         vocab_size=256,

@@ -44,7 +44,6 @@ from pathlib import Path
 
 import torch
 import torch.nn.functional as F
-from conscious_lm import CONSCIOUSNESS_INTERVENTIONS, DEFAULT_INTERVENTION_SEED
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
@@ -55,6 +54,8 @@ except ModuleNotFoundError:
 
 HOME = os.environ.get("ANIMA_LAB_ROOT", str(Path(__file__).resolve().parent.parent))
 TRAINER = f"{HOME}/train_conscious_lm.py"
+if HOME not in sys.path:
+    sys.path.insert(0, HOME)
 CHUNK = 1 << 20
 BLOCK = 256
 BATCH = 8
@@ -375,12 +376,12 @@ def main():
     select = args.arms or list(ARMS)
     clm = load_trainer(TRAINER)
     interventions = args.interventions or []
-    unknown = set(interventions) - set(CONSCIOUSNESS_INTERVENTIONS)
+    unknown = set(interventions) - set(clm.ConsciousLM.INTERVENTIONS)
     if unknown:
         raise SystemExit(f"unknown consciousness interventions: {sorted(unknown)}")
     intervention_seed = int(os.environ.get(
         "CONSCIOUSNESS_INTERVENTION_SEED",
-        DEFAULT_INTERVENTION_SEED,
+        clm.ConsciousLM.DEFAULT_INTERVENTION_SEED,
     ))
     device = resolve_torch_device(torch)
     rng = random.Random(SEED)
