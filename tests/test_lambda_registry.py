@@ -40,3 +40,5 @@ def test_consciousness_causality_experiment_reuses_literary_pair():
     assert exp["interventions"] == ("normal", "off", "shuffle", "noise")
     assert set(exp["checkpoint_sha256"]) == set(exp["arms"])
     assert [row["axis"] for row in exp["scorers"]] == ["panel", "lambda4", "verdict"]
+    assert "measurement/consciousness_causality_verdict.json" in registry.experiment_result_files()
+    assert "measurement/consciousness_causality_gate.py" in registry.experiment_scorer_files()

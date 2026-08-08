@@ -1,0 +1,123 @@
+{
+  "experiment": "lambda4_consciousness_causality",
+  "hypothesis": "LAMBDA-4",
+  "intervention_target": "inter-layer tension signal",
+  "setup_ok": true,
+  "conclusion": "C3_NOT_CAUSAL",
+  "arms": {
+    "litdrop37": {
+      "arm": "litdrop37",
+      "verdict": "NOT_CAUSAL",
+      "baseline_ok": true,
+      "language_preserved": true,
+      "off_removed_lambda4": false,
+      "content_controls_removed_lambda4": false,
+      "language": {
+        "normal": {
+          "bpc": 2.0717074677189418,
+          "delta_from_normal": 0.0,
+          "equivalence_bar": 0.024814285678053327,
+          "preserved": true
+        },
+        "off": {
+          "bpc": 2.071710901997501,
+          "delta_from_normal": 3.4342785593111103e-06,
+          "equivalence_bar": 0.024814285678053327,
+          "preserved": true
+        },
+        "shuffle": {
+          "bpc": 2.0717091230519564,
+          "delta_from_normal": 1.6553330146606982e-06,
+          "equivalence_bar": 0.024814285678053327,
+          "preserved": true
+        },
+        "noise": {
+          "bpc": 2.071711116975815,
+          "delta_from_normal": 3.649256873128337e-06,
+          "equivalence_bar": 0.024814285678053327,
+          "preserved": true
+        }
+      },
+      "lambda4": {
+        "normal": {
+          "verdict": "PASS",
+          "novelty_cost": -0.004299599066555448,
+          "t": -7.937194735504907
+        },
+        "off": {
+          "verdict": "PASS",
+          "novelty_cost": -0.004299897843581686,
+          "t": -7.937575859737785
+        },
+        "shuffle": {
+          "verdict": "PASS",
+          "novelty_cost": -0.0043001339687800825,
+          "t": -7.937985489762424
+        },
+        "noise": {
+          "verdict": "PASS",
+          "novelty_cost": -0.004299809204950347,
+          "t": -7.937405731101341
+        }
+      },
+      "ckpt_sha256_16": "d1fd4fd523ccfb58"
+    },
+    "litdrop37v": {
+      "arm": "litdrop37v",
+      "verdict": "NOT_CAUSAL",
+      "baseline_ok": true,
+      "language_preserved": true,
+      "off_removed_lambda4": false,
+      "content_controls_removed_lambda4": false,
+      "language": {
+        "normal": {
+          "bpc": 2.072771164291155,
+          "delta_from_normal": 0.0,
+          "equivalence_bar": 0.027269999077434104,
+          "preserved": true
+        },
+        "off": {
+          "bpc": 2.0727788712636963,
+          "delta_from_normal": 7.706972541488e-06,
+          "equivalence_bar": 0.027269999077434104,
+          "preserved": true
+        },
+        "shuffle": {
+          "bpc": 2.0727782317032135,
+          "delta_from_normal": 7.067412058692213e-06,
+          "equivalence_bar": 0.027269999077434104,
+          "preserved": true
+        },
+        "noise": {
+          "bpc": 2.07277908624201,
+          "delta_from_normal": 7.921950855305226e-06,
+          "equivalence_bar": 0.027269999077434104,
+          "preserved": true
+        }
+      },
+      "lambda4": {
+        "normal": {
+          "verdict": "PASS",
+          "novelty_cost": -0.003949028599839313,
+          "t": -8.122579959662517
+        },
+        "off": {
+          "verdict": "PASS",
+          "novelty_cost": -0.003949137996133605,
+          "t": -8.122640471980889
+        },
+        "shuffle": {
+          "verdict": "PASS",
+          "novelty_cost": -0.003949571545852122,
+          "t": -8.123507976163596
+        },
+        "noise": {
+          "verdict": "PASS",
+          "novelty_cost": -0.003949239249812165,
+          "t": -8.122846178043298
+        }
+      },
+      "ckpt_sha256_16": "a3de90008d532d55"
+    }
+  }
+}

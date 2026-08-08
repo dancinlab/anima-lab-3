@@ -233,6 +233,24 @@ def result_files(axis=None):
     )
 
 
+def experiment_result_files():
+    """Result receipts produced by registered experiments outside the base gate."""
+    return tuple(
+        scorer["output"]
+        for spec in EXPERIMENTS.values()
+        for scorer in spec.get("scorers", ())
+    )
+
+
+def experiment_scorer_files():
+    """Scorers owned by registered experiments, in stable first-seen order."""
+    return tuple(dict.fromkeys(
+        scorer["script"]
+        for spec in EXPERIMENTS.values()
+        for scorer in spec.get("scorers", ())
+    ))
+
+
 def experiment(name):
     try:
         return EXPERIMENTS[name]

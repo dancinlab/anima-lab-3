@@ -1,0 +1,78 @@
+{
+  "_select": {
+    "kept": 256,
+    "tested": 256,
+    "keep_rate": 1.0,
+    "kept_alt": 256,
+    "tested_alt": 256,
+    "probe_bytes": 64,
+    "block": 256,
+    "shuffle_seed": 20260727,
+    "init_seed": 1337,
+    "ratio_prospective": 3.0,
+    "family": "literary",
+    "regime": "natural",
+    "register": "public-domain literary prose",
+    "corpus": "corpus_natural_literary_ko_dedup.txt",
+    "interventions": [
+      "normal",
+      "off",
+      "shuffle",
+      "noise"
+    ],
+    "intervention_seed": 20260809,
+    "intervention_target": "inter-layer tension signal"
+  },
+  "litdrop37": {
+    "conditions": {
+      "normal": {
+        "bpc": 2.0717074677189418,
+        "stability_alt_phase_bpc": 2.0468931820408884,
+        "stability_delta": 0.024814285678053327
+      },
+      "off": {
+        "bpc": 2.071710901997501,
+        "stability_alt_phase_bpc": 2.0468951007223373,
+        "stability_delta": 0.024815801275163807
+      },
+      "shuffle": {
+        "bpc": 2.0717091230519564,
+        "stability_alt_phase_bpc": 2.046896057375833,
+        "stability_delta": 0.024813065676123625
+      },
+      "noise": {
+        "bpc": 2.071711116975815,
+        "stability_alt_phase_bpc": 2.0468951490924576,
+        "stability_delta": 0.02481596788335727
+      }
+    },
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "d1fd4fd523ccfb58"
+  },
+  "litdrop37v": {
+    "conditions": {
+      "normal": {
+        "bpc": 2.072771164291155,
+        "stability_alt_phase_bpc": 2.0455011652137207,
+        "stability_delta": 0.027269999077434104
+      },
+      "off": {
+        "bpc": 2.0727788712636963,
+        "stability_alt_phase_bpc": 2.0455088345650574,
+        "stability_delta": 0.027270036698638922
+      },
+      "shuffle": {
+        "bpc": 2.0727782317032135,
+        "stability_alt_phase_bpc": 2.045510285668674,
+        "stability_delta": 0.027267946034539303
+      },
+      "noise": {
+        "bpc": 2.07277908624201,
+        "stability_alt_phase_bpc": 2.0455084261062617,
+        "stability_delta": 0.027270660135748415
+      }
+    },
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "a3de90008d532d55"
+  }
+}

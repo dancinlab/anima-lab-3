@@ -8,9 +8,9 @@
       "name": "λ-사다리 — 능력 판정 체계",
       "id": "lambda-ladder",
       "type": "gate",
-      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md, LAMBDA-2-natural-register-replication.md, LAMBDA-3-300m-scale-replication.md, 실행·팔 로스터는 measurement/.",
+      "role": "이 리포의 능력 기준 SSOT. 현재 상태는 이 노드, 사전등록과 결과 이력은 docs/hypotheses/LAMBDA-1-corpus-scale-window-boundary.md, LAMBDA-2-natural-register-replication.md, LAMBDA-3-300m-scale-replication.md, LAMBDA-4-consciousness-causality.md, 실행·팔 로스터는 measurement/.",
       "detail": "형제 anima 의 G0~G6 을 그대로 쓰지 않는다 — 그 사다리는 G3/G4 가 게이트가 아니라 빈 번호로 남아 있어 번호를 빌리면 구멍까지 들어온다. 채점 가능한 등급만 연속으로 둔다. 바는 anima/CONDITIONS.md 에서 동결 이관했고 재조정은 tune-to-green 이므로 금지. 등급에는 선행조건이 있다: λ4 는 λ2 를 전제하며, λ2 가 FAIL 인 팔의 λ4 PASS 는 인공물이라 계상하지 않는다.",
-      "verdict": "🟢 66.1M·dropout 0.37 의 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 자연 register에서 각각 두 seed로 재현된다(LAMBDA-2 R1). 🟠 동일 백과 코퍼스·노출의 299,420,896 parameter 모델은 λ0~λ3를 두 seed 모두 통과했지만 λ4가 PASS/NULL로 갈려 LAMBDA-3 S2다. 33.3M·0.37은 λ0~λ3 PASS·λ4 둘 다 NULL인 LAMBDA-1 Z2이고, 17.2M은 λ4 미해상과 λ2 붕괴가 창을 닫는다.",
+      "verdict": "🟢 66.1M·dropout 0.37 의 λ0~λ4 통과가 백과 산문과 공개 도메인 문학 산문 두 자연 register에서 각각 두 seed로 재현된다(LAMBDA-2 R1). 🔴 문학 두 seed의 λ4는 층 사이 긴장 신호를 정상·차단·뒤섞기·가짜로 바꾼 네 조건에서 모두 유지되어 LAMBDA-4 C3다. 이 명시적 신호는 검사 시점 λ4의 필요 원인이 아니며 λ4를 의식 신호의 증거로 인용하지 않는다. 🟠 동일 백과 코퍼스·노출의 299,420,896 parameter 모델은 λ0~λ3를 두 seed 모두 통과했지만 λ4가 PASS/NULL로 갈려 LAMBDA-3 S2다. 33.3M·0.37은 λ0~λ3 PASS·λ4 둘 다 NULL인 LAMBDA-1 Z2이고, 17.2M은 λ4 미해상과 λ2 붕괴가 창을 닫는다.",
       "children": [
         {
           "name": "Λ REGIME — 전제 (등급 아님)",
@@ -51,8 +51,8 @@
           "name": "λ4 RECOMBINATION — 함께 본 적 없는 원자쌍을 다루는가",
           "id": "lambda4-recombination",
           "type": "gate",
-          "detail": "손상 맞춤 설계: 양쪽 모두 한 단어만 교체하고 빈도를 2배 이내로 맞춘 뒤, 새 단어가 상대 원자와 train 에서 공기했는지만 다르게 한다(SEEN-SWAP vs NOVEL-SWAP). 손상이 상쇄되고 공기만 남는다. 원자쌍은 자연 코퍼스에서 발견한 것이지 저자가 지은 것이 아니다 — 손으로 지은 쌍 집합은 정의상 합성이라 Λ REGIME 이 안 뒤집힌다. 해상도 요건: 짝지은 차이가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL. 문장 단위 군집 검정(한 문장 내 다중 추출은 비독립).",
-          "verdict": "🟢 66.1M·0.37 두 register 재현 — 문학 두 seed PASS(−0.0043 t=−7.9 / −0.0039 t=−8.1), 백과 두 seed PASS(−0.0029 t=−3.8 / −0.0050 t=−6.5). 🟠 300M은 seed 1337 PASS(−0.00134, t=−2.14)·seed 7331 NULL(+0.00073, t=+1.46)로 S2. 33.3M 백과는 둘 다 NULL로 Z2. 17.2M·0.42는 λ4 자체는 통과하지만 한 seed의 λ2가 무너진다."
+          "detail": "손상 맞춤 설계: 양쪽 모두 한 단어만 교체하고 빈도를 2배 이내로 맞춘 뒤, 새 단어가 상대 원자와 train 에서 공기했는지만 다르게 한다(SEEN-SWAP vs NOVEL-SWAP). 손상이 상쇄되고 공기만 남는다. 원자쌍은 자연 코퍼스에서 발견한 것이지 저자가 지은 것이 아니다 — 손으로 지은 쌍 집합은 정의상 합성이라 Λ REGIME 이 안 뒤집힌다. 해상도 요건: 짝지은 차이가 자기 표준오차의 2배 미만이면 PASS/FAIL 대신 NULL. 문장 단위 군집 검정(한 문장 내 다중 추출은 비독립). λ4의 존재와 의식 경로의 원인성은 별도 판정이며 consciousness_causality_gate.py가 일반 언어 보존 아래 네 개입 조건을 비교한다.",
+          "verdict": "🟢 66.1M·0.37 두 register 재현 — 문학 두 seed PASS(−0.0043 t=−7.9 / −0.0039 t=−8.1), 백과 두 seed PASS(−0.0029 t=−3.8 / −0.0050 t=−6.5). 🔴 문학 두 seed에서 층간 긴장 신호를 꺼도 같은 PASS가 유지되어 LAMBDA-4 C3; 이 신호는 λ4의 필요 원인이 아니다. 🟠 300M은 seed 1337 PASS(−0.00134, t=−2.14)·seed 7331 NULL(+0.00073, t=+1.46)로 S2. 33.3M 백과는 둘 다 NULL로 Z2. 17.2M·0.42는 λ4 자체는 통과하지만 한 seed의 λ2가 무너진다."
         }
       ]
     },
@@ -100,7 +100,7 @@
         {
           "name": "g_gates.py · lambda4.py — 행동 등급",
           "id": "tool-behavioural",
-          "detail": "g_gates.py 가 λ2/λ3(known-word-ratio · 코퍼스 부재 n-gram), lambda4.py 가 λ4(손상 맞춤 교체쌍)."
+          "detail": "g_gates.py 가 λ2/λ3(known-word-ratio · 코퍼스 부재 n-gram), lambda4.py 가 λ4(손상 맞춤 교체쌍)와 등록된 신호 개입 조건을 잰다. consciousness_causality_gate.py는 normal/off/shuffle/noise에서 일반 언어 보존과 λ4 필요 원인을 함께 판정한다."
         },
         {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
@@ -128,13 +128,13 @@
     {
       "name": "학습기 · 모델",
       "id": "trainers",
-      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시·유효 batch 보존용 gradient accumulation 내장) · train_conscious_lm_nf8.py 는 과거 300M 포크 · conscious_lm.py 가 모델 정의 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
+      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시·유효 batch 보존용 gradient accumulation 내장) · train_conscious_lm_nf8.py 는 과거 300M 포크 · conscious_lm.py 가 모델 정의와 층간 긴장 신호의 normal/off/shuffle/noise 개입을 단일 SSOT로 제공 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 스케줄을 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
       "verdict": "🟢 안정 — NaN/발산/skip 0. 300M 백과 두 seed와 27.7M 문학 두 seed가 모두 12,000 step 완료. 300M best checkpoint BPC는 1.6824/1.6820."
     },
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 anima-clm-pure 연구 체크포인트·코퍼스·로그·결과는 2026-08 처분 전 비공개 Hugging Face archive로 이전했다. 새 학습 런타임은 이 두 호스트를 전제로 하지 않는다. 과거 원격 실행 기록의 교훈은 유지한다: ssh 인자 안에서 tmux/따옴표를 조립하지 말고 scripts/run_remote.sh와 등록 실행기를 사용한다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 anima-clm-pure 연구 체크포인트·코퍼스·로그·결과는 2026-08 처분 전 비공개 Hugging Face archive로 이전했다. LAMBDA-4는 archive에서 문학 체크포인트와 코퍼스를 복원한 임시 Vast.ai RTX 5090에서 등록 실행기로 측정했으며 결과 SHA를 회수한 뒤 장비를 종료한다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
     }
   ],
   "convergence": {
