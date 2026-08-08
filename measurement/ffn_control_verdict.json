@@ -1,0 +1,37 @@
+{
+  "experiment": "ffn_structural_control",
+  "hypothesis": "LAMBDA-5",
+  "verdict": "F1",
+  "reason": "lambda4 reproduced in both standard-FFN seeds; PureFieldFFN is not required",
+  "adjudicated_at": "2026-08-08T20:58:55.823846+00:00",
+  "reference_ok": true,
+  "reference_checkpoint_sha256": {
+    "litdrop37": "d1fd4fd523ccfb58f7408cdffd42687f866d0dc21c966a61ca4e1cfeb92e200d",
+    "litdrop37v": "a3de90008d532d5551bf5ec4d3e41ffa5dd5e1b55d1c86f3890e2a471736ffc9"
+  },
+  "structure_ok": true,
+  "language_ok": true,
+  "lambda4_passes": 2,
+  "arms": {
+    "litstd37": {
+      "language_ok": true,
+      "structure_ok": true,
+      "ffn_type": "standard",
+      "bpc": 2.0883032292091297,
+      "lambda4_verdict": "PASS",
+      "lambda4_cost": -0.0035502650978514135,
+      "lambda4_t": -7.996430483691795,
+      "checkpoint_sha256": "c95a50b897dfcca1761107b145d78f0c02bab7d1d6328aedae96738618d7f2f6"
+    },
+    "litstd37v": {
+      "language_ok": true,
+      "structure_ok": true,
+      "ffn_type": "standard",
+      "bpc": 2.0552659585432043,
+      "lambda4_verdict": "PASS",
+      "lambda4_cost": -0.0026183513697212433,
+      "lambda4_t": -6.622371148018794,
+      "checkpoint_sha256": "c060fceedaf12863c182406dadfdad074b9f77decba3940fdd0e1e702ed80899"
+    }
+  }
+}

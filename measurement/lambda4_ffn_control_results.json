@@ -1,0 +1,79 @@
+{
+  "_setup": {
+    "freq_band": [
+      50,
+      5000
+    ],
+    "min_token_bytes": 6,
+    "lines_per_group": 192,
+    "seed": 20260728,
+    "corpus": "corpus_natural_literary_ko_dedup.txt",
+    "family": "literary",
+    "regime": "natural",
+    "register": "public-domain literary prose",
+    "bar": "value < (SEEN + BROKEN)/2 AND value < BROKEN",
+    "resolution_rule": "VOID unless the value-vs-BROKEN gap is at least 2x its own standard error across lines -- registered after run 1 exposed that a narrow spread passes the midpoint for free"
+  },
+  "litstd37": {
+    "value_novel_cooccurrence": 8.904266135146221,
+    "ctrl_seen_cooccurrence": 8.934135702128211,
+    "ctrl_broken_composition": 8.857288897037506,
+    "midpoint": 8.895712299582858,
+    "normalised_position": 0.3886897698184571,
+    "resolution": {
+      "spread": -0.046977238108714424,
+      "se": 0.016201875119383098,
+      "t": -2.8994939019443033,
+      "resolvable": true
+    },
+    "ctrl_paired_seen": 8.916382928689321,
+    "paired_novelty_cost": -0.012116793543100357,
+    "paired_t": -1.1589917452845044,
+    "paired_resolvable": false,
+    "matched_seen_swap": 8.832612265894156,
+    "matched_novel_swap": 8.829062000796306,
+    "matched_novelty_cost": -0.0035502650978514135,
+    "matched_t": -7.996430483691795,
+    "matched_resolvable": true,
+    "matched_n_lines": 30759,
+    "matched_n_draws": 123036,
+    "matched_t_unclustered": -8.036590595091202,
+    "lambda4_matched": true,
+    "lambda4_verdict": "PASS",
+    "lambda4_unmatched_run1": false,
+    "lambda4_void": false,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "c95a50b897dfcca1"
+  },
+  "litstd37v": {
+    "value_novel_cooccurrence": 8.712878325333199,
+    "ctrl_seen_cooccurrence": 8.710938699543476,
+    "ctrl_broken_composition": 8.69581545268496,
+    "midpoint": 8.703377076114219,
+    "normalised_position": -0.12825458764697004,
+    "resolution": {
+      "spread": -0.017062872648239136,
+      "se": 0.014478528901820132,
+      "t": -1.178494912290027,
+      "resolvable": false
+    },
+    "ctrl_paired_seen": 8.739931539942821,
+    "paired_novelty_cost": -0.027053214609622955,
+    "paired_t": -2.356301842159703,
+    "paired_resolvable": true,
+    "matched_seen_swap": 8.647386699812229,
+    "matched_novel_swap": 8.644768348442508,
+    "matched_novelty_cost": -0.0026183513697212433,
+    "matched_t": -6.622371148018794,
+    "matched_resolvable": true,
+    "matched_n_lines": 30759,
+    "matched_n_draws": 123036,
+    "matched_t_unclustered": -6.656237159618468,
+    "lambda4_matched": true,
+    "lambda4_verdict": "PASS",
+    "lambda4_unmatched_run1": false,
+    "lambda4_void": true,
+    "ckpt_step": 11750,
+    "ckpt_sha256_16": "c060fceedaf12863"
+  }
+}

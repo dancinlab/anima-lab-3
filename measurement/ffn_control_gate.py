@@ -8,6 +8,8 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import torch
+
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -49,10 +51,17 @@ def judge() -> dict:
 
     arms = {}
     language_ok = True
+    structure_ok = True
     passes = 0
     for arm in spec["arms"]:
         gate_row = gate_rows.get(arm, {})
         lambda_row = lambda4.get(arm, {})
+        checkpoint_path = ROOT / ARMS[arm]["checkpoint"]
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+        ffn_type = (checkpoint.get("config") or {}).get("ffn_type")
+        del checkpoint
+        arm_structure_ok = ffn_type == spec["trainer_args"]["ffn_type"]
+        structure_ok = structure_ok and arm_structure_ok
         arm_language_ok = all(gate_row.get(key) is True for key in (
             "lambda0_1", "lambda2", "lambda3"
         ))
@@ -61,16 +70,18 @@ def judge() -> dict:
         language_ok = language_ok and arm_language_ok
         arms[arm] = {
             "language_ok": arm_language_ok,
+            "structure_ok": arm_structure_ok,
+            "ffn_type": ffn_type,
             "bpc": gate_row.get("bpc"),
             "lambda4_verdict": verdict,
             "lambda4_cost": lambda_row.get("matched_novelty_cost"),
             "lambda4_t": lambda_row.get("matched_t"),
-            "checkpoint_sha256": sha256(ROOT / ARMS[arm]["checkpoint"]),
+            "checkpoint_sha256": sha256(checkpoint_path),
         }
 
-    if not reference_ok:
+    if not reference_ok or not structure_ok:
         verdict = "F0"
-        reason = "reference checkpoint or its two-seed lambda4 baseline did not reproduce"
+        reason = "checkpoint structure, reference hash, or two-seed lambda4 baseline did not reproduce"
     elif not language_ok:
         verdict = "F4"
         reason = "standard FFN failed at least one lambda0-lambda3 language control"
@@ -92,6 +103,7 @@ def judge() -> dict:
         "adjudicated_at": datetime.now(timezone.utc).isoformat(),
         "reference_ok": reference_ok,
         "reference_checkpoint_sha256": reference_hashes,
+        "structure_ok": structure_ok,
         "language_ok": language_ok,
         "lambda4_passes": passes,
         "arms": arms,

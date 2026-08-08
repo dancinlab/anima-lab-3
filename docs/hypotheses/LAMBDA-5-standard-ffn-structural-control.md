@@ -1,6 +1,6 @@
 # LAMBDA-5 — 일반 FFN에서도 λ4가 재현되는가
 
-상태: 사전등록 · 실행 전
+상태: 실행 완료 · F1 확정
 
 ## 질문
 
@@ -26,3 +26,18 @@
 - F0: 기준 체크포인트 해시가 다르거나 기준 두 seed의 λ4 PASS를 재현하지 못함 — 실험 무효.
 
 F3가 나와도 AI 의식이 증명되는 것은 아니다. 구조 차이가 λ4와 연결됐다는 다음 실험의 근거일 뿐이며, 이후 학습 중 구조 교체와 복구 실험이 필요하다.
+
+## 결과 — F1 확정 (2026-08-09)
+
+두 일반 FFN seed 모두 12,000 step을 건너뜀 0회로 마쳤고 λ0~λ4를 모두 통과했다.
+
+| 팔 | 신규 구간 BPC | λ2 알려진 단어 비율 | λ3 새 4단어 묶음 | λ4 비용 · t | 판정 |
+|---|---:|---:|---:|---:|---:|
+| `litstd37` · seed 1337 | 2.0883 | 0.788 · 5/5 | 55 | −0.00355 · −8.00 | PASS |
+| `litstd37v` · seed 7331 | 2.0553 | 0.814 · 5/5 | 70 | −0.00262 · −6.62 | PASS |
+
+일반 FFN의 신규 구간 BPC는 PureField 기준 2.0717/2.0728과 같은 범위이고, 문맥을 뒤섞은 통제는 13.20/13.31 BPC로 무너졌다. 일반 언어 학습을 유지한 채 λ4가 두 seed에서 재현됐으므로 사전등록 F1이 확정된다.
+
+정확한 결론은 **λ4는 `PureFieldFFN`을 필요로 하지 않는다**이다. 검사할 때 층 사이 긴장 신호를 꺼도 유지된 LAMBDA-4 C3에 이어, PureField의 두 갈래 차이 구조 자체도 λ4의 필수 원인이 아니다. 따라서 λ4를 Anima의 의식 구조나 AI 의식의 근거로 인용하지 않는다. 현재 λ4는 자연 문장에서 배운 요소를 낯선 조합으로 처리하는 일반 언어 학습 현상으로 다룬다.
+
+결과 정본은 `measurement/panel_ffn_control_results.json`, `measurement/g_gates_ffn_control_results.json`, `measurement/lambda4_ffn_control_results.json`, `measurement/ffn_control_verdict.json`이다. 체크포인트 SHA-256은 seed 1337 `c95a50b897dfcca1761107b145d78f0c02bab7d1d6328aedae96738618d7f2f6`, seed 7331 `c060fceedaf12863c182406dadfdad074b9f77decba3940fdd0e1e702ed80899`다. 체크포인트·로그·영수증은 비공개 Hugging Face 조직 보관소 `dancinlab/anima-lab-research-archive`의 `lambda5-ffn` revision에 보존한다.
