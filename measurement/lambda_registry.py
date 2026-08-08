@@ -163,6 +163,37 @@ EXPERIMENTS = {
         },
         "results": "scale300m",
     },
+    "lambda4_consciousness_causality": {
+        "hypothesis": "LAMBDA-4",
+        "family": "literary",
+        "arms": ("litdrop37", "litdrop37v"),
+        "measurement_only": True,
+        "corpus_sha256": "336e101a5b9737c2e12073b5562a06320c150b5a19655a8046b7c16e13ddff5e",
+        "fresh_sha256": "8e196165d525e15bc4b200e395953b19d6007acd0cb2c65746649dc4acb5cecd",
+        "checkpoint_sha256": {
+            "litdrop37": "d1fd4fd523ccfb58f7408cdffd42687f866d0dc21c966a61ca4e1cfeb92e200d",
+            "litdrop37v": "a3de90008d532d5551bf5ec4d3e41ffa5dd5e1b55d1c86f3890e2a471736ffc9",
+        },
+        "interventions": ("normal", "off", "shuffle", "noise"),
+        "intervention_seed": 20260809,
+        "scorers": (
+            {
+                "axis": "panel",
+                "script": "measurement/panel.py",
+                "output": "measurement/panel_consciousness_causality_results.json",
+            },
+            {
+                "axis": "lambda4",
+                "script": "measurement/lambda4.py",
+                "output": "measurement/lambda4_consciousness_causality_results.json",
+            },
+            {
+                "axis": "verdict",
+                "script": "measurement/consciousness_causality_gate.py",
+                "output": "measurement/consciousness_causality_verdict.json",
+            },
+        ),
+    },
 }
 
 

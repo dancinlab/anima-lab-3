@@ -64,11 +64,12 @@ def validate(name: str, score_only: bool = False) -> dict:
         "host": socket.gethostname(),
         "family": exp["family"],
         "arms": list(exp["arms"]),
-        "effective_batch_size": (
+    }
+    if "trainer_args" in exp:
+        checks["effective_batch_size"] = (
             exp["trainer_args"]["batch_size"]
             * exp["trainer_args"]["grad_accum_steps"]
-        ),
-    }
+        )
     for path, expected, label in (
         (corpus, exp["corpus_sha256"], "corpus"),
         (fresh, exp["fresh_sha256"], "fresh"),
@@ -94,7 +95,16 @@ def validate(name: str, score_only: bool = False) -> dict:
                 f"refusing ambiguous checkpoint directory without completion receipt: "
                 f"{checkpoint.parent}"
             )
-    checks["trainer_sha256"] = sha256(ROOT / exp["trainer"])
+        expected_checkpoint = exp.get("checkpoint_sha256", {}).get(arm_name)
+        if checkpoint.is_file() and expected_checkpoint:
+            actual_checkpoint = sha256(checkpoint)
+            if actual_checkpoint != expected_checkpoint:
+                raise SystemExit(
+                    f"registered checkpoint checksum mismatch for {arm_name}: "
+                    f"{actual_checkpoint} != {expected_checkpoint}"
+                )
+    if exp.get("trainer"):
+        checks["trainer_sha256"] = sha256(ROOT / exp["trainer"])
     return checks
 
 
@@ -160,6 +170,8 @@ def train_arm(name: str, exp: dict, arm_name: str) -> dict:
 
 
 def score(name: str, exp: dict) -> dict:
+    if exp.get("scorers"):
+        return score_registered(name, exp)
     result_set = RESULT_SETS[exp["results"]]
     env = {**os.environ, "LAMBDA_FAMILY": exp["family"]}
     receipts = {}
@@ -217,6 +229,42 @@ def score(name: str, exp: dict) -> dict:
     return receipts
 
 
+def score_registered(name: str, exp: dict) -> dict:
+    """Run an experiment-defined scorer roster without a one-off shell path."""
+    env = {
+        **os.environ,
+        "ANIMA_LAB_ROOT": str(ROOT),
+        "LAMBDA_FAMILY": exp["family"],
+    }
+    interventions = list(exp.get("interventions", ()))
+    if interventions:
+        env["CONSCIOUSNESS_INTERVENTION_SEED"] = str(exp["intervention_seed"])
+    receipts = {}
+    for scorer in exp["scorers"]:
+        output = ROOT / scorer["output"]
+        log_path = ROOT / "logs" / f"{name}_{scorer['axis']}.log"
+        command = [sys.executable, "-u", str(ROOT / scorer["script"]), str(output)]
+        if scorer["axis"] != "verdict":
+            command.extend(exp["arms"])
+            if interventions:
+                command.extend(("--interventions", *interventions))
+        print(f"[score] {scorer['axis']} -> {output}", flush=True)
+        with log_path.open("w") as log:
+            completed = subprocess.run(
+                command, cwd=ROOT, env=env, stdout=log,
+                stderr=subprocess.STDOUT, check=False,
+            )
+        if completed.returncode or not output.is_file():
+            raise SystemExit(
+                f"{scorer['axis']} scorer failed: exit {completed.returncode}"
+            )
+        receipts[scorer["axis"]] = {
+            "path": str(output.relative_to(ROOT)),
+            "sha256": sha256(output),
+        }
+    return receipts
+
+
 def run(args: argparse.Namespace) -> None:
     checks = validate(args.experiment, score_only=args.score_only)
     if args.preflight:
@@ -232,7 +280,7 @@ def run(args: argparse.Namespace) -> None:
             raise SystemExit("another research job holds logs/gpu.lock") from exc
         exp = experiment(args.experiment)
         training = []
-        if not args.score_only:
+        if not args.score_only and not exp.get("measurement_only"):
             training = [train_arm(args.experiment, exp, arm) for arm in exp["arms"]]
         scoring = {} if args.train_only else score(args.experiment, exp)
         receipt = {

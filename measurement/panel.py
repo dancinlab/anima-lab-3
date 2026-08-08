@@ -40,6 +40,7 @@ does not identify a file.
 
 Ratio bar stays PROSPECTIVE, as in gate.py: reported, never deciding.
 """
+import argparse
 import hashlib
 import json
 import os
@@ -47,16 +48,19 @@ import math
 import sys
 import time
 from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
+    from measurement.runtime import resolve_torch_device
 except ModuleNotFoundError:
     from lambda_registry import family, family_arm_paths
+    from runtime import resolve_torch_device
 
-HOME = "/home/summer/anima-clm-pure"
+HOME = os.environ.get("ANIMA_LAB_ROOT", str(Path(__file__).resolve().parent.parent))
 TRAINER = f"{HOME}/train_conscious_lm.py"
 CHUNK = 1 << 20
 BLOCK, PROBE = 256, 64
@@ -73,7 +77,6 @@ FAMILY_NAME, FAMILY = family()
 SCREEN_CORPORA = [f"{HOME}/{path}" for path in FAMILY["screen_corpora"]]
 VAL_CORPUS = f"{HOME}/{FAMILY['corpus']}"
 ARMS = family_arm_paths(HOME, FAMILY_NAME)
-SELECT = sys.argv[2:] or list(ARMS)
 
 
 def load_trainer(path):
@@ -135,9 +138,23 @@ def build(clm, cfg, device, state=None):
 
 
 def main():
-    out_path = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output")
+    parser.add_argument("arms", nargs="*")
+    parser.add_argument("--interventions", nargs="+")
+    args = parser.parse_args()
+    out_path = args.output
+    select = args.arms or list(ARMS)
     clm = load_trainer(TRAINER)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    interventions = args.interventions or []
+    unknown = set(interventions) - set(getattr(clm, "CONSCIOUSNESS_INTERVENTIONS", ()))
+    if unknown:
+        raise SystemExit(f"unknown consciousness interventions: {sorted(unknown)}")
+    intervention_seed = int(os.environ.get(
+        "CONSCIOUSNESS_INTERVENTION_SEED",
+        getattr(clm, "DEFAULT_INTERVENTION_SEED", 20260809),
+    ))
+    device = resolve_torch_device(torch)
     print(f"[device] {device}", flush=True)
 
     trains = []
@@ -170,11 +187,15 @@ def main():
                            "ratio_prospective": RATIO, "family": FAMILY_NAME,
                            "regime": FAMILY["regime"], "register": FAMILY["register"],
                            "corpus": os.path.basename(VAL_CORPUS)}}
+    if interventions:
+        results["_select"]["interventions"] = interventions
+        results["_select"]["intervention_seed"] = intervention_seed
+        results["_select"]["intervention_target"] = "inter-layer tension signal"
 
     # Control A is per-architecture, not per-arm: build it once from the first
     # arm's config and reuse it for every arm that shares that shape.
     init_cache = {}
-    for name in SELECT:
+    for name in select:
         path = ARMS[name]
         if not os.path.exists(path):
             print(f"[{name}] checkpoint absent -- skipped, not scored", flush=True)
@@ -185,6 +206,26 @@ def main():
         shape = (int(cfg["dim"]), int(cfg["heads"]), int(cfg["layers"]))
 
         model = build(clm, cfg, device, ck["model_state"])
+        if interventions:
+            conditions = {}
+            for mode in interventions:
+                model.set_consciousness_intervention(mode, intervention_seed)
+                value = score(model, x, y, device)
+                align = score(model, x_alt, y_alt, device)
+                conditions[mode] = {
+                    "bpc": value,
+                    "stability_alt_phase_bpc": align,
+                    "stability_delta": abs(align - value),
+                }
+                print(f"[{name}/{mode}] value={value:.4f} · alt-phase={align:.4f} "
+                      f"(|Δ|{abs(align-value):.4f}) · sha {sha}", flush=True)
+            results[name] = {
+                "conditions": conditions,
+                "ckpt_step": ck.get("step"),
+                "ckpt_sha256_16": sha,
+            }
+            del model, ck
+            continue
         value = score(model, x, y, device)
         shuf = score(model, x_shuf, y, device)
         align = score(model, x_alt, y_alt, device)

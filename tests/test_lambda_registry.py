@@ -31,3 +31,12 @@ def test_scale_experiment_preserves_reference_effective_batch_and_receipts():
 def test_every_scored_arm_references_a_registered_floor():
     assert all(spec["floor"] in registry.FLOORS for spec in registry.ARMS.values())
     assert all(spec["checkpoint"] for spec in registry.ARMS.values() if spec["family"])
+
+
+def test_consciousness_causality_experiment_reuses_literary_pair():
+    exp = registry.experiment("lambda4_consciousness_causality")
+    assert exp["measurement_only"] is True
+    assert exp["arms"] == ("litdrop37", "litdrop37v")
+    assert exp["interventions"] == ("normal", "off", "shuffle", "noise")
+    assert set(exp["checkpoint_sha256"]) == set(exp["arms"])
+    assert [row["axis"] for row in exp["scorers"]] == ["panel", "lambda4", "verdict"]

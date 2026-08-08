@@ -30,6 +30,7 @@ be present or the rung is VOID, the same rule the other rungs run under.
 
 Frequency band and pair count are frozen here before the first run.
 """
+import argparse
 import hashlib
 import json
 import math
@@ -39,16 +40,19 @@ import re
 import sys
 from collections import Counter
 from importlib.util import module_from_spec, spec_from_file_location
+from pathlib import Path
 
 import torch
 import torch.nn.functional as F
 
 try:
     from measurement.lambda_registry import family, family_arm_paths
+    from measurement.runtime import resolve_torch_device
 except ModuleNotFoundError:
     from lambda_registry import family, family_arm_paths
+    from runtime import resolve_torch_device
 
-HOME = "/home/summer/anima-clm-pure"
+HOME = os.environ.get("ANIMA_LAB_ROOT", str(Path(__file__).resolve().parent.parent))
 TRAINER = f"{HOME}/train_conscious_lm.py"
 CHUNK = 1 << 20
 BLOCK = 256
@@ -73,7 +77,6 @@ CORPUS = f"{HOME}/{FAMILY['corpus']}"
 # Optional extra held-out pool is document-disjoint from the training corpus.
 FRESH = f"{HOME}/{FAMILY['fresh']}" if FAMILY.get("fresh") else ""
 ARMS = family_arm_paths(HOME, FAMILY_NAME, axis="lambda4")
-SELECT = sys.argv[2:] or list(ARMS)
 
 
 def load_trainer(path):
@@ -281,10 +284,104 @@ def spread_is_resolvable(seen_per_line, broken_per_line):
     return {"spread": mean, "se": se, "t": t, "resolvable": abs(t) >= 2.0}
 
 
+def measure_model(model, device, inputs):
+    """Score one model state with the frozen λ4 spans and controls."""
+    v = score(model, inputs["xv"], inputs["yv"], device)
+    s_per = score_per_line(model, inputs["xs"], inputs["ys"], device)
+    b_per = score_per_line(model, inputs["xb"], inputs["yb"], device)
+    s, b = sum(s_per) / len(s_per), sum(b_per) / len(b_per)
+    mid = (s + b) / 2
+    res = spread_is_resolvable(
+        score_per_line(model, inputs["xv"], inputs["yv"], device), b_per
+    )
+    v_k = score_per_line(model, inputs["xvk"], inputs["yvk"], device)
+    p_per = score_per_line(model, inputs["xp"], inputs["yp"], device)
+    paired = spread_is_resolvable(p_per, v_k)
+    p_mean = sum(p_per) / len(p_per)
+    ms_per = score_per_line(model, inputs["xms"], inputs["yms"], device)
+    mn_per = score_per_line(model, inputs["xmn"], inputs["ymn"], device)
+
+    # Several draws from one sentence are not independent. Average within each
+    # sentence first, then test over sentences exactly as the frozen λ4 scorer.
+    by_line = {}
+    for li, sv, nv in zip(inputs["m_line"], ms_per, mn_per):
+        by_line.setdefault(li, []).append(nv - sv)
+    per_line = [sum(values) / len(values) for values in by_line.values()]
+    matched = spread_is_resolvable([0.0] * len(per_line), per_line)
+    matched["n_lines"] = len(per_line)
+    matched["n_draws"] = len(ms_per)
+    matched["t_unclustered"] = spread_is_resolvable(ms_per, mn_per)["t"]
+    ms_mean = sum(ms_per) / len(ms_per)
+    mn_mean = sum(mn_per) / len(mn_per)
+    lam4 = mn_mean <= ms_mean
+    ok = v < mid and v < b
+    pos = (v - s) / (b - s) if b != s else float("nan")
+    return {
+        "value_novel_cooccurrence": v,
+        "ctrl_seen_cooccurrence": s,
+        "ctrl_broken_composition": b,
+        "midpoint": mid,
+        "normalised_position": pos,
+        "resolution": res,
+        "ctrl_paired_seen": p_mean,
+        "paired_novelty_cost": paired["spread"],
+        "paired_t": paired["t"],
+        "paired_resolvable": paired["resolvable"],
+        "matched_seen_swap": ms_mean,
+        "matched_novel_swap": mn_mean,
+        "matched_novelty_cost": matched["spread"],
+        "matched_t": matched["t"],
+        "matched_resolvable": matched["resolvable"],
+        "matched_n_lines": matched["n_lines"],
+        "matched_n_draws": matched["n_draws"],
+        "matched_t_unclustered": matched["t_unclustered"],
+        "lambda4_matched": None if not matched["resolvable"] else lam4,
+        "lambda4_verdict": (
+            "NULL" if not matched["resolvable"] else ("PASS" if lam4 else "FAIL")
+        ),
+        "lambda4_unmatched_run1": ok,
+        "lambda4_void": not res["resolvable"],
+    }
+
+
+def print_measurement(label, row, sha):
+    verdict = row["lambda4_verdict"]
+    if verdict == "NULL":
+        verdict = "NULL (|cost| below resolution -- no penalty either way)"
+    print(
+        f"[{label}] novel={row['value_novel_cooccurrence']:.4f} · "
+        f"seen={row['ctrl_seen_cooccurrence']:.4f} · "
+        f"broken={row['ctrl_broken_composition']:.4f} · "
+        f"mid={row['midpoint']:.4f} · pos={row['normalised_position']:.3f} · "
+        f"Δbroken={row['resolution']['spread']:+.4f} "
+        f"t={row['resolution']['t']:.1f} · MATCHED "
+        f"seen-swap={row['matched_seen_swap']:.4f} "
+        f"novel-swap={row['matched_novel_swap']:.4f} "
+        f"cost={row['matched_novelty_cost']:+.4f} t={row['matched_t']:+.1f} "
+        f"(clustered over {row['matched_n_lines']} lines; unclustered would read "
+        f"{row['matched_t_unclustered']:+.1f}) → λ4 {verdict} · sha {sha}",
+        flush=True,
+    )
+
+
 def main():
-    out_path = sys.argv[1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("output")
+    parser.add_argument("arms", nargs="*")
+    parser.add_argument("--interventions", nargs="+")
+    args = parser.parse_args()
+    out_path = args.output
+    select = args.arms or list(ARMS)
     clm = load_trainer(TRAINER)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    interventions = args.interventions or []
+    unknown = set(interventions) - set(getattr(clm, "CONSCIOUSNESS_INTERVENTIONS", ()))
+    if unknown:
+        raise SystemExit(f"unknown consciousness interventions: {sorted(unknown)}")
+    intervention_seed = int(os.environ.get(
+        "CONSCIOUSNESS_INTERVENTION_SEED",
+        getattr(clm, "DEFAULT_INTERVENTION_SEED", 20260809),
+    ))
+    device = resolve_torch_device(torch)
     rng = random.Random(SEED)
     print(f"[device] {device}", flush=True)
 
@@ -324,6 +421,12 @@ def main():
     xmn, ymn = to_tensor(m_novel)
     # The paired comparison must use the same subset on both sides.
     xvk, yvk = to_tensor([novel[i][0] for i in keep])
+    inputs = {
+        "xv": xv, "yv": yv, "xs": xs, "ys": ys, "xb": xb, "yb": yb,
+        "xp": xp, "yp": yp, "xms": xms, "yms": yms,
+        "xmn": xmn, "ymn": ymn, "xvk": xvk, "yvk": yvk,
+        "m_line": m_line,
+    }
 
     results = {"_setup": {"freq_band": [FREQ_LO, FREQ_HI], "min_token_bytes": MIN_TOKEN_BYTES,
                           "lines_per_group": len(novel), "seed": SEED,
@@ -335,7 +438,11 @@ def main():
                                              "least 2x its own standard error across lines "
                                              "-- registered after run 1 exposed that a narrow "
                                              "spread passes the midpoint for free"}}
-    for name in SELECT:
+    if interventions:
+        results["_setup"]["interventions"] = interventions
+        results["_setup"]["intervention_seed"] = intervention_seed
+        results["_setup"]["intervention_target"] = "inter-layer tension signal"
+    for name in select:
         path = ARMS[name]
         if not os.path.exists(path):
             print(f"[{name}] checkpoint absent -- skipped", flush=True)
@@ -348,73 +455,23 @@ def main():
                             block_size=int(cfg.get("block_size", BLOCK)), dropout=0.0)
         m.load_state_dict(ck["model_state"], strict=False)
         m.to(device).eval()
-        v = score(m, xv, yv, device)
-        s_per = score_per_line(m, xs, ys, device)
-        b_per = score_per_line(m, xb, yb, device)
-        s, b = sum(s_per) / len(s_per), sum(b_per) / len(b_per)
-        mid = (s + b) / 2
-        # BROKEN is built from the NOVEL lines, so the paired test compares the
-        # value lines against themselves with the composition removed.
-        res = spread_is_resolvable(score_per_line(m, xv, yv, device), b_per)
-        # Paired SEEN: same lines, one atom swapped to a train co-occurring one.
-        v_k = score_per_line(m, xvk, yvk, device)
-        p_per = score_per_line(m, xp, yp, device)
-        paired = spread_is_resolvable(p_per, v_k)   # positive = novel costs more
-        p_mean = sum(p_per) / len(p_per)
-        ms_per = score_per_line(m, xms, yms, device)
-        mn_per = score_per_line(m, xmn, ymn, device)
-        # CLUSTERED by sentence. Several swap draws from one line are not
-        # independent samples -- they share the sentence -- so testing across
-        # draws underestimates the standard error and inflates t. Average the
-        # draws within each line first, then test across LINES. This is strictly
-        # more conservative and it is the number the verdict uses.
-        by_line = {}
-        for li, sv, nv in zip(m_line, ms_per, mn_per):
-            by_line.setdefault(li, []).append(nv - sv)
-        per_line = [sum(v) / len(v) for v in by_line.values()]
-        matched = spread_is_resolvable([0.0] * len(per_line), per_line)
-        matched["n_lines"] = len(per_line)
-        matched["n_draws"] = len(ms_per)
-        # Reported alongside so the inflation is visible rather than hidden.
-        naive = spread_is_resolvable(ms_per, mn_per)
-        matched["t_unclustered"] = naive["t"]
-        ms_mean = sum(ms_per) / len(ms_per)
-        mn_mean = sum(mn_per) / len(mn_per)
-        lam4 = mn_mean <= ms_mean
-        ok = v < mid and v < b
-        pos = (v - s) / (b - s) if b != s else float("nan")
-        results[name] = {"value_novel_cooccurrence": v, "ctrl_seen_cooccurrence": s,
-                         "ctrl_broken_composition": b, "midpoint": mid,
-                         "normalised_position": pos,
-                         "resolution": res,
-                         "ctrl_paired_seen": p_mean,
-                         "paired_novelty_cost": paired["spread"],
-                         "paired_t": paired["t"],
-                         "paired_resolvable": paired["resolvable"],
-                         "matched_seen_swap": ms_mean,
-                         "matched_novel_swap": mn_mean,
-                         "matched_novelty_cost": matched["spread"],
-                         "matched_t": matched["t"],
-                         "matched_resolvable": matched["resolvable"],
-                         "lambda4_matched": (None if not matched["resolvable"] else lam4),
-                         "lambda4_verdict": ("NULL" if not matched["resolvable"]
-                                             else ("PASS" if lam4 else "FAIL")),
-                         "lambda4_unmatched_run1": ok,
-                         "lambda4_void": not res["resolvable"],
-                         "ckpt_step": ck.get("step"), "ckpt_sha256_16": sha}
-        # A knife-edge PASS/FAIL on an effect smaller than its own noise is not a
-        # verdict. When the damage-matched cost is below resolution the honest
-        # reading is NULL: the confounds are controlled and no penalty exists at
-        # this resolution, in either direction.
-        verdict = ("NULL (|cost| below resolution -- no penalty either way)"
-                   if not matched["resolvable"] else ("PASS" if lam4 else "FAIL"))
-        print(f"[{name}] novel={v:.4f} · seen={s:.4f} · broken={b:.4f} · mid={mid:.4f} · "
-              f"pos={pos:.3f} · Δbroken={res['spread']:+.4f} t={res['t']:.1f} · "
-              f"MATCHED seen-swap={ms_mean:.4f} novel-swap={mn_mean:.4f} "
-              f"cost={matched['spread']:+.4f} t={matched['t']:+.1f} "
-              f"(clustered over {matched['n_lines']} lines; unclustered would read "
-              f"{matched['t_unclustered']:+.1f}) → λ4 {verdict} "
-              f"· sha {sha}", flush=True)
+        if interventions:
+            conditions = {}
+            for mode in interventions:
+                m.set_consciousness_intervention(mode, intervention_seed)
+                row = measure_model(m, device, inputs)
+                conditions[mode] = row
+                print_measurement(f"{name}/{mode}", row, sha)
+            results[name] = {
+                "conditions": conditions,
+                "ckpt_step": ck.get("step"),
+                "ckpt_sha256_16": sha,
+            }
+        else:
+            row = measure_model(m, device, inputs)
+            row.update({"ckpt_step": ck.get("step"), "ckpt_sha256_16": sha})
+            results[name] = row
+            print_measurement(name, row, sha)
         del ck, m
 
     json.dump(results, open(out_path, "w"), indent=2)

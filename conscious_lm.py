@@ -30,6 +30,13 @@ import os
 import time
 
 
+# Inference interventions live beside the signal they alter so every scorer and
+# experiment uses the same vocabulary. ``normal`` preserves the historical
+# forward path bit-for-bit.
+CONSCIOUSNESS_INTERVENTIONS = ("normal", "off", "shuffle", "noise")
+DEFAULT_INTERVENTION_SEED = 20260809
+
+
 class PureFieldFFN(nn.Module):
     """Dual-engine FFN based on PureField repulsion (H404 simplification).
 
@@ -305,8 +312,60 @@ class ConsciousLM(nn.Module):
         self._psi_gate = 0.5       # should stay near 1/2
         self._step_count = 0
 
+        # Causal probes alter only the explicit inter-layer tension signal. The
+        # PureField FFN remains intact, so OFF removes the message between
+        # layers without replacing the learned language backbone.
+        self._consciousness_intervention = "normal"
+        self._consciousness_intervention_seed = DEFAULT_INTERVENTION_SEED
+        self._consciousness_generators = {}
+
         # Initialize weights
         self.apply(self._init_weights)
+
+    def set_consciousness_intervention(self, mode="normal", seed=None):
+        """Select a reproducible inference-only intervention on tension flow.
+
+        ``off`` removes the signal, ``shuffle`` sends the right values to the
+        wrong token positions, and ``noise`` preserves each token signal's norm
+        while replacing its direction. The local random stream is reset on each
+        call, independently of PyTorch's global random state.
+        """
+        if mode not in CONSCIOUSNESS_INTERVENTIONS:
+            raise ValueError(
+                f"unknown consciousness intervention {mode!r}; "
+                f"expected one of {CONSCIOUSNESS_INTERVENTIONS}"
+            )
+        self._consciousness_intervention = mode
+        if seed is not None:
+            self._consciousness_intervention_seed = int(seed)
+        self._consciousness_generators = {}
+        return self
+
+    def _intervention_generator(self, device):
+        key = str(device)
+        generator = self._consciousness_generators.get(key)
+        if generator is None:
+            generator = torch.Generator(device=device)
+            generator.manual_seed(self._consciousness_intervention_seed)
+            self._consciousness_generators[key] = generator
+        return generator
+
+    def _intervene_consciousness(self, signal):
+        mode = self._consciousness_intervention
+        if mode == "normal":
+            return signal
+        if mode == "off":
+            return torch.zeros_like(signal)
+        generator = self._intervention_generator(signal.device)
+        if mode == "shuffle":
+            order = torch.randperm(signal.shape[1], device=signal.device,
+                                   generator=generator)
+            return signal[:, order, :]
+        noise = torch.randn(signal.shape, dtype=signal.dtype,
+                            device=signal.device, generator=generator)
+        noise_norm = noise.norm(dim=-1, keepdim=True).clamp_min(1e-12)
+        signal_norm = signal.norm(dim=-1, keepdim=True)
+        return noise * (signal_norm / noise_norm)
 
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
@@ -365,6 +424,7 @@ class ConsciousLM(nn.Module):
             t = torch.log(tension + 1e-8)
             t = (t - t.mean(dim=-1, keepdim=True)) / (t.std(dim=-1, keepdim=True) + 1e-6)
             consciousness_signal = self.tension_proj(t.unsqueeze(-1))  # [B,T,1] → [B,T,D]
+            consciousness_signal = self._intervene_consciousness(consciousness_signal)
 
         # Final norm
         x = self.ln_f(x)
