@@ -40,6 +40,30 @@ def test_recurrent_workspace_rejects_missing_module_or_round():
         bridge((torch.randn(5, 6),))
 
 
+def test_role_binding_preserves_roles_and_backpropagates_relation():
+    torch.manual_seed(17)
+    bridge = RecurrentWorkspaceBridge(
+        c_dim=6, d_model=10, hub_dim=4, alpha=0.5, rounds=1, bind_roles=True
+    )
+    modules = (torch.randn(5, 6), torch.randn(5, 6))
+    trace = bridge.trace_modules(modules, seq_len=2)
+    swapped = bridge.trace_modules(tuple(reversed(modules)), seq_len=2)
+    assert trace["role_codes"].shape == (2, 4)
+    assert trace["relation_context"].shape == (1, 4)
+    assert not torch.equal(trace["relation_context"], swapped["relation_context"])
+    trace["gate"].sum().backward()
+    assert bridge.relation_projection.weight.grad is not None
+    assert all(layer.weight.grad is not None for layer in bridge.role_projections)
+
+
+def test_role_binding_requires_exactly_two_modules():
+    bridge = RecurrentWorkspaceBridge(
+        c_dim=6, d_model=10, hub_dim=4, rounds=1, bind_roles=True
+    )
+    with pytest.raises(ValueError):
+        bridge.trace_modules((torch.randn(5, 6),) * 3)
+
+
 def test_repaired_arm_seeds_are_independent_of_roster_order():
     spec = dict(WORKSPACE_CONTROL_SEED_REPAIR_SPEC)
     expected = {

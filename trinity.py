@@ -560,15 +560,23 @@ class RecurrentWorkspaceBridge(ThalamicBridge):
 
     def __init__(self, c_dim=128, d_model=384, n_hubs=16,
                  hub_dim=THALAMIC_BRIDGE_HUB_DIM, alpha=PSI_COUPLING,
-                 rounds: int = 1):
+                 rounds: int = 1, bind_roles: bool = False):
         super().__init__(c_dim=c_dim, d_model=d_model, n_hubs=n_hubs,
                          hub_dim=hub_dim, alpha=alpha)
         if rounds < 1:
             raise ValueError("workspace rounds must be at least one")
         self.rounds = int(rounds)
+        self.bind_roles = bool(bind_roles)
         self.workspace_cell = nn.GRUCell(hub_dim, hub_dim)
         self.broadcast = nn.Linear(hub_dim, hub_dim, bias=False)
         self.workspace_norm = nn.LayerNorm(hub_dim)
+        if self.bind_roles:
+            self.role_projections = nn.ModuleList([
+                nn.Linear(hub_dim, hub_dim, bias=False),
+                nn.Linear(hub_dim, hub_dim, bias=False),
+            ])
+            self.relation_projection = nn.Linear(3 * hub_dim, hub_dim, bias=False)
+            self.relation_norm = nn.LayerNorm(hub_dim)
 
     def trace_modules(self, module_states, seq_len: int = 1) -> Dict[str, torch.Tensor]:
         """Trace a fixed module set through local transform, recurrence, and gate."""
@@ -576,12 +584,27 @@ class RecurrentWorkspaceBridge(ThalamicBridge):
             raise ValueError("recurrent workspace requires at least two module states")
         local_cells = [self.transform_cells(states) for states in module_states]
         summaries = torch.cat([cells.mean(dim=1) for cells in local_cells], dim=0)
+        role_codes = None
+        relation_context = None
+        if self.bind_roles:
+            if len(module_states) != 2:
+                raise ValueError("role binding requires exactly two module states")
+            role_codes = torch.stack([
+                torch.tanh(project(summary))
+                for project, summary in zip(self.role_projections, summaries)
+            ])
+            relation_context = self.relation_norm(self.relation_projection(torch.cat([
+                role_codes[0], role_codes[1], role_codes[0] * role_codes[1]
+            ]))).unsqueeze(0)
         workspace = torch.zeros(
             1, summaries.shape[-1], device=summaries.device, dtype=summaries.dtype
         )
         timeline = []
         for _ in range(self.rounds):
-            context = summaries.mean(dim=0, keepdim=True)
+            context = (
+                relation_context if relation_context is not None
+                else summaries.mean(dim=0, keepdim=True)
+            )
             workspace = self.workspace_cell(context, workspace)
             timeline.append(workspace)
             shared = self.broadcast(workspace).expand_as(summaries)
@@ -592,6 +615,8 @@ class RecurrentWorkspaceBridge(ThalamicBridge):
             "module_cells": torch.stack([cells.squeeze(0) for cells in local_cells]),
             "module_summaries": summaries,
             "workspace_timeline": torch.stack(timeline, dim=1),
+            "role_codes": role_codes,
+            "relation_context": relation_context,
             "pooled": pooled,
             **final,
         }

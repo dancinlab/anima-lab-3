@@ -14,7 +14,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from graft_behavior import GraftActionChannel, _memory_state, sha256_file
-from measurement.synergy_registry import SYNERGY_SPEC, experiment, spec_sha256
+from measurement.synergy_registry import (
+    SYNERGY_SPEC,
+    experiment as synergy_experiment,
+    spec_sha256,
+)
 from pure import PureMind
 from trinity import HFDecoder, QuantumC, RecurrentWorkspaceBridge
 
@@ -38,9 +42,15 @@ class SynergyActionChannel(nn.Module):
         workspace_rounds = None
         if "_workspace_" in arm:
             workspace_rounds = int(arm.rsplit("_", 1)[-1])
+        bind_roles = arm.endswith("_relation")
+        if bind_roles:
+            workspace_rounds = spec["relation_rounds"]
         bridge = None
         if workspace_rounds is not None:
-            if workspace_rounds not in spec["workspace_rounds"]:
+            registered_rounds = (
+                [spec["relation_rounds"]] if bind_roles else spec["workspace_rounds"]
+            )
+            if workspace_rounds not in registered_rounds:
                 raise ValueError("workspace arm names an unregistered round count")
             bridge = RecurrentWorkspaceBridge(
                 c_dim=state_dim,
@@ -48,6 +58,7 @@ class SynergyActionChannel(nn.Module):
                 hub_dim=spec["bridge_hub_dim"],
                 alpha=0.5,
                 rounds=workspace_rounds,
+                bind_roles=bind_roles,
             )
         self.action = GraftActionChannel(
             state_dim=state_dim,
@@ -69,7 +80,7 @@ class SynergyActionChannel(nn.Module):
     def _bridge_states(
         self, pairs: list[tuple[torch.Tensor, torch.Tensor]]
     ) -> list:
-        if "_workspace_" in self.arm:
+        if "_workspace_" in self.arm or self.arm.endswith("_relation"):
             return pairs
         if self.recurrent is None:
             return [torch.cat(pair, dim=0) for pair in pairs]
@@ -118,6 +129,13 @@ def _module_snapshot(seed: int, split: str, module: int, cue_index: int, repeat:
     return quantum, memory
 
 
+def _target_index(module_a: int, module_b: int, spec: dict) -> int:
+    table = spec.get("target_table")
+    if table is None:
+        return (module_a + module_b) % len(spec["actions"])
+    return int(table[module_a][module_b])
+
+
 def build_examples(seed: int, split: str, spec: dict = SYNERGY_SPEC) -> list[SplitCueExample]:
     repeats = spec[f"{split}_repeats_per_pair"]
     cache: dict[tuple[int, int, int], tuple[torch.Tensor, torch.Tensor]] = {}
@@ -138,7 +156,7 @@ def build_examples(seed: int, split: str, spec: dict = SYNERGY_SPEC) -> list[Spl
                     memory=(ma, mb),
                     module_a=module_a,
                     module_b=module_b,
-                    target=(module_a + module_b) % len(spec["actions"]),
+                    target=_target_index(module_a, module_b, spec),
                 ))
     random.Random(seed + (0 if split == "train" else 1_000_000)).shuffle(examples)
     return examples
@@ -252,13 +270,17 @@ def train_channel(decoder: HFDecoder, channel: SynergyActionChannel,
     return losses
 
 
-def _partner_permutation(examples: list[SplitCueExample], action_count: int) -> list[int]:
+def _partner_permutation(examples: list[SplitCueExample], spec: dict | int) -> list[int]:
+    if isinstance(spec, int):
+        target_for = lambda a, b: (a + b) % spec
+    else:
+        target_for = lambda a, b: _target_index(a, b, spec)
     permutation = []
     for index, row in enumerate(examples):
         candidate = (index + 1) % len(examples)
         while candidate != index:
             other = examples[candidate]
-            changed_target = (row.module_a + other.module_b) % action_count != row.target
+            changed_target = target_for(row.module_a, other.module_b) != row.target
             if other.module_b != row.module_b and changed_target:
                 break
             candidate = (candidate + 1) % len(examples)
@@ -278,14 +300,16 @@ def evaluate_channel(decoder: HFDecoder, channel: SynergyActionChannel,
     normal = _pairs(examples, arm)
     zero_a = torch.zeros_like(normal[0][0])
     zero_b = torch.zeros_like(normal[0][1])
-    partner = _partner_permutation(examples, len(spec["actions"]))
-    conditions = {
+    partner = _partner_permutation(examples, spec)
+    all_conditions = {
         "normal": normal,
         "module_a_only": [(pair[0], zero_b) for pair in normal],
         "module_b_only": [(zero_a, pair[1]) for pair in normal],
         "partner_shuffle": [(pair[0], normal[partner[index]][1]) for index, pair in enumerate(normal)],
+        "role_swap": [(pair[1], pair[0]) for pair in normal],
         "recovered": normal,
     }
+    conditions = {name: all_conditions[name] for name in spec["interventions"]}
 
     def action_logits(pairs: list[tuple[torch.Tensor, torch.Tensor]]) -> torch.Tensor:
         rows = []
@@ -361,7 +385,11 @@ def main() -> None:
     parser.add_argument("--seeds")
     parser.add_argument("--train-steps", type=int)
     args = parser.parse_args()
-    spec = experiment(args.experiment)
+    try:
+        spec = synergy_experiment(args.experiment)
+    except ValueError:
+        from measurement.relation_registry import experiment as relation_experiment
+        spec = relation_experiment(args.experiment)
     if args.train_steps is not None:
         spec["train_steps"] = args.train_steps
     model = args.model or spec["model"]
@@ -389,12 +417,20 @@ def main() -> None:
         "dataset_audit": audits[0],
         "seeds": seed_rows,
     }
+    if spec["experiment"].startswith("relation1_"):
+        payload["source"] = {
+            "results": json.loads(Path(spec["source_results"]).read_text()),
+            "verdict": json.loads(Path(spec["source_verdict_path"]).read_text()),
+        }
     temporary = output.with_name(output.name + ".tmp")
     temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     temporary.replace(output)
     print(f"[results] {output}")
     if seeds == spec["seeds"] and args.train_steps is None:
-        from measurement.synergy_gate import adjudicate
+        if spec["experiment"].startswith("relation1_"):
+            from measurement.relation_gate import adjudicate
+        else:
+            from measurement.synergy_gate import adjudicate
         verdict = adjudicate(payload)
         verdict_path = Path(args.verdict)
         verdict_path.parent.mkdir(parents=True, exist_ok=True)

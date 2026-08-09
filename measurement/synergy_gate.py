@@ -60,11 +60,15 @@ def _judge_arm(metrics: dict, spec: dict, positive_control: bool) -> dict:
         values["normal"] >= normal_bar
         and single_best <= bars["single_module_max_accuracy"]
         and values["partner_shuffle"] <= bars["partner_shuffle_max_accuracy"]
+        and (
+            "role_swap" not in values
+            or values["role_swap"] <= bars["role_swap_max_accuracy"]
+        )
         and values["normal"] - single_best >= bars["minimum_joint_gain"]
         and abs(values["normal"] - values["recovered"]) <= bars["recovery_accuracy_tolerance"]
         and conditions["recovered"].get("logits_identical") is True
     )
-    return {
+    judged = {
         "integrated": integrated,
         "language_ok": float(metrics["neutral_kl_nats"]) <= bars["neutral_kl_nats"],
         "normal": values["normal"],
@@ -74,6 +78,9 @@ def _judge_arm(metrics: dict, spec: dict, positive_control: bool) -> dict:
         "recovered": values["recovered"],
         "neutral_kl_nats": float(metrics["neutral_kl_nats"]),
     }
+    if "role_swap" in values:
+        judged["role_swap"] = values["role_swap"]
+    return judged
 
 
 def adjudicate(payload: dict) -> dict:
