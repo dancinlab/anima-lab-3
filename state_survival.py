@@ -36,8 +36,9 @@ def _trial_seed(seed: int, target: int, index: int, per_situation: int, split: s
 
 
 @torch.no_grad()
-def collect_examples(seed: int, split: str, bridge: ThalamicBridge) -> dict[int, dict]:
-    spec = STATE_SURVIVAL_SPEC
+def collect_examples(seed: int, split: str, bridge: ThalamicBridge,
+                     spec: dict | None = None) -> dict[int, dict]:
+    spec = spec or STATE_SURVIVAL_SPEC
     per_situation = spec[f"{split}_examples_per_situation"]
     delays = spec["delay_steps"]
     rows = {delay: {channel: [] for channel in spec["channels"]} for delay in delays}
@@ -77,7 +78,8 @@ def collect_examples(seed: int, split: str, bridge: ThalamicBridge) -> dict[int,
                     "bridge_pooled": bridge_trace["pooled"],
                     "bridge_gate": bridge_trace["gate"],
                 }
-                for channel, value in features.items():
+                for channel in spec["channels"]:
+                    value = features[channel]
                     rows[delay][channel].append(value.detach().reshape(-1).float().cpu())
                 labels[delay].append(target)
 
@@ -95,14 +97,14 @@ def collect_examples(seed: int, split: str, bridge: ThalamicBridge) -> dict[int,
 
 
 def _ridge_predict(train_x: torch.Tensor, train_y: torch.Tensor, eval_x: torch.Tensor,
-                   ridge: float) -> torch.Tensor:
+                   ridge: float, num_classes: int) -> torch.Tensor:
     mean = train_x.mean(0, keepdim=True)
     scale = train_x.std(0, keepdim=True, unbiased=False).clamp_min(1e-5)
     train = (train_x - mean) / scale
     evaluate = (eval_x - mean) / scale
     dimension = max(train.shape[1], 1)
     kernel = train @ train.T / dimension
-    target = F.one_hot(train_y, num_classes=len(STATE_SURVIVAL_SPEC["situations"])).float()
+    target = F.one_hot(train_y, num_classes=num_classes).float()
     alpha = torch.linalg.solve(
         kernel + ridge * torch.eye(kernel.shape[0], dtype=kernel.dtype), target
     )
@@ -110,15 +112,17 @@ def _ridge_predict(train_x: torch.Tensor, train_y: torch.Tensor, eval_x: torch.T
 
 
 def probe_channel(train_x: torch.Tensor, train_y: torch.Tensor, eval_x: torch.Tensor,
-                  eval_y: torch.Tensor, seed: int) -> dict:
-    ridge = STATE_SURVIVAL_SPEC["probe_ridge"]
-    logits = _ridge_predict(train_x, train_y, eval_x, ridge)
+                  eval_y: torch.Tensor, seed: int, spec: dict | None = None) -> dict:
+    spec = spec or STATE_SURVIVAL_SPEC
+    ridge = spec["probe_ridge"]
+    num_classes = len(spec["situations"])
+    logits = _ridge_predict(train_x, train_y, eval_x, ridge, num_classes)
     shuffled_accuracies = []
-    permutations = STATE_SURVIVAL_SPEC["label_control"]["permutations"]
+    permutations = spec["label_control"]["permutations"]
     for index in range(permutations):
         generator = torch.Generator().manual_seed(seed + index * 1_000_003)
         shuffled_y = train_y.index_select(0, torch.randperm(len(train_y), generator=generator))
-        shuffled_logits = _ridge_predict(train_x, shuffled_y, eval_x, ridge)
+        shuffled_logits = _ridge_predict(train_x, shuffled_y, eval_x, ridge, num_classes)
         shuffled_accuracies.append(float((shuffled_logits.argmax(-1) == eval_y).float().mean()))
     shuffled = torch.tensor(shuffled_accuracies)
     return {
@@ -129,16 +133,16 @@ def probe_channel(train_x: torch.Tensor, train_y: torch.Tensor, eval_x: torch.Te
     }
 
 
-def run_seed(seed: int) -> dict:
-    spec = STATE_SURVIVAL_SPEC
+def run_seed(seed: int, spec: dict | None = None) -> dict:
+    spec = spec or STATE_SURVIVAL_SPEC
     torch.manual_seed(seed + 3_000_000)
     bridge = ThalamicBridge(
         c_dim=2 * spec["engine_dim"],
         d_model=spec["bridge"]["output_dim"],
         hub_dim=spec["bridge"]["hub_dim"],
     ).eval()
-    train = collect_examples(seed, "train", bridge)
-    evaluate = collect_examples(seed, "eval", bridge)
+    train = collect_examples(seed, "train", bridge, spec=spec)
+    evaluate = collect_examples(seed, "eval", bridge, spec=spec)
     result = {}
     for delay in spec["delay_steps"]:
         result[str(delay)] = {}
@@ -147,6 +151,7 @@ def run_seed(seed: int) -> dict:
                 train[delay]["features"][channel], train[delay]["labels"],
                 evaluate[delay]["features"][channel], evaluate[delay]["labels"],
                 seed + delay * 101 + spec["channels"].index(channel),
+                spec=spec,
             )
         print(f"[seed {seed}] delay={delay} " + " ".join(
             f"{channel}={result[str(delay)][channel]['accuracy']:.3f}"
