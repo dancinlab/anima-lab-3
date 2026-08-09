@@ -13,10 +13,12 @@ import torch
 
 try:
     from measurement.episode_control_registry import (
-        CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256,
+        ATTENTION_CONTROL_SPEC, CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256,
     )
 except ModuleNotFoundError:
-    from episode_control_registry import CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256
+    from episode_control_registry import (
+        ATTENTION_CONTROL_SPEC, CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256,
+    )
 
 
 def _sha256_file(path: Path) -> str:
@@ -54,11 +56,14 @@ def adjudicate(payload: dict) -> dict:
         spec = experiment(payload.get("experiment", ""))
     except ValueError:
         spec = CONTROL_SPEC
+    attention_experiment = spec["experiment"] == ATTENTION_CONTROL_SPEC["experiment"]
+    online_experiment = "online_train_examples" in spec
+    primary_arm = "attention" if attention_experiment else "gru"
     invalid = lambda reason: {
         "experiment": payload.get("experiment", spec["experiment"]),
         "verdict": (
-            "O0_INVALID" if spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
-            else "P0_INVALID"
+            "A0_INVALID" if attention_experiment else
+            "O0_INVALID" if online_experiment else "P0_INVALID"
         ),
         "reason": reason,
         "spec_sha256": spec_sha256(spec),
@@ -98,7 +103,7 @@ def adjudicate(payload: dict) -> dict:
         online_audit = None
         for seed in spec["seeds"]:
             row = rows[seed]
-            if spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]:
+            if online_experiment:
                 training = row["training_audit"]
                 expected_examples = spec["online_train_examples"]
                 if (
@@ -156,11 +161,16 @@ def adjudicate(payload: dict) -> dict:
             ):
                 return invalid(f"seed {seed} checkpoint identity changed")
             if (
-                spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
+                online_experiment
                 and checkpoint.get("training_stream_sha256")
                 != row["training_audit"]["ordered_fingerprint_sha256"]
             ):
                 return invalid(f"seed {seed} checkpoint training stream changed")
+            if (
+                attention_experiment
+                and checkpoint.get("model_class") != spec["model_class"]
+            ):
+                return invalid(f"seed {seed} attention model identity changed")
             arms = row["arms"]
             if arms["vector_memory"]["accuracy"] != spec["thresholds"]["vector_memory_accuracy"]:
                 return invalid(f"seed {seed} exact memory control failed")
@@ -179,10 +189,11 @@ def adjudicate(payload: dict) -> dict:
                     return invalid(f"seed {seed} {arm} confusion matrix is incomplete")
                 if len(metrics["per_value_recall"]) != spec["values"]:
                     return invalid(f"seed {seed} {arm} recall vector is incomplete")
-            gru = arms["gru"]
+            primary = arms[primary_arm]
             passed = (
-                gru["accuracy"] >= spec["thresholds"]["gru_accuracy"]
-                and min(gru["per_value_recall"]) >= spec["thresholds"]["gru_min_value_recall"]
+                primary["accuracy"] >= spec["thresholds"][f"{primary_arm}_accuracy"]
+                and min(primary["per_value_recall"])
+                >= spec["thresholds"][f"{primary_arm}_min_value_recall"]
             )
             judged[str(seed)] = {
                 "passed": passed,
@@ -194,17 +205,18 @@ def adjudicate(payload: dict) -> dict:
     except (KeyError, TypeError, ValueError, OSError) as exc:
         return invalid(str(exc))
     passed = all(row["passed"] for row in judged.values())
-    online = spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
     return {
         "experiment": spec["experiment"],
         "verdict": (
+            "A1_KEYED_ATTENTION_VALID" if passed else "A2_ATTENTION_PATH_INVALID"
+        ) if attention_experiment else (
             "O1_ONLINE_CONTROL_VALID" if passed else "O2_ONLINE_TRAINING_INVALID"
-        ) if online else (
+        ) if online_experiment else (
             "P1_POSITIVE_CONTROL_VALID" if passed else "P2_TRAINING_PATH_INVALID"
         ),
         "reason": (
-            "the standard GRU learned dynamic relations in both registered seeds"
-            if passed else "the exact memory control passed but the standard GRU did not"
+            f"the standard {primary_arm} learned dynamic relations in both registered seeds"
+            if passed else f"the exact memory control passed but the standard {primary_arm} did not"
         ),
         "spec_sha256": spec_sha256(spec),
         "seeds": judged,

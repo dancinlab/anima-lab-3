@@ -18,6 +18,7 @@ import torch.nn.functional as F
 
 from graft_behavior import sha256_file
 from measurement.episode_control_registry import (
+    ATTENTION_CONTROL_SPEC,
     CONTROL_SPEC,
     ONLINE_CONTROL_SPEC,
     REGISTERED_EXPERIMENTS,
@@ -62,6 +63,32 @@ class DynamicRelationGRU(nn.Module):
     def forward(self, sequence: torch.Tensor) -> torch.Tensor:
         hidden = self.recurrent(sequence)[0][:, -1]
         return self.readout(hidden)
+
+
+class KeyedRelationAttention(nn.Module):
+    """Canonical learned key-value attention with a direct value readout."""
+
+    def __init__(self, keys: int, values: int, state_dim: int, heads: int,
+                 dropout: float = 0.0):
+        super().__init__()
+        self.key_embedding = nn.Embedding(keys, state_dim)
+        self.value_embedding = nn.Embedding(values, state_dim)
+        self.attention = nn.MultiheadAttention(
+            state_dim, heads, dropout=dropout, batch_first=True
+        )
+        self.readout = nn.Linear(state_dim, values)
+
+    def forward(self, store_keys: torch.Tensor, store_values: torch.Tensor,
+                query_keys: torch.Tensor, need_weights: bool = False):
+        query = self.key_embedding(query_keys).unsqueeze(1)
+        keys = self.key_embedding(store_keys)
+        values = self.value_embedding(store_values)
+        retrieved, weights = self.attention(
+            query, keys, values, need_weights=need_weights,
+            average_attn_weights=True,
+        )
+        logits = self.readout(retrieved[:, 0])
+        return (logits, weights[:, 0]) if need_weights else logits
 
 
 def _atomic_json(path: Path, payload: dict) -> None:
@@ -226,6 +253,20 @@ def encode_episodes(episodes: list[RelationEpisode], spec: dict = CONTROL_SPEC) 
 
 def labels(episodes: list[RelationEpisode]) -> torch.Tensor:
     return torch.tensor([episode.target for episode in episodes], dtype=torch.long)
+
+
+def relation_tensors(episodes: list[RelationEpisode]) -> tuple[torch.Tensor, ...]:
+    """Return only the registered key-value stores and query key."""
+    store_keys = torch.tensor(
+        [[key for key, _ in episode.stores] for episode in episodes], dtype=torch.long
+    )
+    store_values = torch.tensor(
+        [[value for _, value in episode.stores] for episode in episodes], dtype=torch.long
+    )
+    query_keys = torch.tensor(
+        [episode.query_key for episode in episodes], dtype=torch.long
+    )
+    return store_keys, store_values, query_keys
 
 
 def audit_split(episodes: list[RelationEpisode], spec: dict = CONTROL_SPEC) -> dict:
@@ -483,6 +524,116 @@ def run_online_seed(seed: int, splits: dict[str, list[RelationEpisode]], output_
     }
 
 
+@torch.no_grad()
+def _evaluate_attention(model: KeyedRelationAttention, tensors: tuple[torch.Tensor, ...],
+                        expected: torch.Tensor, values: int) -> dict:
+    model.eval()
+    logits, weights = model(*tensors, need_weights=True)
+    predicted = logits.argmax(-1).cpu()
+    metrics = _metrics(expected.cpu(), predicted, values)
+    query_positions = (
+        tensors[0].cpu() == tensors[2].cpu().unsqueeze(1)
+    ).long().argmax(-1)
+    matched = weights.cpu().gather(1, query_positions.unsqueeze(1)).squeeze(1)
+    metrics["matched_attention_mean"] = float(matched.mean())
+    metrics["matched_attention_min"] = float(matched.min())
+    return metrics
+
+
+def run_attention_seed(seed: int, splits: dict[str, list[RelationEpisode]],
+                       output_dir: Path, spec: dict = ATTENTION_CONTROL_SPEC) -> dict:
+    torch.manual_seed(seed)
+    random.seed(seed)
+    device = torch.device(spec["device"])
+    fixed = {
+        name: tuple(tensor.to(device) for tensor in relation_tensors(rows))
+        for name, rows in splits.items()
+    }
+    targets = {name: labels(rows).to(device) for name, rows in splits.items()}
+    excluded = {row.fingerprint() for rows in splits.values() for row in rows}
+    stream = OnlineEpisodeStream(spec, excluded)
+    model = KeyedRelationAttention(
+        spec["keys"], spec["values"], spec["state_dim"],
+        spec["attention_heads"], spec["attention_dropout"],
+    ).to(device)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=spec["learning_rate"], weight_decay=spec["weight_decay"]
+    )
+    best = {"accuracy": -1.0, "step": 0, "state": None}
+    losses = []
+    for step in range(1, spec["train_steps"] + 1):
+        episodes = stream.next_batch()
+        batch = tuple(tensor.to(device) for tensor in relation_tensors(episodes))
+        batch_y = labels(episodes).to(device)
+        model.train()
+        loss = F.cross_entropy(model(*batch), batch_y)
+        optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), spec["gradient_clip"])
+        optimizer.step()
+        losses.append(float(loss.detach()))
+        if step % spec["validate_every"] == 0:
+            metrics = _evaluate_attention(
+                model, fixed["validation"], targets["validation"], spec["values"]
+            )
+            if metrics["accuracy"] > best["accuracy"]:
+                best = {
+                    "accuracy": metrics["accuracy"],
+                    "step": step,
+                    "state": {
+                        name: value.detach().cpu().clone()
+                        for name, value in model.state_dict().items()
+                    },
+                }
+            if step % (spec["validate_every"] * 5) == 0:
+                print(
+                    f"[seed {seed}] step={step} loss={sum(losses[-50:]) / 50:.4f} "
+                    f"validation={metrics['accuracy']:.4f}", flush=True,
+                )
+    if best["state"] is None:
+        raise RuntimeError("no validation checkpoint was selected")
+    training_audit = stream.audit()
+    model.load_state_dict(best["state"])
+    attention = _evaluate_attention(model, fixed["eval"], targets["eval"], spec["values"])
+    expected = targets["eval"].cpu()
+    predicted = model(*fixed["eval"]).argmax(-1).cpu()
+    arms = {
+        "attention": attention,
+        "vector_memory": _metrics(
+            expected, _vector_memory_predictions(splits["eval"], spec), spec["values"]
+        ),
+        "no_memory": _metrics(
+            expected,
+            _frequency_memory_predictions(stream.key_value_counts, splits["eval"]),
+            spec["values"],
+        ),
+        "shuffled_labels": _metrics(
+            _shuffled_labels(expected, spec), predicted, spec["values"]
+        ),
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint = output_dir / f"seed_{seed}_attention.pt"
+    torch.save({
+        "experiment": spec["experiment"],
+        "spec_sha256": spec_sha256(spec),
+        "seed": seed,
+        "selected_step": best["step"],
+        "validation_accuracy": best["accuracy"],
+        "training_stream_sha256": training_audit["ordered_fingerprint_sha256"],
+        "model_class": spec["model_class"],
+        "model": best["state"],
+    }, checkpoint)
+    return {
+        "seed": seed,
+        "selected_step": best["step"],
+        "validation_accuracy": best["accuracy"],
+        "final_loss_mean_50": sum(losses[-50:]) / min(50, len(losses)),
+        "training_audit": training_audit,
+        "arms": arms,
+        "checkpoint": {"path": str(checkpoint), "sha256": sha256_file(checkpoint)},
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--experiment", choices=REGISTERED_EXPERIMENTS,
@@ -492,23 +643,28 @@ def main() -> None:
     parser.add_argument("--checkpoint-dir")
     args = parser.parse_args()
     spec = registered_experiment(args.experiment)
-    online = spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
+    online = "online_train_examples" in spec
+    attention = spec["experiment"] == ATTENTION_CONTROL_SPEC["experiment"]
     if args.output is None:
         args.output = (
-            "measurement/episode_control2_results.json" if online
-            else "measurement/episode_control_results.json"
+            "measurement/episode_control3_results.json" if attention else
+            "measurement/episode_control2_results.json" if online else
+            "measurement/episode_control_results.json"
         )
     if args.verdict is None:
         args.verdict = (
-            "measurement/episode_control2_verdict.json" if online
-            else "measurement/episode_control_verdict.json"
+            "measurement/episode_control3_verdict.json" if attention else
+            "measurement/episode_control2_verdict.json" if online else
+            "measurement/episode_control_verdict.json"
         )
     if args.checkpoint_dir is None:
         args.checkpoint_dir = (
-            "checkpoints/episode_control2" if online else "checkpoints/episode_control1"
+            "checkpoints/episode_control3" if attention else
+            "checkpoints/episode_control2" if online else
+            "checkpoints/episode_control1"
         )
     splits = build_reference_splits(spec) if online else build_splits(spec)
-    runner = run_online_seed if online else run_seed
+    runner = run_attention_seed if attention else run_online_seed if online else run_seed
     payload = {
         "experiment": spec["experiment"],
         "spec": spec,

@@ -6,6 +6,7 @@ import torch
 
 from episode_control import (
     DynamicRelationGRU,
+    KeyedRelationAttention,
     OnlineEpisodeStream,
     _input_dim,
     _metrics,
@@ -17,9 +18,12 @@ from episode_control import (
     dataset_audit,
     encode_episodes,
     labels,
+    relation_tensors,
 )
 from measurement.episode_control_gate import adjudicate
-from measurement.episode_control_registry import CONTROL_SPEC, ONLINE_CONTROL_SPEC, spec_sha256
+from measurement.episode_control_registry import (
+    ATTENTION_CONTROL_SPEC, CONTROL_SPEC, ONLINE_CONTROL_SPEC, spec_sha256,
+)
 
 
 def test_control_dataset_is_balanced_disjoint_and_encodable():
@@ -53,6 +57,21 @@ def test_control_gru_uses_registered_shapes():
                                CONTROL_SPEC["values"])
     logits = model(torch.zeros(2, 5, _input_dim(CONTROL_SPEC)))
     assert logits.shape == (2, CONTROL_SPEC["values"])
+
+
+def test_keyed_attention_uses_shared_keys_and_registered_shapes():
+    model = KeyedRelationAttention(
+        ATTENTION_CONTROL_SPEC["keys"], ATTENTION_CONTROL_SPEC["values"],
+        ATTENTION_CONTROL_SPEC["state_dim"], ATTENTION_CONTROL_SPEC["attention_heads"],
+        ATTENTION_CONTROL_SPEC["attention_dropout"],
+    )
+    episodes = build_reference_splits(ATTENTION_CONTROL_SPEC)["validation"][:3]
+    stores, values, queries = relation_tensors(episodes)
+    logits, weights = model(stores, values, queries, need_weights=True)
+    assert logits.shape == (3, ATTENTION_CONTROL_SPEC["values"])
+    assert weights.shape == (3, ATTENTION_CONTROL_SPEC["relations_per_episode"])
+    assert model.attention.num_heads == ATTENTION_CONTROL_SPEC["attention_heads"]
+    assert model.attention.dropout == ATTENTION_CONTROL_SPEC["attention_dropout"]
 
 
 def test_online_stream_is_fresh_balanced_disjoint_and_deterministic():
@@ -218,3 +237,85 @@ def test_online_control_gate_passes_and_fails_closed(tmp_path):
         str(index): 0 for index in range(8)
     }
     assert adjudicate(invalid)["verdict"] == "O0_INVALID"
+
+
+def _attention_passing_payload(tmp_path: Path) -> dict:
+    fixed = build_reference_splits(ATTENTION_CONTROL_SPEC)
+    expected = labels(fixed["eval"])
+    perfect = _metrics(expected, expected, ATTENTION_CONTROL_SPEC["values"])
+    wrong = _metrics(
+        expected, (expected + 1) % ATTENTION_CONTROL_SPEC["values"],
+        ATTENTION_CONTROL_SPEC["values"],
+    )
+    chance = _metrics(expected, torch.zeros_like(expected), ATTENTION_CONTROL_SPEC["values"])
+    examples = ATTENTION_CONTROL_SPEC["online_train_examples"]
+    training_audit = {
+        "examples": examples,
+        "unique_fingerprints": examples,
+        "fixed_split_overlap": 0,
+        "balanced_batches": ATTENTION_CONTROL_SPEC["train_steps"],
+        "target_counts": {str(index): examples // 8 for index in range(8)},
+        "query_key_counts": {str(index): examples // 8 for index in range(8)},
+        "query_position_counts": {str(index): examples // 2 for index in range(2)},
+        "ordered_fingerprint_sha256": "a" * 64,
+        "key_value_counts": [[examples // 64] * 8 for _ in range(8)],
+    }
+    seeds = []
+    for seed in ATTENTION_CONTROL_SPEC["seeds"]:
+        checkpoint = tmp_path / f"attention_seed_{seed}.pt"
+        torch.save({
+            "experiment": ATTENTION_CONTROL_SPEC["experiment"],
+            "spec_sha256": spec_sha256(ATTENTION_CONTROL_SPEC),
+            "seed": seed,
+            "selected_step": 100,
+            "training_stream_sha256": training_audit["ordered_fingerprint_sha256"],
+            "model_class": ATTENTION_CONTROL_SPEC["model_class"],
+            "model": {},
+        }, checkpoint)
+        seeds.append({
+            "seed": seed,
+            "selected_step": 100,
+            "validation_accuracy": 1.0,
+            "training_audit": deepcopy(training_audit),
+            "arms": {
+                "attention": deepcopy(perfect),
+                "vector_memory": deepcopy(perfect),
+                "no_memory": deepcopy(chance),
+                "shuffled_labels": deepcopy(wrong),
+            },
+            "checkpoint": {
+                "path": str(checkpoint),
+                "sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+            },
+        })
+    return {
+        "experiment": ATTENTION_CONTROL_SPEC["experiment"],
+        "spec": deepcopy(ATTENTION_CONTROL_SPEC),
+        "spec_sha256": spec_sha256(ATTENTION_CONTROL_SPEC),
+        "dataset_audit": dataset_audit(fixed, ATTENTION_CONTROL_SPEC),
+        "runtime": {"python": "test", "torch": "test", "device": "cpu"},
+        "seeds": seeds,
+    }
+
+
+def test_attention_control_gate_passes_and_fails_closed(tmp_path):
+    value = _attention_passing_payload(tmp_path)
+    assert adjudicate(value)["verdict"] == "A1_KEYED_ATTENTION_VALID"
+
+    failed = deepcopy(value)
+    failed["seeds"][0]["arms"]["attention"]["accuracy"] = 0.50
+    assert adjudicate(failed)["verdict"] == "A2_ATTENTION_PATH_INVALID"
+
+    invalid = deepcopy(value)
+    invalid["seeds"][0]["checkpoint"]["sha256"] = "0" * 64
+    assert adjudicate(invalid)["verdict"] == "A0_INVALID"
+
+    invalid = deepcopy(value)
+    checkpoint = Path(invalid["seeds"][0]["checkpoint"]["path"])
+    stored = torch.load(checkpoint, weights_only=True)
+    stored["model_class"] = "custom.Attention"
+    torch.save(stored, checkpoint)
+    invalid["seeds"][0]["checkpoint"]["sha256"] = hashlib.sha256(
+        checkpoint.read_bytes()
+    ).hexdigest()
+    assert adjudicate(invalid)["verdict"] == "A0_INVALID"

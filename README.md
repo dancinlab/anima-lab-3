@@ -1013,11 +1013,13 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    못했다. 따라서 고정 자료 반복은 `CONTROL-1` 실패의 근본 원인이 아니며 `EPISODE-1`은 계속
    보류한다. 다음 양성 비교는 열쇠로 저장 항목을 직접 찾는 표준 주의집중 방식이다. 상세 판정은
    `docs/hypotheses/CONTROL-2-online-dynamic-relation-positive-control.md`가 정본이다.
-9. **CONTROL-3 — 열쇠 기반 주의집중 양성 비교 (사전등록, 실행 전):** `CONTROL-2`와 같은 온라인
-   자료 흐름·고정 평가·2,000회 학습·폭 96을 유지하고, 순서대로 모든 입력을 압축하는 `GRU`만
-   열쇠로 두 저장 항목을 직접 찾는 표준 `torch.nn.MultiheadAttention`으로 바꾼다. 두 seed 모두
-   새 회차 정확도 90% 이상, 값별 재현율 80% 이상이어야 열쇠 검색 구조를 `EPISODE-1`의 표준
-   양성 비교로 쓸 수 있다. 상세 무효·판정 기준은
+9. **CONTROL-3 — 열쇠 기반 주의집중 양성 비교 (완료, `A1_KEYED_ATTENTION_VALID`):** `CONTROL-2`와
+   같은 온라인 자료 흐름·고정 평가·2,000회 학습·폭 96을 유지하고, 순서대로 모든 입력을 압축하는
+   `GRU`만 열쇠로 두 저장 항목을 직접 찾는 표준 `torch.nn.MultiheadAttention`으로 바꿨다. 두
+   seed 모두 새 회차와 값별 재현율이 100%였고, 정확 기억 100%, 기억 없음 12.5%, 가짜 정답 0%로
+   통제도 통과했다. 질문 열쇠가 가리킨 항목에 준 평균 비중은 99.72%/99.81%였다. 따라서 이 과제의
+   표준 양성 비교는 순차 기억층이 아니라 열쇠 검색 주의집중이며, 보류했던 `EPISODE-1`을 이
+   비교군으로 시작할 수 있다. 상세 사양과 판정은
    `docs/hypotheses/CONTROL-3-keyed-attention-positive-control.md`가 정본이다.
 10. **META-1 — 자기 판단 정확도 (완료, `M2_CALIBRATED_NOT_UNIQUE`):** 내부 코드 확신의
    AUROC는 두 seed에서 0.923/0.907이었고, 코드를 뒤섞으면 0.250/0.275로 무너졌지만 행동은
