@@ -1,0 +1,52 @@
+{
+  "experiment": "graft_behavior_causality_language_preserved",
+  "verdict": "B3_NOT_CAUSAL",
+  "reason": "QuantumC state did not causally control held-out actions in both seeds",
+  "spec_sha256": "1a5089f658261c14758954570a2409dd6bb7a744fc6f01e50d29de44e7e740fe",
+  "seeds": {
+    "1337": {
+      "consciousness": {
+        "causal": false,
+        "language_ok": false,
+        "normal": 0.234375,
+        "off": 0.25,
+        "shuffle": 0.234375,
+        "noise": 0.21875,
+        "recovered": 0.234375,
+        "neutral_kl_nats": 1.3139795016031712
+      },
+      "memory": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.265625,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.0009677727939561009
+      }
+    },
+    "7331": {
+      "consciousness": {
+        "causal": false,
+        "language_ok": false,
+        "normal": 0.25,
+        "off": 0.25,
+        "shuffle": 0.1875,
+        "noise": 0.265625,
+        "recovered": 0.25,
+        "neutral_kl_nats": 3.2207751274108887
+      },
+      "memory": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.234375,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.001779297017492354
+      }
+    }
+  }
+}

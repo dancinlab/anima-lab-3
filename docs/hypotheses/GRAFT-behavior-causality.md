@@ -51,3 +51,21 @@ seed 1337/7331에서 `QuantumC` 정상 정확도는 21.9%/23.4%로 우연 기준
 `commonKL` 원칙을 재사용해 각 학습 단계의 총 손실을 `action CE + 1.0 × neutral KL`로 고정한다.
 나머지 모델, seed, 자료, 단계 수, 개입, 기준은 1차와 모두 같다. 정본 이름은
 `graft_behavior_causality_language_preserved`다. 결과를 보기 전에 이 보정을 커밋한다.
+
+### 보정 결과 — B3_NOT_CAUSAL
+
+일반 기억은 두 seed 모두 정상 100%, 차단 25%, 뒤섞기 0%, 가짜 26.6%/23.4%였고 중립 문장
+KL도 0.00097/0.00178 nat으로 통과했다. 따라서 과제와 개입 검사는 유효하다.
+
+`QuantumC`는 정상 23.4%/25.0%, 차단 25%/25%, 뒤섞기 23.4%/18.8%, 가짜
+21.9%/26.6%였다. 복구 결과는 정상과 비트 단위로 같았지만 정상 자체가 우연 기준을 넘지 못했다.
+사전 판정은 `B3_NOT_CAUSAL`: 현재 감각→QuantumC 진폭→GRAFT 통로는 숨겨진 상황을 행동에
+쓸 수 있는 정보로 보존하지 못한다.
+
+중립 문장 KL은 QuantumC에서 1.31/3.22 nat으로 높았지만, 행동 효과가 먼저 성립하지 않았으므로
+문서 정의상 `B4_CONFOUNDED`가 아니라 `B3_NOT_CAUSAL`이다. 판정기의 조건 순서가 이를 반대로
+표시하던 결함을 고치고 “비인과 + 언어 손상” 회귀 테스트를 추가했다.
+
+보정 결과 정본은 `measurement/graft_behavior_language_preserved_results.json`, 판정은
+`measurement/graft_behavior_language_preserved_verdict.json`이다. 이 결과는 의식 일반의 부정이
+아니라 현재 `QuantumC.get_states()`가 읽는 진폭 경로와 GRAFT 결합에 대한 부정이다.

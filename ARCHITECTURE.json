@@ -85,7 +85,7 @@
       "name": "measurement/ — 계측기",
       "id": "measurement-tools",
       "role": "모든 판정이 나오는 곳. 계측 코드와 결과 JSON이 실행 계약과 영수증의 SSOT다.",
-      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4). lambda_registry.py가 corpus family·floor·팔·seed 형제·λ4 roster의 단일 SSOT다. runtime.py가 현재 체크아웃과 GPU/Metal/CPU 선택을 공통으로 해결한다. 등록 실행기는 세 채점기에 같은 family/roster를 전달하고 공통 GPU lock으로 학습·채점 중복을 거부한다.",
+      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동 등급(g_gates·lambda4·graft_behavior). lambda_registry.py가 corpus family·floor·팔·seed 형제·λ4 roster의 단일 SSOT이고 graft_behavior_registry.py가 숨겨진 상황 행동 실험의 조건·개입·바를 고정한다. runtime.py가 현재 체크아웃과 GPU/Metal/CPU 선택을 공통으로 해결한다. 등록 실행기는 공통 GPU lock으로 학습·채점 중복을 거부한다.",
       "children": [
         {
           "name": "gate.py — 판정기",
@@ -101,6 +101,11 @@
           "name": "g_gates.py · lambda4.py — 행동 등급",
           "id": "tool-behavioural",
           "detail": "g_gates.py 가 λ2/λ3(known-word-ratio · 코퍼스 부재 n-gram), lambda4.py 가 λ4(손상 맞춤 교체쌍)와 등록된 신호 개입 조건을 잰다. consciousness_causality_gate.py는 신호 개입의 인과성을, ffn_control_gate.py는 PureField와 일반 FFN의 구조 차이를 사전등록 기준으로 판정한다."
+        },
+        {
+          "name": "graft_behavior.py · graft_behavior_gate.py — 숨겨진 상황 행동 인과성",
+          "id": "tool-graft-behavior",
+          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 두 seed 보정 실험에서 일반 기억은 100%였지만 QuantumC는 23.4%/25.0%로 우연 수준이라 B3_NOT_CAUSAL이다. 결론 범위는 현재 감각→진폭 상태→GRAFT 통로다."
         },
         {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
@@ -123,18 +128,18 @@
       "name": "docs/hypotheses/ — 가설 원장",
       "id": "hypotheses",
       "role": "사전등록 → 반증 → 판정. 가설당 한 문서, 결과는 문서 안에 update-in-place.",
-      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이며 자연 코퍼스에서 재현되지 않는다(크기별 PASS/FAIL/FAIL/PASS 가 자연에서는 평평) · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관."
+      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · GRAFT 행동 보정 실험은 일반 기억 양성 통제 아래 QuantumC가 우연 수준이라 B3_NOT_CAUSAL이다."
     },
     {
       "name": "학습기 · 모델",
       "id": "trainers",
-      "detail": "train_conscious_lm.py 가 정본 학습기(신규성 표시·유효 batch 보존용 gradient accumulation 내장) · train_conscious_lm_nf8.py 는 과거 300M 포크 · conscious_lm.py 가 PureFieldFFN과 파라미터를 맞춘 표준 FFN, 체크포인트 config 기반 모델 복원, 층간 긴장 신호 개입을 단일 SSOT로 제공 · mitosis.py 가 세포 분열. 학습 규약: 목적함수나 구조를 바꾸면 step 0 부터 새 체크포인트 디렉토리(--resume 은 목적함수 변경을 가로질러 거부) · 배치 순서는 전용 생성기(세포 연산이 전역 RNG 를 N 에 따라 다르게 소모하므로 공유하면 두 런이 비교 불가).",
+      "detail": "train_conscious_lm.py 가 정본 언어 학습기 · conscious_lm.py 가 PureFieldFFN과 표준 FFN, 체크포인트 복원, 층간 긴장 신호 개입을 제공한다. graft_behavior.py는 기존 QuantumC·PureMind 감각 인코더·ThalamicBridge·HFDecoder를 재사용해 숨겨진 상황의 행동 인과성을 학습·개입한다. 목적함수나 구조를 바꾸면 step 0부터 새 체크포인트 디렉토리를 쓰고, seed별 전용 생성기로 비교 가능성을 보존한다.",
       "verdict": "🟢 안정 — NaN/발산/skip 0. 300M 백과 두 seed, 27.7M 문학 PureField 두 seed, 27.689M 문학 일반 FFN 두 seed가 모두 12,000 step 완료. 일반 FFN 신규 구간 BPC는 2.0883/2.0553."
     },
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4와 LAMBDA-5는 archive에서 필요한 자료만 복원한 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. LAMBDA-5 체크포인트·로그·영수증·결과는 `lambda5-ffn` revision에 manifest SHA-256과 함께 보존하며, 임시 장비는 결과 회수와 원격 무결성 확인 뒤 종료한다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 행동 체크포인트·로그·결과는 조직 archive의 `graft-behavior` revision에 manifest SHA-256과 함께 보존하고 임시 장비는 원격 무결성 확인 뒤 종료한다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
     }
   ],
   "convergence": {

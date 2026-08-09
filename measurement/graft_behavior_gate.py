@@ -63,10 +63,10 @@ def adjudicate(payload: dict) -> dict:
     consciousness_language = all(row["consciousness"]["language_ok"] for row in judged.values())
     if not memory_valid:
         verdict, reason = "B0_INVALID", "direct-memory positive control did not validate the task"
-    elif not consciousness_language:
-        verdict, reason = "B4_CONFOUNDED", "action effect was accompanied by excessive neutral-language drift"
     elif not consciousness_causal:
         verdict, reason = "B3_NOT_CAUSAL", "QuantumC state did not causally control held-out actions in both seeds"
+    elif not consciousness_language:
+        verdict, reason = "B4_CONFOUNDED", "action effect was accompanied by excessive neutral-language drift"
     else:
         margin = spec["thresholds"]["memory_equivalence_margin"]
         advantage = all(

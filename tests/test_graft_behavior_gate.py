@@ -34,6 +34,8 @@ def test_adjudication_distinguishes_causal_from_unique():
     assert adjudicate(payload())["verdict"] == "B2_CAUSAL_NOT_UNIQUE"
     weak = metrics(normal=0.5, off=0.25)
     assert adjudicate(payload(consciousness=weak))["verdict"] == "B3_NOT_CAUSAL"
+    weak["neutral_kl_nats"] = 9.0
+    assert adjudicate(payload(consciousness=weak))["verdict"] == "B3_NOT_CAUSAL"
 
 
 def test_adjudication_fails_closed_on_spec_or_positive_control():
