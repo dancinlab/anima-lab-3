@@ -1,0 +1,136 @@
+  [HFDecoder] Loading mistralai/Mistral-7B-Instruct-v0.2...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s]Fetching 3 files:  33%|███▎      | 1/3 [02:27<04:54, 147.22s/it]Fetching 3 files:  67%|██████▋   | 2/3 [02:30<01:02, 62.83s/it] Fetching 3 files: 100%|██████████| 3/3 [02:30<00:00, 50.33s/it]
+Loading checkpoint shards:   0%|          | 0/3 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 3/3 [00:00<00:00, 30.20it/s]
+  [HFDecoder] gradient checkpointing ON
+  [HFDecoder] mistralai/Mistral-7B-Instruct-v0.2: 7,258,513,408 total, 16,781,312 trainable
+[1337:quantum_workspace_2] step=50 loss=5.6177 action=1.9883 neutralKL=3.3658
+[1337:quantum_workspace_2] step=100 loss=3.6504 action=1.5164 neutralKL=1.6782
+[1337:quantum_workspace_2] step=150 loss=4.5729 action=2.2072 neutralKL=0.6547
+[1337:quantum_workspace_2] step=200 loss=1.9061 action=1.7044 neutralKL=3.4612
+[1337:quantum_workspace_2] step=250 loss=1.9132 action=1.5054 neutralKL=0.0040
+[1337:quantum_workspace_2] step=300 loss=2.0116 action=1.6743 neutralKL=0.0096
+[1337:quantum_workspace_2] step=350 loss=2.6937 action=1.8107 neutralKL=1.9783
+[1337:quantum_workspace_2] step=400 loss=4.2093 action=1.4374 neutralKL=2.7111
+[1337:quantum_workspace_2] step=450 loss=4.1703 action=1.7184 neutralKL=0.0040
+[1337:quantum_workspace_2] step=500 loss=2.1056 action=1.9067 neutralKL=0.0118
+[1337:quantum_workspace_2] step=550 loss=1.6541 action=1.4826 neutralKL=0.0021
+[1337:quantum_workspace_2] step=600 loss=1.6820 action=1.9002 neutralKL=0.0156
+[1337:quantum_workspace_2] step=650 loss=1.7382 action=1.6980 neutralKL=0.0015
+[1337:quantum_workspace_2] step=700 loss=1.6244 action=1.5214 neutralKL=0.0031
+[1337:quantum_workspace_2] step=750 loss=1.6793 action=1.5312 neutralKL=0.0011
+[1337:quantum_workspace_2] step=800 loss=1.5895 action=1.4834 neutralKL=0.0026
+[1337:quantum_relation] step=50 loss=5.6822 action=1.7647 neutralKL=5.6644
+[1337:quantum_relation] step=100 loss=7.4963 action=1.8832 neutralKL=4.2095
+[1337:quantum_relation] step=150 loss=3.2612 action=1.6296 neutralKL=0.0065
+[1337:quantum_relation] step=200 loss=1.9607 action=1.6805 neutralKL=0.0084
+[1337:quantum_relation] step=250 loss=1.6596 action=1.6102 neutralKL=0.0029
+[1337:quantum_relation] step=300 loss=1.6516 action=1.6352 neutralKL=0.0036
+[1337:quantum_relation] step=350 loss=1.6288 action=1.7677 neutralKL=0.0038
+[1337:quantum_relation] step=400 loss=1.6972 action=1.5941 neutralKL=0.0034
+[1337:quantum_relation] step=450 loss=1.8021 action=1.6050 neutralKL=0.0015
+[1337:quantum_relation] step=500 loss=2.1135 action=1.6508 neutralKL=0.5104
+[1337:quantum_relation] step=550 loss=1.9181 action=1.5716 neutralKL=0.0012
+[1337:quantum_relation] step=600 loss=1.8696 action=1.7316 neutralKL=1.6227
+[1337:quantum_relation] step=650 loss=1.9226 action=1.4721 neutralKL=0.0014
+[1337:quantum_relation] step=700 loss=2.0696 action=1.5736 neutralKL=0.0028
+[1337:quantum_relation] step=750 loss=2.0250 action=1.6769 neutralKL=0.0043
+[1337:quantum_relation] step=800 loss=1.7096 action=1.6835 neutralKL=0.0038
+[1337:memory_relation] step=50 loss=5.9763 action=1.0226 neutralKL=2.3867
+[1337:memory_relation] step=100 loss=7.9080 action=1.7974 neutralKL=6.3328
+[1337:memory_relation] step=150 loss=6.0469 action=2.0154 neutralKL=1.6533
+[1337:memory_relation] step=200 loss=3.5599 action=1.5934 neutralKL=2.0146
+[1337:memory_relation] step=250 loss=3.5653 action=1.4611 neutralKL=2.4747
+[1337:memory_relation] step=300 loss=3.3822 action=1.7908 neutralKL=1.7091
+[1337:memory_relation] step=350 loss=3.5231 action=1.7077 neutralKL=2.4921
+[1337:memory_relation] step=400 loss=3.5425 action=1.9625 neutralKL=1.9890
+[1337:memory_relation] step=450 loss=3.5916 action=1.7071 neutralKL=1.4099
+[1337:memory_relation] step=500 loss=3.4071 action=1.5192 neutralKL=1.7267
+[1337:memory_relation] step=550 loss=3.3749 action=1.4883 neutralKL=1.8535
+[1337:memory_relation] step=600 loss=3.4185 action=1.5038 neutralKL=1.8895
+[1337:memory_relation] step=650 loss=3.3606 action=1.5236 neutralKL=2.2645
+[1337:memory_relation] step=700 loss=3.3997 action=1.5761 neutralKL=1.5458
+[1337:memory_relation] step=750 loss=3.5189 action=1.6291 neutralKL=2.3188
+[1337:memory_relation] step=800 loss=3.5179 action=1.6404 neutralKL=1.6153
+[1337:gru] step=50 loss=6.8719 action=1.5237 neutralKL=4.6312
+[1337:gru] step=100 loss=4.8050 action=2.0870 neutralKL=2.4577
+[1337:gru] step=150 loss=3.5454 action=1.6310 neutralKL=1.4446
+[1337:gru] step=200 loss=4.2429 action=1.5684 neutralKL=3.4903
+[1337:gru] step=250 loss=3.6035 action=1.5155 neutralKL=1.5252
+[1337:gru] step=300 loss=3.8634 action=1.7060 neutralKL=2.0130
+[1337:gru] step=350 loss=3.5960 action=1.6422 neutralKL=2.5101
+[1337:gru] step=400 loss=3.6576 action=1.5663 neutralKL=1.5234
+[1337:gru] step=450 loss=3.7769 action=1.5248 neutralKL=2.6975
+[1337:gru] step=500 loss=3.9194 action=1.5398 neutralKL=1.8454
+[1337:gru] step=550 loss=3.9277 action=1.7482 neutralKL=3.2187
+[1337:gru] step=600 loss=3.9670 action=1.4606 neutralKL=1.5390
+[1337:gru] step=650 loss=3.8197 action=1.6458 neutralKL=2.7839
+[1337:gru] step=700 loss=3.9496 action=2.3268 neutralKL=1.7522
+[1337:gru] step=750 loss=4.1521 action=1.5677 neutralKL=3.1059
+[1337:gru] step=800 loss=3.9203 action=1.4269 neutralKL=2.1861
+[7331:quantum_workspace_2] step=50 loss=4.4867 action=1.7235 neutralKL=1.6770
+[7331:quantum_workspace_2] step=100 loss=3.5503 action=1.4867 neutralKL=1.0526
+[7331:quantum_workspace_2] step=150 loss=3.3822 action=1.8778 neutralKL=2.3241
+[7331:quantum_workspace_2] step=200 loss=3.3902 action=1.6621 neutralKL=1.6647
+[7331:quantum_workspace_2] step=250 loss=3.3082 action=1.6787 neutralKL=1.3506
+[7331:quantum_workspace_2] step=300 loss=3.3566 action=1.7562 neutralKL=1.2812
+[7331:quantum_workspace_2] step=350 loss=3.3754 action=1.6254 neutralKL=1.8284
+[7331:quantum_workspace_2] step=400 loss=3.5131 action=1.7334 neutralKL=1.9470
+[7331:quantum_workspace_2] step=450 loss=3.5813 action=1.9563 neutralKL=2.2514
+[7331:quantum_workspace_2] step=500 loss=3.5110 action=1.6984 neutralKL=1.5381
+[7331:quantum_workspace_2] step=550 loss=3.5467 action=1.7479 neutralKL=3.2186
+[7331:quantum_workspace_2] step=600 loss=3.4564 action=1.5990 neutralKL=1.2460
+[7331:quantum_workspace_2] step=650 loss=3.4000 action=1.8042 neutralKL=1.8487
+[7331:quantum_workspace_2] step=700 loss=3.3425 action=1.5838 neutralKL=2.6689
+[7331:quantum_workspace_2] step=750 loss=3.4498 action=1.4015 neutralKL=2.3547
+[7331:quantum_workspace_2] step=800 loss=3.3766 action=1.7513 neutralKL=1.1887
+[7331:quantum_relation] step=50 loss=6.1262 action=1.6925 neutralKL=1.9637
+[7331:quantum_relation] step=100 loss=5.6469 action=1.5760 neutralKL=3.4709
+[7331:quantum_relation] step=150 loss=4.7119 action=1.6048 neutralKL=2.8622
+[7331:quantum_relation] step=200 loss=3.6769 action=1.8417 neutralKL=1.4319
+[7331:quantum_relation] step=250 loss=3.9892 action=1.9048 neutralKL=1.4594
+[7331:quantum_relation] step=300 loss=3.4836 action=1.8736 neutralKL=1.9099
+[7331:quantum_relation] step=350 loss=4.2504 action=1.5843 neutralKL=2.7326
+[7331:quantum_relation] step=400 loss=3.4909 action=1.6805 neutralKL=1.6262
+[7331:quantum_relation] step=450 loss=3.2407 action=1.7541 neutralKL=1.8764
+[7331:quantum_relation] step=500 loss=3.2440 action=1.5082 neutralKL=1.2602
+[7331:quantum_relation] step=550 loss=3.1605 action=1.6399 neutralKL=2.7238
+[7331:quantum_relation] step=600 loss=3.2286 action=1.7066 neutralKL=1.6525
+[7331:quantum_relation] step=650 loss=3.5220 action=2.0890 neutralKL=1.7948
+[7331:quantum_relation] step=700 loss=3.2689 action=1.7633 neutralKL=1.1598
+[7331:quantum_relation] step=750 loss=3.3286 action=1.6240 neutralKL=1.8060
+[7331:quantum_relation] step=800 loss=3.4521 action=1.7447 neutralKL=1.1965
+[7331:memory_relation] step=50 loss=7.3816 action=1.5541 neutralKL=5.4824
+[7331:memory_relation] step=100 loss=8.7775 action=1.8363 neutralKL=3.4978
+[7331:memory_relation] step=150 loss=7.6015 action=1.9949 neutralKL=5.9522
+[7331:memory_relation] step=200 loss=7.0314 action=1.7181 neutralKL=4.1522
+[7331:memory_relation] step=250 loss=2.6898 action=1.6276 neutralKL=0.0038
+[7331:memory_relation] step=300 loss=1.8481 action=1.7471 neutralKL=0.0059
+[7331:memory_relation] step=350 loss=1.6533 action=1.8324 neutralKL=0.0024
+[7331:memory_relation] step=400 loss=1.6522 action=1.5480 neutralKL=0.0024
+[7331:memory_relation] step=450 loss=2.2965 action=1.8045 neutralKL=0.9867
+[7331:memory_relation] step=500 loss=2.2069 action=1.5652 neutralKL=0.0025
+[7331:memory_relation] step=550 loss=1.7182 action=1.6021 neutralKL=0.0016
+[7331:memory_relation] step=600 loss=1.6521 action=1.4039 neutralKL=0.0022
+[7331:memory_relation] step=650 loss=1.5242 action=1.2804 neutralKL=0.0016
+[7331:memory_relation] step=700 loss=1.4796 action=1.3402 neutralKL=0.0025
+[7331:memory_relation] step=750 loss=1.4100 action=1.4881 neutralKL=0.0018
+[7331:memory_relation] step=800 loss=1.4094 action=1.4013 neutralKL=0.0028
+[7331:gru] step=50 loss=4.6716 action=1.8355 neutralKL=2.9414
+[7331:gru] step=100 loss=2.7373 action=1.6243 neutralKL=0.0161
+[7331:gru] step=150 loss=1.8240 action=1.7764 neutralKL=0.0056
+[7331:gru] step=200 loss=1.6844 action=1.6873 neutralKL=0.0049
+[7331:gru] step=250 loss=1.6315 action=1.5887 neutralKL=0.0023
+[7331:gru] step=300 loss=1.6586 action=1.6031 neutralKL=0.0051
+[7331:gru] step=350 loss=1.6655 action=1.6310 neutralKL=0.0022
+[7331:gru] step=400 loss=1.6425 action=1.4476 neutralKL=0.0057
+[7331:gru] step=450 loss=1.6560 action=1.6675 neutralKL=0.0036
+[7331:gru] step=500 loss=1.7453 action=1.6716 neutralKL=0.0051
+[7331:gru] step=550 loss=1.5735 action=1.6114 neutralKL=0.0030
+[7331:gru] step=600 loss=1.4930 action=1.4218 neutralKL=0.0048
+[7331:gru] step=650 loss=1.3866 action=1.4833 neutralKL=0.0028
+[7331:gru] step=700 loss=1.1567 action=1.1516 neutralKL=0.0076
+[7331:gru] step=750 loss=0.9537 action=0.8520 neutralKL=0.0032
+[7331:gru] step=800 loss=0.7368 action=0.4666 neutralKL=0.0065
+[results] measurement/relation_results.json
+[R0_INVALID] GRU task-validation arm did not validate the task

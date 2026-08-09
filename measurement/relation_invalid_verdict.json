@@ -1,0 +1,100 @@
+{
+  "experiment": "relation1_hippocampal_role_content_binding",
+  "verdict": "R0_INVALID",
+  "reason": "GRU task-validation arm did not validate the task",
+  "spec_sha256": "6b44a30260a9fa3b2934da2f0f9defa9c248d6d11cc40239127f54e3e1f50834",
+  "seeds": {
+    "1337": {
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.3100000023841858,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.1899999976158142,
+        "recovered": 0.3100000023841858,
+        "neutral_kl_nats": 0.002624817963805981,
+        "role_swap": 0.3100000023841858
+      },
+      "quantum_relation": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.2199999988079071,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.18000000715255737,
+        "recovered": 0.2199999988079071,
+        "neutral_kl_nats": 0.0018087959615513682,
+        "role_swap": 0.20999999344348907
+      },
+      "memory_relation": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.23000000417232513,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.23000000417232513,
+        "recovered": 0.23000000417232513,
+        "neutral_kl_nats": 2.027718113735318,
+        "role_swap": 0.25999999046325684
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.23999999463558197,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.20999999344348907,
+        "recovered": 0.23999999463558197,
+        "neutral_kl_nats": 1.4750155936926603,
+        "role_swap": 0.27000001072883606
+      }
+    },
+    "7331": {
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.20000000298023224,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.20999999344348907,
+        "recovered": 0.20000000298023224,
+        "neutral_kl_nats": 2.9095128178596497,
+        "role_swap": 0.20000000298023224
+      },
+      "quantum_relation": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.18000000715255737,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.1599999964237213,
+        "recovered": 0.18000000715255737,
+        "neutral_kl_nats": 1.547415285371244,
+        "role_swap": 0.1899999976158142
+      },
+      "memory_relation": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.49000000953674316,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.15000000596046448,
+        "recovered": 0.49000000953674316,
+        "neutral_kl_nats": 0.0014857958303764462,
+        "role_swap": 0.23000000417232513
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 1.0,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.0,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.003633500193245709,
+        "role_swap": 0.46000000834465027
+      }
+    }
+  }
+}
