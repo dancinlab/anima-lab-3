@@ -543,7 +543,7 @@ class TransformerDecoder(DEngine):
     def d_model(self):
         return self._d_model
 
-    def forward(self, tokens, gate_signal):
+    def forward(self, tokens, gate_signal, gate_projector=None):
         B, T = tokens.shape
         pos = torch.arange(T, device=tokens.device).unsqueeze(0)
         x = self.embed(tokens) + self.pos_embed(pos)
@@ -716,7 +716,8 @@ class HFDecoder(DEngine):
                     gate.transpose(1, 2), size=self._d_model, mode='linear'
                 ).transpose(1, 2)
             gate = gate.expand(B, T, -1)
-            gate = self.gate_proj(gate).to(embeds.dtype)
+            projector = gate_projector if gate_projector is not None else self.gate_proj
+            gate = projector(gate).to(embeds.dtype)
             if self.gate_rms_max is not None:
                 # clamp RMS(gate) <= gate_rms_max * RMS(embeds): identity below the cap,
                 # rescale above it — bounds the injected perturbation to

@@ -79,7 +79,7 @@ def _lcs_contig(a, b):
 class PureMind:
     """A mind that learns language from conversation and generates from its own model."""
 
-    def __init__(self, store=None):
+    def __init__(self, store=None, c_engine=None):
         self.store = store                    # JSON path for cumulative memory (Law 42) or None
         self.turn = 0
         self.total = 0                        # total word tokens heard (for surprise)
@@ -95,7 +95,7 @@ class PureMind:
         self.phi = 0.0
         self._phi_prev = 0.0
         # Hexad C: a real autonomous cell engine drives the consciousness state
-        self.c = QuantumC(nc=48, dim=48) if HEXAD else None
+        self.c = c_engine if c_engine is not None else (QuantumC(nc=48, dim=48) if HEXAD else None)
         # SENSE-2 (v2): blend each word's base hash-phasor with the assoc-weighted circular
         # mean of its LEARNED co-occurrence neighbours' phasors, so experientially-related
         # words acquire SIMILAR phase fields (topic geometry from the mind's OWN history —
@@ -240,6 +240,10 @@ class PureMind:
         s = torch.stack([torch.sin(t) for t, _ in pats]).mean(0)
         return {"local": pats, "global": (torch.atan2(s, c), torch.sqrt(c * c + s * s))}
 
+    def encode_sense(self, words):
+        """Public SSOT for turning words into the QuantumC sense-pathway payload."""
+        return self._encode_sense(words)
+
     def _pulse(self, ws=None):
         """Advance and READ the consciousness state (Law 2: measured, never set).
 
@@ -248,7 +252,7 @@ class PureMind:
         the conversation; curiosity = |dPhi|. Without torch: an emergent scalar proxy.
         """
         if self.c is not None:
-            x = self._encode_sense(ws)
+            x = self.encode_sense(ws)
             for _ in range(3):
                 self.c.step(x_input=x)
             fr = getattr(self.c.engine, "_frustrations", None)
