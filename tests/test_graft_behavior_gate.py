@@ -1,6 +1,12 @@
 from copy import deepcopy
 
-from measurement.graft_behavior_registry import BEHAVIOR_SPEC, PHASE_STATE_SPEC, experiment, spec_sha256
+from measurement.graft_behavior_registry import (
+    BEHAVIOR_SPEC,
+    PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
+    PHASE_STATE_SPEC,
+    experiment,
+    spec_sha256,
+)
 from measurement.graft_behavior_gate import adjudicate, judge_arm
 
 
@@ -53,6 +59,16 @@ def test_phase_experiment_is_registered_and_independently_copied():
     assert second["engine_dim"] == BEHAVIOR_SPEC["state_dim"]
     assert second["state_dim"] == 2 * BEHAVIOR_SPEC["state_dim"]
     assert second["train_steps"] == PHASE_STATE_SPEC["train_steps"]
+
+
+def test_phase_memory_control_repair_preserves_registered_thresholds():
+    repair = experiment(PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["experiment"])
+
+    assert repair["readout"] == "phase"
+    assert repair["state_dim"] == 2 * BEHAVIOR_SPEC["state_dim"]
+    assert repair["memory_readout"] == "amplitude"
+    assert repair["memory_state_dim"] == BEHAVIOR_SPEC["state_dim"]
+    assert repair["thresholds"] == PHASE_STATE_SPEC["thresholds"]
 
 
 def test_phase_payload_uses_its_own_frozen_spec():

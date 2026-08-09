@@ -64,10 +64,20 @@ PHASE_STATE_SPEC.update({
     "state_dim": 2 * BEHAVIOR_SPEC["state_dim"],
 })
 
+PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC = deepcopy(PHASE_STATE_SPEC)
+PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC.update({
+    "experiment": "graft_behavior_causality_phase_state_memory_control_repair",
+    # Keep the direct-memory positive control bit-for-bit equivalent to the
+    # validated language-preserved experiment. Only QuantumC uses phase readout.
+    "memory_readout": "amplitude",
+    "memory_state_dim": BEHAVIOR_SPEC["state_dim"],
+})
+
 REGISTERED_EXPERIMENTS = {
     BEHAVIOR_SPEC["experiment"]: BEHAVIOR_SPEC,
     LANGUAGE_PRESERVED_SPEC["experiment"]: LANGUAGE_PRESERVED_SPEC,
     PHASE_STATE_SPEC["experiment"]: PHASE_STATE_SPEC,
+    PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["experiment"]: PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
 }
 
 

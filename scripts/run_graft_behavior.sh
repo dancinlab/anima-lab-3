@@ -38,7 +38,7 @@ case "$ACTION" in
       tests/test_consciousness_intervention.py
     "$PYTHON_BIN" -m py_compile graft_behavior.py measurement/graft_behavior_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state)
+  smoke|full|language-preserved|phase-state|phase-state-repair)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -63,11 +63,17 @@ case "$ACTION" in
         --output measurement/graft_behavior_phase_state_results.json \
         --checkpoint-dir checkpoints/graft_behavior_phase_state
     fi
+    if [ "$ACTION" = phase-state-repair ]; then
+      exec "$PYTHON_BIN" graft_behavior.py \
+        --experiment graft_behavior_causality_phase_state_memory_control_repair \
+        --output measurement/graft_behavior_phase_state_repair_results.json \
+        --checkpoint-dir checkpoints/graft_behavior_phase_state_repair
+    fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -78,7 +84,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac

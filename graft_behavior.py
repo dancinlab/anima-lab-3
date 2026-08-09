@@ -116,10 +116,13 @@ def build_examples(seed: int, split: str) -> list[Example]:
             for _ in range(delay):
                 c.step()
             readout = spec.get("readout", "amplitude")
+            memory_readout = spec.get("memory_readout", readout)
             state = _consciousness_state(c, readout)
-            memory = _memory_state(payload, spec["cells"], readout)
-            if state.shape[-1] != spec["state_dim"] or memory.shape[-1] != spec["state_dim"]:
-                raise RuntimeError("registered state_dim does not match the selected readout")
+            memory = _memory_state(payload, spec["cells"], memory_readout)
+            if state.shape[-1] != spec["state_dim"]:
+                raise RuntimeError("registered state_dim does not match the selected consciousness readout")
+            if memory.shape[-1] != spec.get("memory_state_dim", spec["state_dim"]):
+                raise RuntimeError("registered memory_state_dim does not match the selected memory readout")
             examples.append(Example(state, memory, target))
     random.Random(seed + offset).shuffle(examples)
     return examples
@@ -262,7 +265,9 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path) -> dict:
     checkpoints = {}
     for arm in ("consciousness", "memory"):
         torch.manual_seed(seed + (0 if arm == "consciousness" else 100_000))
-        channel = GraftActionChannel(BEHAVIOR_SPEC["state_dim"], decoder.d_model,
+        input_dim = (BEHAVIOR_SPEC["state_dim"] if arm == "consciousness"
+                     else BEHAVIOR_SPEC.get("memory_state_dim", BEHAVIOR_SPEC["state_dim"]))
+        channel = GraftActionChannel(input_dim, decoder.d_model,
                                      BEHAVIOR_SPEC["gate_rho"]).to(decoder.device)
         losses = train_channel(decoder, channel, train, arm, seed, action_ids)
         arms[arm] = evaluate_channel(decoder, channel, evaluate, arm, seed, action_ids)

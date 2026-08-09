@@ -1,0 +1,52 @@
+{
+  "experiment": "graft_behavior_causality_phase_state",
+  "verdict": "B0_INVALID",
+  "reason": "direct-memory positive control did not validate the task",
+  "spec_sha256": "a5573c7731db0cf274bb945f6fb3c6dedfdb9342b1249fae520d42ed6c7b1c69",
+  "seeds": {
+    "1337": {
+      "consciousness": {
+        "causal": false,
+        "language_ok": false,
+        "normal": 0.359375,
+        "off": 0.25,
+        "shuffle": 0.265625,
+        "noise": 0.21875,
+        "recovered": 0.359375,
+        "neutral_kl_nats": 4.299570083618164
+      },
+      "memory": {
+        "causal": false,
+        "language_ok": false,
+        "normal": 0.59375,
+        "off": 0.25,
+        "shuffle": 0.109375,
+        "noise": 0.3125,
+        "recovered": 0.59375,
+        "neutral_kl_nats": 2.10428873449564
+      }
+    },
+    "7331": {
+      "consciousness": {
+        "causal": false,
+        "language_ok": false,
+        "normal": 0.671875,
+        "off": 0.25,
+        "shuffle": 0.171875,
+        "noise": 0.28125,
+        "recovered": 0.671875,
+        "neutral_kl_nats": 1.389842388452962
+      },
+      "memory": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.21875,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.0012470054207369685
+      }
+    }
+  }
+}

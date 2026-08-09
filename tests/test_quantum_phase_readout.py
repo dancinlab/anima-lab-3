@@ -1,7 +1,12 @@
 import torch
 
 import graft_behavior
-from measurement.graft_behavior_registry import PHASE_STATE_SPEC, experiment
+from measurement.graft_behavior_registry import (
+    BEHAVIOR_SPEC,
+    PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
+    PHASE_STATE_SPEC,
+    experiment,
+)
 from trinity import QuantumC
 
 
@@ -32,3 +37,18 @@ def test_phase_examples_keep_engine_and_readout_dimensions_separate(monkeypatch)
 
     assert row.state.shape == (spec["cells"], spec["state_dim"])
     assert row.memory.shape == (spec["cells"], spec["state_dim"])
+
+
+def test_phase_repair_keeps_the_validated_memory_control_shape(monkeypatch):
+    spec = experiment(PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["experiment"])
+    spec["situations"] = spec["situations"][:1]
+    spec["train_examples_per_situation"] = 1
+    spec["warm_steps"] = 0
+    spec["sense_steps"] = 1
+    spec["delay_steps"] = [0, 0]
+    monkeypatch.setattr(graft_behavior, "BEHAVIOR_SPEC", spec)
+
+    row = graft_behavior.build_examples(7, "train")[0]
+
+    assert row.state.shape == (spec["cells"], 2 * BEHAVIOR_SPEC["state_dim"])
+    assert row.memory.shape == (spec["cells"], BEHAVIOR_SPEC["state_dim"])
