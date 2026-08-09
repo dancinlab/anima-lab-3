@@ -1,0 +1,52 @@
+{
+  "experiment": "graft_behavior_causality_phase_state_bridge32_memory_control_repair",
+  "verdict": "B2_CAUSAL_NOT_UNIQUE",
+  "reason": "QuantumC state causally controlled action but direct memory was equivalent",
+  "spec_sha256": "a4217c7ddd9f7af46a30da012bf7acf198e4471073c21cd703c3caf39f39807c",
+  "seeds": {
+    "1337": {
+      "consciousness": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.203125,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.0010635494836606085
+      },
+      "memory": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.265625,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.0009677727939561009
+      }
+    },
+    "7331": {
+      "consciousness": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.265625,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.0013067273539490998
+      },
+      "memory": {
+        "causal": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "off": 0.25,
+        "shuffle": 0.0,
+        "noise": 0.234375,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.001779297017492354
+      }
+    }
+  }
+}

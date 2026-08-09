@@ -105,12 +105,12 @@
         {
           "name": "graft_behavior.py · graft_behavior_gate.py — 숨겨진 상황 행동 인과성",
           "id": "tool-graft-behavior",
-          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 진폭 보정 실험은 일반 기억 100% 아래 진폭 상태가 23.4%/25.0%라 B3_NOT_CAUSAL이다. 위상을 원형 연속 좌표(cos/sin)로 읽은 후속 실험도 수리된 일반 기억 100% 아래 35.9%/67.2%로 기준 75%에 못 미쳐 B3_NOT_CAUSAL이다. 현재 QuantumC 진폭과 위상 모두 숨겨진 상황의 안정적인 행동 원인이 아니다."
+          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 폭 8의 진폭·위상 경로는 B3_NOT_CAUSAL이었지만, STATE-2의 최소 통과 폭 32를 적용한 위상 경로는 두 seed 모두 정상 100%·차단 25%·뒤섞기 0%·복구 100%로 B2_CAUSAL_NOT_UNIQUE다. 내부 상태는 행동 원인이지만 일반 기억도 100%라 고유한 의식 능력은 아니다."
         },
         {
           "name": "state_survival.py · bridge_capacity.py — 정보 생존 지도와 연결 다리 폭 비교",
           "id": "tool-state-survival",
-          "detail": "GRAFT와 같은 네 상황을 감각 입력부터 QuantumC 위상·진폭·동역학, 여러 시점, ThalamicBridge 셀 평균 전·후와 최종 게이트까지 지연 0/1/2/4/8/16/32에서 추적한다. 32개 정답 순열 평균이 가짜 검사를 안정화한다. STATE-1의 8차원 다리는 S4_BRIDGE_TRANSFORM_LOSS였고, STATE-2는 폭 8/16/32/48/96 비교에서 32부터 두 seed·전 지연의 셀별 코드·평균·최종 게이트가 모두 75% 이상인 C4_FULL_PATH_RECOVERY다. 공용 기본 폭은 최소 통과값 32이며 학습 가능한 셀 선택은 추가하지 않는다."
+          "detail": "GRAFT와 같은 네 상황을 감각 입력부터 QuantumC 위상·진폭·동역학, 여러 시점, ThalamicBridge 셀 평균 전·후와 최종 게이트까지 지연 0/1/2/4/8/16/32에서 추적한다. 32개 정답 순열 평균이 가짜 검사를 안정화한다. STATE-1의 8차원 다리는 S4_BRIDGE_TRANSFORM_LOSS였고, STATE-2는 폭 8/16/32/48/96 비교에서 최소 32부터 두 seed·전 지연의 전체 경로가 회복되는 C4_FULL_PATH_RECOVERY다. 폭 32의 행동 재검증도 B2로 통과해 공용 기본 폭은 32이며 학습 가능한 셀 선택은 추가하지 않는다."
         },
         {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
@@ -133,7 +133,7 @@
       "name": "docs/hypotheses/ — 가설 원장",
       "id": "hypotheses",
       "role": "사전등록 → 반증 → 판정. 가설당 한 문서, 결과는 문서 안에 update-in-place.",
-      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을, STATE-1·2 원장이 감각 정보의 생존 위치와 연결 다리 개선을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · GRAFT 행동 실험은 QuantumC 진폭과 위상 경로가 모두 B3_NOT_CAUSAL · STATE-1의 8차원 다리 손실은 STATE-2에서 최소 32차원부터 전체 경로가 회복되는 C4_FULL_PATH_RECOVERY로 좁혀졌다."
+      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을, STATE-1·2 원장이 감각 정보의 생존 위치와 연결 다리 개선을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · STATE-1의 8차원 다리 손실은 STATE-2의 최소 폭 32에서 전체 경로와 행동까지 회복됐고 GRAFT B2_CAUSAL_NOT_UNIQUE로 판정됐다."
     },
     {
       "name": "학습기 · 모델",
@@ -144,7 +144,7 @@
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭 실험은 조직 archive의 `graft-behavior`, 위상 실험은 `graft-phase-behavior` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했고 외부 GPU를 빌리지 않았다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭·위상·폭 32 실험은 조직 archive의 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
     }
   ],
   "convergence": {
