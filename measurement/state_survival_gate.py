@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import os
 from pathlib import Path
 
 try:
@@ -15,9 +17,15 @@ except ModuleNotFoundError:
 def _status(metrics: dict, positive_control: bool = False) -> dict:
     bars = STATE_SURVIVAL_SPEC["thresholds"]
     normal_bar = bars["positive_control_accuracy"] if positive_control else bars["signal_accuracy"]
+    accuracy = float(metrics["accuracy"])
+    shuffled = float(metrics["shuffled_label_accuracy"])
+    if not (math.isfinite(accuracy) and math.isfinite(shuffled)):
+        raise ValueError("probe metrics must be finite")
+    if not (0.0 <= accuracy <= 1.0 and 0.0 <= shuffled <= 1.0):
+        raise ValueError("probe metrics must be probabilities")
     passed = (
-        metrics["accuracy"] >= normal_bar
-        and metrics["shuffled_label_accuracy"] <= bars["shuffled_label_max_accuracy"]
+        accuracy >= normal_bar
+        and shuffled <= bars["shuffled_label_max_accuracy"]
     )
     return {"pass": passed, **metrics}
 
@@ -48,15 +56,19 @@ def adjudicate(payload: dict) -> dict:
         rows = seed_rows[seed].get("delays", {})
         if set(rows) != {str(delay) for delay in delays}:
             return {"verdict": "S0_INVALID", "reason": f"seed {seed} delay set is incomplete"}
-        judged[seed] = {}
+        seed_key = str(seed)
+        judged[seed_key] = {}
         for delay in delays:
             metrics = rows[str(delay)]
             if set(metrics) != channels:
                 return {"verdict": "S0_INVALID", "reason": f"seed {seed} delay {delay} channel set is incomplete"}
-            judged[seed][str(delay)] = {
-                channel: _status(value, positive_control=channel == "sense_input")
-                for channel, value in metrics.items()
-            }
+            try:
+                judged[seed_key][str(delay)] = {
+                    channel: _status(value, positive_control=channel == "sense_input")
+                    for channel, value in metrics.items()
+                }
+            except (KeyError, TypeError, ValueError) as exc:
+                return {"verdict": "S0_INVALID", "reason": f"invalid probe metrics: {exc}"}
 
     behavior = payload.get("downstream_behavior", {})
     expected_behavior = spec["downstream_behavior"]["required_experiment"]
@@ -99,7 +111,11 @@ def main() -> None:
     parser.add_argument("output")
     args = parser.parse_args()
     verdict = adjudicate(json.loads(Path(args.results).read_text()))
-    Path(args.output).write_text(json.dumps(verdict, ensure_ascii=False, indent=2) + "\n")
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = output.with_name(output.name + ".tmp")
+    temporary.write_text(json.dumps(verdict, ensure_ascii=False, indent=2) + "\n")
+    os.replace(temporary, output)
     print(f"[{verdict['verdict']}] {verdict['reason']}")
 
 

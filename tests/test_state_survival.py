@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 import torch
 
@@ -63,6 +65,12 @@ def test_state_gate_fails_closed_and_localizes_pooling_loss():
     assert adjudicate(payload)["verdict"] == "S0_INVALID"
 
 
+def test_state_gate_rejects_non_finite_metrics():
+    payload = _payload()
+    payload["seeds"][0]["delays"]["0"]["phase"]["accuracy"] = float("nan")
+    assert adjudicate(payload)["verdict"] == "S0_INVALID"
+
+
 def test_probe_averages_the_registered_number_of_label_permutations():
     train_y = torch.arange(4).repeat_interleave(8)
     train_x = torch.nn.functional.one_hot(train_y, num_classes=4).float()
@@ -71,3 +79,12 @@ def test_probe_averages_the_registered_number_of_label_permutations():
     assert metrics["accuracy"] == 1.0
     assert metrics["shuffled_label_permutations"] == STATE_SURVIVAL_SPEC["label_control"]["permutations"]
     assert metrics["shuffled_label_accuracy"] <= STATE_SURVIVAL_SPEC["thresholds"]["shuffled_label_max_accuracy"]
+
+
+def test_committed_state_result_reproduces_the_registered_verdict():
+    root = Path(__file__).resolve().parents[1]
+    payload = json.loads((root / "measurement/state_survival_results.json").read_text())
+    verdict = json.loads((root / "measurement/state_survival_verdict.json").read_text())
+
+    assert adjudicate(payload) == verdict
+    assert verdict["verdict"] == "S4_BRIDGE_TRANSFORM_LOSS"
