@@ -1,0 +1,174 @@
+{
+  "experiment": "workspace1_recurrent_split_cue_integration",
+  "verdict": "W0_INVALID",
+  "reason": "GRU task-validation arm did not validate the task",
+  "selected_workspace_rounds": null,
+  "spec_sha256": "34afb1aab666bb698716514571623070bd8b64d7b8ededbeda2cfe94e1dcbfa2",
+  "seeds": {
+    "1337": {
+      "quantum_single_pass": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.296875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.28125,
+        "recovered": 0.296875,
+        "neutral_kl_nats": 2.0659627297427505
+      },
+      "quantum_workspace_1": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.421875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.1875,
+        "recovered": 0.421875,
+        "neutral_kl_nats": 0.0024877859104890376
+      },
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.65625,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.171875,
+        "recovered": 0.65625,
+        "neutral_kl_nats": 0.005776651843916625
+      },
+      "quantum_workspace_4": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.265625,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.25,
+        "recovered": 0.265625,
+        "neutral_kl_nats": 2.799561858177185
+      },
+      "memory_workspace_1": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.3125,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.25,
+        "recovered": 0.3125,
+        "neutral_kl_nats": 2.6862714886665344
+      },
+      "memory_workspace_2": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.296875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.25,
+        "recovered": 0.296875,
+        "neutral_kl_nats": 2.1304191201925278
+      },
+      "memory_workspace_4": {
+        "integrated": true,
+        "language_ok": true,
+        "normal": 0.890625,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.03125,
+        "recovered": 0.890625,
+        "neutral_kl_nats": 0.002094364201184362
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.625,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.265625,
+        "recovered": 0.625,
+        "neutral_kl_nats": 0.0014414744800888002
+      }
+    },
+    "7331": {
+      "quantum_single_pass": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.296875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.25,
+        "recovered": 0.296875,
+        "neutral_kl_nats": 2.574938169156667
+      },
+      "quantum_workspace_1": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.609375,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.1875,
+        "recovered": 0.609375,
+        "neutral_kl_nats": 0.003629831422585994
+      },
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.328125,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.1875,
+        "recovered": 0.328125,
+        "neutral_kl_nats": 0.002669882611371577
+      },
+      "quantum_workspace_4": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.296875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.234375,
+        "recovered": 0.296875,
+        "neutral_kl_nats": 2.9953298568725586
+      },
+      "memory_workspace_1": {
+        "integrated": true,
+        "language_ok": true,
+        "normal": 1.0,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.0,
+        "recovered": 1.0,
+        "neutral_kl_nats": 0.003200380364432931
+      },
+      "memory_workspace_2": {
+        "integrated": true,
+        "language_ok": true,
+        "normal": 0.96875,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.015625,
+        "recovered": 0.96875,
+        "neutral_kl_nats": 0.023565718962345272
+      },
+      "memory_workspace_4": {
+        "integrated": true,
+        "language_ok": true,
+        "normal": 0.890625,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.015625,
+        "recovered": 0.890625,
+        "neutral_kl_nats": 0.0039092793595045805
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.4375,
+        "module_a_only": 0.25,
+        "module_b_only": 0.25,
+        "partner_shuffle": 0.171875,
+        "recovered": 0.4375,
+        "neutral_kl_nats": 2.8262783885002136
+      }
+    }
+  },
+  "source_map_verdict": "I3_GATE_LOSS"
+}

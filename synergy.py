@@ -189,6 +189,19 @@ def _prompt_tokens(decoder: HFDecoder, spec: dict) -> torch.Tensor:
     return decoder.tokenizer(spec["question"], return_tensors="pt").input_ids.to(decoder.device)
 
 
+def _arm_seed(seed: int, arm: str, spec: dict) -> int:
+    """Resolve an arm-local seed without coupling repaired runs to roster order."""
+    offsets = spec.get("arm_seed_offsets")
+    if offsets is None:
+        return seed + spec["arms"].index(arm) * 100_000
+    if set(offsets) != set(spec["arms"]):
+        raise ValueError("registered arm seed offsets do not match the arm roster")
+    offset = offsets[arm]
+    if not isinstance(offset, int) or offset < 0:
+        raise ValueError(f"registered arm seed offset is invalid: {arm}")
+    return seed + offset
+
+
 def train_channel(decoder: HFDecoder, channel: SynergyActionChannel,
                   examples: list[SplitCueExample], arm: str, seed: int,
                   action_ids: list[int], spec: dict) -> list[float]:
@@ -199,7 +212,7 @@ def train_channel(decoder: HFDecoder, channel: SynergyActionChannel,
     )
     prompt = _prompt_tokens(decoder, spec)
     actions = torch.tensor(action_ids, device=decoder.device)
-    rng = random.Random(seed + spec["arms"].index(arm) * 100_000)
+    rng = random.Random(_arm_seed(seed, arm, spec))
     neutral = []
     with torch.no_grad():
         for text in spec["neutral_prompts"]:
@@ -318,7 +331,7 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path, spec: dict) -> dic
     arms = {}
     checkpoints = {}
     for arm in spec["arms"]:
-        torch.manual_seed(seed + spec["arms"].index(arm) * 100_000)
+        torch.manual_seed(_arm_seed(seed, arm, spec))
         channel = SynergyActionChannel(arm, spec["state_dim"], decoder.d_model, spec).to(decoder.device)
         losses = train_channel(decoder, channel, train, arm, seed, action_ids, spec)
         arms[arm] = evaluate_channel(decoder, channel, evaluate, arm, action_ids, spec)

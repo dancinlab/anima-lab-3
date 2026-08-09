@@ -9,7 +9,11 @@ from pathlib import Path
 
 from graft_behavior import sha256_file
 from measurement.workspace_information_gate import adjudicate as adjudicate_information
-from measurement.workspace_registry import WORKSPACE_SPEC, spec_sha256
+from measurement.workspace_registry import (
+    WORKSPACE_CONTROL_SEED_REPAIR_SPEC,
+    experiment,
+    spec_sha256,
+)
 from synergy import HFDecoder, audit_examples, run_seed
 
 
@@ -43,11 +47,15 @@ def main() -> None:
     parser.add_argument("--output", default="measurement/workspace_results.json")
     parser.add_argument("--verdict", default="measurement/workspace_verdict.json")
     parser.add_argument("--checkpoint-dir", default="checkpoints/workspace1")
+    parser.add_argument(
+        "--experiment",
+        default=WORKSPACE_CONTROL_SEED_REPAIR_SPEC["experiment"],
+    )
     parser.add_argument("--model")
     parser.add_argument("--seeds")
     parser.add_argument("--train-steps", type=int)
     args = parser.parse_args()
-    spec = dict(WORKSPACE_SPEC)
+    spec = experiment(args.experiment)
     if args.train_steps is not None:
         spec["train_steps"] = args.train_steps
     seeds = spec["seeds"] if args.seeds is None else [

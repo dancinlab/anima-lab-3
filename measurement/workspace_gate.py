@@ -11,11 +11,11 @@ from pathlib import Path
 try:
     from measurement.synergy_gate import _expected_audit, _judge_arm
     from measurement.workspace_information_gate import adjudicate as adjudicate_information
-    from measurement.workspace_registry import WORKSPACE_SPEC, spec_sha256
+    from measurement.workspace_registry import experiment, spec_sha256
 except ModuleNotFoundError:
     from synergy_gate import _expected_audit, _judge_arm
     from workspace_information_gate import adjudicate as adjudicate_information
-    from workspace_registry import WORKSPACE_SPEC, spec_sha256
+    from workspace_registry import experiment, spec_sha256
 
 
 def _finite_tree(value) -> bool:
@@ -29,8 +29,9 @@ def _finite_tree(value) -> bool:
 
 
 def adjudicate(payload: dict) -> dict:
-    spec = WORKSPACE_SPEC
-    if payload.get("experiment") != spec["experiment"]:
+    try:
+        spec = experiment(payload.get("experiment"))
+    except (TypeError, ValueError):
         return {"verdict": "W0_INVALID", "reason": "result names an unregistered experiment"}
     if payload.get("spec") != spec or payload.get("spec_sha256") != spec_sha256(spec):
         return {"verdict": "W0_INVALID", "reason": "result spec does not match the registered SSOT"}

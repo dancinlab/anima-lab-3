@@ -1,6 +1,8 @@
 import pytest
 import torch
 
+from measurement.workspace_registry import WORKSPACE_CONTROL_SEED_REPAIR_SPEC
+from synergy import _arm_seed
 from trinity import RecurrentWorkspaceBridge, ThalamicBridge
 
 
@@ -36,3 +38,17 @@ def test_recurrent_workspace_rejects_missing_module_or_round():
     bridge = RecurrentWorkspaceBridge(c_dim=6, d_model=10, hub_dim=4, rounds=1)
     with pytest.raises(ValueError):
         bridge((torch.randn(5, 6),))
+
+
+def test_repaired_arm_seeds_are_independent_of_roster_order():
+    spec = dict(WORKSPACE_CONTROL_SEED_REPAIR_SPEC)
+    expected = {
+        arm: _arm_seed(1337, arm, spec)
+        for arm in spec["arms"]
+    }
+    spec["arms"] = list(reversed(spec["arms"]))
+    assert {
+        arm: _arm_seed(1337, arm, spec)
+        for arm in spec["arms"]
+    } == expected
+    assert expected["gru"] == 201_337

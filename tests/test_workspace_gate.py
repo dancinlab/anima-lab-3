@@ -3,7 +3,11 @@ import json
 from pathlib import Path
 
 from measurement.workspace_gate import adjudicate
-from measurement.workspace_registry import WORKSPACE_SPEC, spec_sha256
+from measurement.workspace_registry import (
+    WORKSPACE_CONTROL_SEED_REPAIR_SPEC,
+    WORKSPACE_SPEC,
+    spec_sha256,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,8 +26,7 @@ def arm(normal=0.90, a_only=0.25, b_only=0.25, shuffled=0.25, kl=0.1):
     }
 
 
-def payload(q_rounds=None, memory=0.90, gru=0.90):
-    spec = WORKSPACE_SPEC
+def payload(q_rounds=None, memory=0.90, gru=0.90, spec=WORKSPACE_SPEC):
     q_rounds = q_rounds or {1: 0.90, 2: 0.90, 4: 0.90}
     map_results = json.loads((ROOT / spec["source_map_results"]).read_text())
     map_verdict = json.loads((ROOT / spec["source_map_verdict"]).read_text())
@@ -97,3 +100,8 @@ def test_workspace_gate_fails_closed_on_map_checkpoint_and_spec_drift():
     drift = payload()
     drift["spec"]["workspace_rounds"] = [1, 3, 4]
     assert adjudicate(drift)["verdict"] == "W0_INVALID"
+
+
+def test_workspace_gate_accepts_registered_control_seed_repair():
+    value = payload(spec=WORKSPACE_CONTROL_SEED_REPAIR_SPEC)
+    assert adjudicate(value)["verdict"] == "W1_INTEGRATED_NOT_UNIQUE"

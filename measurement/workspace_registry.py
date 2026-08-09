@@ -116,9 +116,30 @@ WORKSPACE_SPEC = {
 }
 
 
+WORKSPACE_CONTROL_SEED_REPAIR_SPEC = deepcopy(WORKSPACE_SPEC)
+WORKSPACE_CONTROL_SEED_REPAIR_SPEC.update({
+    "experiment": "workspace1_recurrent_split_cue_integration_control_seed_repair",
+    "control_seed_policy": (
+        "arm-name offsets are fixed independently of arm roster order; "
+        "the GRU validation arm reuses the validated SYNERGY-1 offset"
+    ),
+    "arm_seed_offsets": {
+        "quantum_single_pass": 0,
+        "quantum_workspace_1": 1_000_000,
+        "quantum_workspace_2": 1_100_000,
+        "quantum_workspace_4": 1_200_000,
+        "memory_workspace_1": 2_000_000,
+        "memory_workspace_2": 2_100_000,
+        "memory_workspace_4": 2_200_000,
+        "gru": 200_000,
+    },
+})
+
+
 REGISTERED_EXPERIMENTS = {
     WORKSPACE_INFORMATION_SPEC["experiment"]: WORKSPACE_INFORMATION_SPEC,
     WORKSPACE_SPEC["experiment"]: WORKSPACE_SPEC,
+    WORKSPACE_CONTROL_SEED_REPAIR_SPEC["experiment"]: WORKSPACE_CONTROL_SEED_REPAIR_SPEC,
 }
 
 
