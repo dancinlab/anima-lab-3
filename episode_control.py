@@ -17,7 +17,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from graft_behavior import sha256_file
-from measurement.episode_control_registry import CONTROL_SPEC, spec_sha256
+from measurement.episode_control_registry import (
+    CONTROL_SPEC,
+    ONLINE_CONTROL_SPEC,
+    REGISTERED_EXPERIMENTS,
+    experiment as registered_experiment,
+    spec_sha256,
+)
 from trinity import VectorMemory
 
 
@@ -107,6 +113,91 @@ def build_splits(spec: dict = CONTROL_SPEC) -> dict[str, list[RelationEpisode]]:
         splits[name] = build_split(name, spec, seen)
         seen.update(row.fingerprint() for row in splits[name])
     return splits
+
+
+def build_reference_splits(spec: dict = ONLINE_CONTROL_SPEC) -> dict[str, list[RelationEpisode]]:
+    if spec.get("reference_experiment") != CONTROL_SPEC["experiment"]:
+        raise ValueError("unknown fixed evaluation source")
+    reference = build_splits(CONTROL_SPEC)
+    return {name: reference[name] for name in spec["splits"]}
+
+
+class OnlineEpisodeStream:
+    """Deterministic fresh-episode stream with exact per-batch balance."""
+
+    def __init__(self, spec: dict, excluded_fingerprints: set[str]):
+        expected_batch = spec["keys"] * spec["values"] * spec["relations_per_episode"]
+        if spec["batch_size"] != expected_batch:
+            raise ValueError("online batch must contain every key/value/query-position tuple")
+        if spec["online_train_examples"] != spec["batch_size"] * spec["train_steps"]:
+            raise ValueError("online example count does not match batch size times train steps")
+        self.spec = spec
+        self.rng = random.Random(spec["online_data_seed"])
+        self.excluded = set(excluded_fingerprints)
+        self.seen: set[str] = set()
+        self.ordered_digest = hashlib.sha256()
+        self.target_counts = Counter()
+        self.query_key_counts = Counter()
+        self.query_position_counts = Counter()
+        self.key_value_counts = torch.zeros(spec["keys"], spec["values"], dtype=torch.long)
+        self.balanced_batches = 0
+
+    def next_batch(self) -> list[RelationEpisode]:
+        spec = self.spec
+        combinations = [
+            (query_key, target, query_position)
+            for query_key in range(spec["keys"])
+            for target in range(spec["values"])
+            for query_position in range(spec["relations_per_episode"])
+        ]
+        self.rng.shuffle(combinations)
+        episodes = []
+        for query_key, target, query_position in combinations:
+            while True:
+                other_key = self.rng.randrange(spec["keys"])
+                other_value = self.rng.randrange(spec["values"])
+                distractors = tuple(
+                    self.rng.randrange(spec["distractors"])
+                    for _ in range(spec["distractor_steps"])
+                )
+                if other_key == query_key or other_value == target:
+                    continue
+                stores = [None, None]
+                stores[query_position] = (query_key, target)
+                stores[1 - query_position] = (other_key, other_value)
+                episode = RelationEpisode(tuple(stores), distractors, query_position)
+                fingerprint = episode.fingerprint()
+                if fingerprint not in self.excluded and fingerprint not in self.seen:
+                    break
+            self.seen.add(fingerprint)
+            self.ordered_digest.update(fingerprint.encode())
+            self.ordered_digest.update(b"\n")
+            self.target_counts[target] += 1
+            self.query_key_counts[query_key] += 1
+            self.query_position_counts[query_position] += 1
+            self.key_value_counts[query_key, target] += 1
+            episodes.append(episode)
+        if len(episodes) == spec["batch_size"]:
+            self.balanced_batches += 1
+        return episodes
+
+    def audit(self) -> dict:
+        def complete(counter: Counter, categories: int) -> dict[str, int]:
+            return {str(index): counter[index] for index in range(categories)}
+
+        return {
+            "examples": len(self.seen),
+            "unique_fingerprints": len(self.seen),
+            "fixed_split_overlap": len(self.seen & self.excluded),
+            "balanced_batches": self.balanced_batches,
+            "target_counts": complete(self.target_counts, self.spec["values"]),
+            "query_key_counts": complete(self.query_key_counts, self.spec["keys"]),
+            "query_position_counts": complete(
+                self.query_position_counts, self.spec["relations_per_episode"]
+            ),
+            "ordered_fingerprint_sha256": self.ordered_digest.hexdigest(),
+            "key_value_counts": self.key_value_counts.tolist(),
+        }
 
 
 def _input_dim(spec: dict) -> int:
@@ -299,14 +390,125 @@ def run_seed(seed: int, splits: dict[str, list[RelationEpisode]], output_dir: Pa
     }
 
 
+def _frequency_memory_predictions(
+    key_value_counts: torch.Tensor, evaluate: list[RelationEpisode]
+) -> torch.Tensor:
+    majority = key_value_counts.argmax(-1)
+    return torch.tensor([int(majority[row.query_key]) for row in evaluate])
+
+
+def run_online_seed(seed: int, splits: dict[str, list[RelationEpisode]], output_dir: Path,
+                    spec: dict = ONLINE_CONTROL_SPEC) -> dict:
+    torch.manual_seed(seed)
+    random.seed(seed)
+    device = torch.device(spec["device"])
+    tensors = {name: encode_episodes(rows, spec).to(device) for name, rows in splits.items()}
+    targets = {name: labels(rows).to(device) for name, rows in splits.items()}
+    excluded = {row.fingerprint() for rows in splits.values() for row in rows}
+    stream = OnlineEpisodeStream(spec, excluded)
+    model = DynamicRelationGRU(_input_dim(spec), spec["state_dim"], spec["values"]).to(device)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=spec["learning_rate"], weight_decay=spec["weight_decay"]
+    )
+    best = {"accuracy": -1.0, "step": 0, "state": None}
+    losses = []
+    for step in range(1, spec["train_steps"] + 1):
+        episodes = stream.next_batch()
+        batch_x = encode_episodes(episodes, spec).to(device)
+        batch_y = labels(episodes).to(device)
+        model.train()
+        logits = model(batch_x)
+        loss = F.cross_entropy(logits, batch_y)
+        optimizer.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), spec["gradient_clip"])
+        optimizer.step()
+        losses.append(float(loss.detach()))
+        if step % spec["validate_every"] == 0:
+            metrics = _evaluate(model, tensors["validation"], targets["validation"])
+            if metrics["accuracy"] > best["accuracy"]:
+                best = {
+                    "accuracy": metrics["accuracy"],
+                    "step": step,
+                    "state": {
+                        name: value.detach().cpu().clone()
+                        for name, value in model.state_dict().items()
+                    },
+                }
+            if step % (spec["validate_every"] * 5) == 0:
+                print(
+                    f"[seed {seed}] step={step} loss={sum(losses[-50:]) / 50:.4f} "
+                    f"validation={metrics['accuracy']:.4f}", flush=True,
+                )
+    if best["state"] is None:
+        raise RuntimeError("no validation checkpoint was selected")
+    training_audit = stream.audit()
+    model.load_state_dict(best["state"])
+    gru = _evaluate(model, tensors["eval"], targets["eval"])
+    expected = targets["eval"].cpu()
+    predicted = model(tensors["eval"]).argmax(-1).cpu()
+    arms = {
+        "gru": gru,
+        "vector_memory": _metrics(
+            expected, _vector_memory_predictions(splits["eval"], spec), spec["values"]
+        ),
+        "no_memory": _metrics(
+            expected,
+            _frequency_memory_predictions(stream.key_value_counts, splits["eval"]),
+            spec["values"],
+        ),
+        "shuffled_labels": _metrics(
+            _shuffled_labels(expected, spec), predicted, spec["values"]
+        ),
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    checkpoint = output_dir / f"seed_{seed}_gru.pt"
+    torch.save({
+        "experiment": spec["experiment"],
+        "spec_sha256": spec_sha256(spec),
+        "seed": seed,
+        "selected_step": best["step"],
+        "validation_accuracy": best["accuracy"],
+        "training_stream_sha256": training_audit["ordered_fingerprint_sha256"],
+        "model": best["state"],
+    }, checkpoint)
+    return {
+        "seed": seed,
+        "selected_step": best["step"],
+        "validation_accuracy": best["accuracy"],
+        "final_loss_mean_50": sum(losses[-50:]) / min(50, len(losses)),
+        "training_audit": training_audit,
+        "arms": arms,
+        "checkpoint": {"path": str(checkpoint), "sha256": sha256_file(checkpoint)},
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", default="measurement/episode_control_results.json")
-    parser.add_argument("--verdict", default="measurement/episode_control_verdict.json")
-    parser.add_argument("--checkpoint-dir", default="checkpoints/episode_control1")
+    parser.add_argument("--experiment", choices=REGISTERED_EXPERIMENTS,
+                        default=CONTROL_SPEC["experiment"])
+    parser.add_argument("--output")
+    parser.add_argument("--verdict")
+    parser.add_argument("--checkpoint-dir")
     args = parser.parse_args()
-    spec = CONTROL_SPEC
-    splits = build_splits(spec)
+    spec = registered_experiment(args.experiment)
+    online = spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
+    if args.output is None:
+        args.output = (
+            "measurement/episode_control2_results.json" if online
+            else "measurement/episode_control_results.json"
+        )
+    if args.verdict is None:
+        args.verdict = (
+            "measurement/episode_control2_verdict.json" if online
+            else "measurement/episode_control_verdict.json"
+        )
+    if args.checkpoint_dir is None:
+        args.checkpoint_dir = (
+            "checkpoints/episode_control2" if online else "checkpoints/episode_control1"
+        )
+    splits = build_reference_splits(spec) if online else build_splits(spec)
+    runner = run_online_seed if online else run_seed
     payload = {
         "experiment": spec["experiment"],
         "spec": spec,
@@ -318,7 +520,7 @@ def main() -> None:
             "device": spec["device"],
         },
         "seeds": [
-            run_seed(seed, splits, Path(args.checkpoint_dir), spec) for seed in spec["seeds"]
+            runner(seed, splits, Path(args.checkpoint_dir), spec) for seed in spec["seeds"]
         ],
     }
     _atomic_json(Path(args.output), payload)

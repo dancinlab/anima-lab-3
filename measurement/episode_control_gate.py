@@ -12,9 +12,11 @@ from pathlib import Path
 import torch
 
 try:
-    from measurement.episode_control_registry import CONTROL_SPEC, spec_sha256
+    from measurement.episode_control_registry import (
+        CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256,
+    )
 except ModuleNotFoundError:
-    from episode_control_registry import CONTROL_SPEC, spec_sha256
+    from episode_control_registry import CONTROL_SPEC, ONLINE_CONTROL_SPEC, experiment, spec_sha256
 
 
 def _sha256_file(path: Path) -> str:
@@ -35,19 +37,30 @@ def _finite_tree(value) -> bool:
     return True
 
 
-def _balanced(counts: dict, expected_categories: int, maximum_delta: int) -> bool:
+def _balanced(counts: dict, expected_categories: int, maximum_delta: int,
+              expected_total: int | None = None) -> bool:
     if set(counts) != {str(index) for index in range(expected_categories)}:
         return False
     values = list(counts.values())
-    return all(isinstance(value, int) and value >= 0 for value in values) and (
-        max(values) - min(values) <= maximum_delta
+    return (
+        all(isinstance(value, int) and value >= 0 for value in values)
+        and max(values) - min(values) <= maximum_delta
+        and (expected_total is None or sum(values) == expected_total)
     )
 
 
 def adjudicate(payload: dict) -> dict:
-    spec = CONTROL_SPEC
+    try:
+        spec = experiment(payload.get("experiment", ""))
+    except ValueError:
+        spec = CONTROL_SPEC
     invalid = lambda reason: {
-        "experiment": spec["experiment"], "verdict": "P0_INVALID", "reason": reason,
+        "experiment": payload.get("experiment", spec["experiment"]),
+        "verdict": (
+            "O0_INVALID" if spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
+            else "P0_INVALID"
+        ),
+        "reason": reason,
         "spec_sha256": spec_sha256(spec),
     }
     try:
@@ -65,20 +78,67 @@ def adjudicate(payload: dict) -> dict:
             row = audit["splits"][split]
             if row["episodes"] != expected or row["unique_fingerprints"] != expected:
                 return invalid(f"{split} contains missing or repeated episodes")
-            if not _balanced(row["target_counts"], spec["values"], maximum_delta):
+            if not _balanced(
+                row["target_counts"], spec["values"], maximum_delta, expected
+            ):
                 return invalid(f"{split} targets are not balanced")
-            if not _balanced(row["query_key_counts"], spec["keys"], maximum_delta):
+            if not _balanced(
+                row["query_key_counts"], spec["keys"], maximum_delta, expected
+            ):
                 return invalid(f"{split} query keys are not balanced")
             if not _balanced(
-                row["query_position_counts"], spec["relations_per_episode"], maximum_delta
+                row["query_position_counts"], spec["relations_per_episode"],
+                maximum_delta, expected,
             ):
                 return invalid(f"{split} query positions are not balanced")
         rows = {row["seed"]: row for row in payload["seeds"]}
         if set(rows) != set(spec["seeds"]) or len(rows) != len(payload["seeds"]):
             return invalid("registered seeds are missing or duplicated")
         judged = {}
+        online_audit = None
         for seed in spec["seeds"]:
             row = rows[seed]
+            if spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]:
+                training = row["training_audit"]
+                expected_examples = spec["online_train_examples"]
+                if (
+                    training["examples"] != expected_examples
+                    or training["unique_fingerprints"] != expected_examples
+                    or training["fixed_split_overlap"] != 0
+                    or training["balanced_batches"] != spec["train_steps"]
+                ):
+                    return invalid(f"seed {seed} online training stream is incomplete")
+                maximum_delta = spec["thresholds"]["maximum_balance_delta"]
+                if not _balanced(
+                    training["target_counts"], spec["values"], maximum_delta,
+                    expected_examples,
+                ):
+                    return invalid(f"seed {seed} online targets are not balanced")
+                if not _balanced(
+                    training["query_key_counts"], spec["keys"], maximum_delta,
+                    expected_examples,
+                ):
+                    return invalid(f"seed {seed} online query keys are not balanced")
+                if not _balanced(
+                    training["query_position_counts"],
+                    spec["relations_per_episode"], maximum_delta, expected_examples,
+                ):
+                    return invalid(f"seed {seed} online query positions are not balanced")
+                key_values = training["key_value_counts"]
+                expected_per_pair = expected_examples // (spec["keys"] * spec["values"])
+                if (
+                    len(key_values) != spec["keys"]
+                    or any(len(values) != spec["values"] for values in key_values)
+                    or any(value != expected_per_pair
+                           for values in key_values for value in values)
+                ):
+                    return invalid(f"seed {seed} online key/value pairs are not balanced")
+                if len(training["ordered_fingerprint_sha256"]) != 64:
+                    return invalid(f"seed {seed} online stream SHA-256 is malformed")
+                if online_audit is None:
+                    online_audit = training
+                elif training != online_audit:
+                    return invalid("model seeds used different online training streams")
             if set(row["arms"]) != set(spec["arms"]):
                 return invalid(f"seed {seed} arm roster changed")
             receipt = row["checkpoint"]
@@ -95,6 +155,12 @@ def adjudicate(payload: dict) -> dict:
                 or checkpoint.get("selected_step") != row["selected_step"]
             ):
                 return invalid(f"seed {seed} checkpoint identity changed")
+            if (
+                spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
+                and checkpoint.get("training_stream_sha256")
+                != row["training_audit"]["ordered_fingerprint_sha256"]
+            ):
+                return invalid(f"seed {seed} checkpoint training stream changed")
             arms = row["arms"]
             if arms["vector_memory"]["accuracy"] != spec["thresholds"]["vector_memory_accuracy"]:
                 return invalid(f"seed {seed} exact memory control failed")
@@ -128,9 +194,14 @@ def adjudicate(payload: dict) -> dict:
     except (KeyError, TypeError, ValueError, OSError) as exc:
         return invalid(str(exc))
     passed = all(row["passed"] for row in judged.values())
+    online = spec["experiment"] == ONLINE_CONTROL_SPEC["experiment"]
     return {
         "experiment": spec["experiment"],
-        "verdict": "P1_POSITIVE_CONTROL_VALID" if passed else "P2_TRAINING_PATH_INVALID",
+        "verdict": (
+            "O1_ONLINE_CONTROL_VALID" if passed else "O2_ONLINE_TRAINING_INVALID"
+        ) if online else (
+            "P1_POSITIVE_CONTROL_VALID" if passed else "P2_TRAINING_PATH_INVALID"
+        ),
         "reason": (
             "the standard GRU learned dynamic relations in both registered seeds"
             if passed else "the exact memory control passed but the standard GRU did not"

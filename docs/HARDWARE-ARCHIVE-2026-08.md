@@ -14,6 +14,7 @@
 | `synergy1-split-cue` | 임시 RTX 5090의 SYNERGY-1 무효·최종 실행 체크포인트 12개·로그·결과·판정 | 21 | 2,424,573,584 | `bc8bbbb91d028fb404384526f78d6e20bed2d36769cfe999e2e4b3710844311d` |
 | `workspace1-recurrent` | 임시 RTX 5090의 WORKSPACE-1 무효·수리 본실험 체크포인트 32개·로그·결과·판정 | 40 | 6,464,830,683 | `e9728489b228f448680cc8a63dbe73f835b438f58a64ae359ba260f123b6672b` |
 | `episode-control1-dynamic-relation` | 로컬 CPU CONTROL-1 결과·판정·표준 GRU 두 seed 체크포인트 | 5 | 353,592 | `0cbc1373f0afd01892b95a3c130b0fbcd95e5658737fd013212fb47fc5dd94c1` |
+| `episode-control2-online-dynamic-relation` | 로컬 CPU CONTROL-2 온라인 자료 결과·판정·표준 GRU 두 seed 체크포인트 | 5 | 357,690 | `51e44840f19ab605a5e1243980f72854d7a6ef2fdaa16fcf3fd6f7bd19db95f8` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -56,5 +57,9 @@ revision을 이 Mac의 새 임시 디렉토리로 다시 내려받아 manifest 4
 난수를 고친 최종 실행의 체크포인트를 모두 보존했다.
 
 CONTROL-1 보관은 Hugging Face 커밋 `fd0deebe88dfd6be5dfff3b3a1d0d72077965fe2`에 올렸다. 원격
+revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 체크포인트의 SHA-256을 전수 확인했고,
+다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. GPU를 빌리지 않은 로컬 CPU 실행이다.
+
+CONTROL-2 보관은 Hugging Face 커밋 `f508c5664b5dc681e92f24e48415557be7b1a65a`에 올렸다. 원격
 revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 체크포인트의 SHA-256을 전수 확인했고,
 다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. GPU를 빌리지 않은 로컬 CPU 실행이다.
