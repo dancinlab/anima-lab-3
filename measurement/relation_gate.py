@@ -9,11 +9,11 @@ import os
 from pathlib import Path
 
 try:
-    from measurement.relation_registry import RELATION_SPEC, spec_sha256
+    from measurement.relation_registry import experiment, spec_sha256
     from measurement.synergy_gate import _expected_audit, _judge_arm
     from measurement.workspace_gate import adjudicate as adjudicate_workspace
 except ModuleNotFoundError:
-    from relation_registry import RELATION_SPEC, spec_sha256
+    from relation_registry import experiment, spec_sha256
     from synergy_gate import _expected_audit, _judge_arm
     from workspace_gate import adjudicate as adjudicate_workspace
 
@@ -29,8 +29,9 @@ def _finite_tree(value) -> bool:
 
 
 def adjudicate(payload: dict) -> dict:
-    spec = RELATION_SPEC
-    if payload.get("experiment") != spec["experiment"]:
+    try:
+        spec = experiment(payload.get("experiment"))
+    except (TypeError, ValueError):
         return {"verdict": "R0_INVALID", "reason": "result names an unregistered experiment"}
     if payload.get("spec") != spec or payload.get("spec_sha256") != spec_sha256(spec):
         return {"verdict": "R0_INVALID", "reason": "result spec does not match the registered SSOT"}
@@ -46,6 +47,14 @@ def adjudicate(payload: dict) -> dict:
     if (source_verdict.get("experiment") != spec["source_experiment"]
             or source_verdict.get("verdict") != spec["source_verdict"]):
         return {"verdict": "R0_INVALID", "reason": "registered WORKSPACE-1 failure changed"}
+    if "invalid_results" in spec:
+        invalid_run = payload.get("invalid_run", {})
+        invalid_results = invalid_run.get("results")
+        invalid_verdict = invalid_run.get("verdict")
+        if not isinstance(invalid_results, dict) or not isinstance(invalid_verdict, dict):
+            return {"verdict": "R0_INVALID", "reason": "registered invalid first run is missing"}
+        if adjudicate(invalid_results) != invalid_verdict or invalid_verdict.get("verdict") != "R0_INVALID":
+            return {"verdict": "R0_INVALID", "reason": "invalid first-run verdict does not reproduce"}
     expected = {split: _expected_audit(spec, split) for split in ("train", "eval")}
     if payload.get("dataset_audit") != expected:
         return {"verdict": "R0_INVALID", "reason": "role-cue dataset is not exactly balanced"}

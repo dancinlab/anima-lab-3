@@ -3,7 +3,11 @@ import json
 from pathlib import Path
 
 from measurement.relation_gate import adjudicate
-from measurement.relation_registry import RELATION_SPEC, spec_sha256
+from measurement.relation_registry import (
+    RELATION_ROLE_REPAIR_SPEC,
+    RELATION_SPEC,
+    spec_sha256,
+)
 from measurement.synergy_gate import _expected_audit
 
 
@@ -24,15 +28,14 @@ def arm(normal=0.90, single=0.20, shuffled=0.20, swapped=0.20, kl=0.1):
     }
 
 
-def payload(relation=0.90, baseline=0.30, memory=0.90, gru=0.90):
-    spec = RELATION_SPEC
+def payload(relation=0.90, baseline=0.30, memory=0.90, gru=0.90, spec=RELATION_SPEC):
     arms = {
         "quantum_workspace_2": arm(normal=baseline),
         "quantum_relation": arm(normal=relation),
         "memory_relation": arm(normal=memory),
         "gru": arm(normal=gru),
     }
-    return {
+    value = {
         "experiment": spec["experiment"],
         "spec": deepcopy(spec),
         "spec_sha256": spec_sha256(spec),
@@ -55,6 +58,12 @@ def payload(relation=0.90, baseline=0.30, memory=0.90, gru=0.90):
             for seed in spec["seeds"]
         ],
     }
+    if "invalid_results" in spec:
+        value["invalid_run"] = {
+            "results": json.loads((ROOT / spec["invalid_results"]).read_text()),
+            "verdict": json.loads((ROOT / spec["invalid_verdict"]).read_text()),
+        }
+    return value
 
 
 def test_relation_gate_accepts_bound_not_unique_and_quantum_advantage():
@@ -80,3 +89,10 @@ def test_relation_gate_fails_closed_on_role_control_source_and_receipt_drift():
     bad_hash = payload()
     bad_hash["seeds"][0]["checkpoints"]["gru"]["sha256"] = "bad"
     assert adjudicate(bad_hash)["verdict"] == "R0_INVALID"
+
+
+def test_relation_gate_accepts_registered_role_training_repair_and_requires_invalid_run():
+    repaired = payload(spec=RELATION_ROLE_REPAIR_SPEC)
+    assert adjudicate(repaired)["verdict"] == "R1_BOUND_NOT_UNIQUE"
+    del repaired["invalid_run"]
+    assert adjudicate(repaired)["verdict"] == "R0_INVALID"

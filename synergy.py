@@ -220,6 +220,24 @@ def _arm_seed(seed: int, arm: str, spec: dict) -> int:
     return seed + offset
 
 
+def _training_batch(examples: list[SplitCueExample], source_pairs: list, rng: random.Random,
+                    spec: dict) -> tuple[list, list[int]]:
+    if "role_balanced_training" not in spec:
+        indices = [rng.randrange(len(examples)) for _ in range(spec["batch_size"])]
+        return [source_pairs[index] for index in indices], [examples[index].target for index in indices]
+    if spec["batch_size"] % 2:
+        raise ValueError("role-balanced training requires an even batch size")
+    indices = [rng.randrange(len(examples)) for _ in range(spec["batch_size"] // 2)]
+    normal = [source_pairs[index] for index in indices]
+    swapped = [(pair[1], pair[0]) for pair in normal]
+    normal_targets = [examples[index].target for index in indices]
+    swapped_targets = [
+        _target_index(examples[index].module_b, examples[index].module_a, spec)
+        for index in indices
+    ]
+    return normal + swapped, normal_targets + swapped_targets
+
+
 def train_channel(decoder: HFDecoder, channel: SynergyActionChannel,
                   examples: list[SplitCueExample], arm: str, seed: int,
                   action_ids: list[int], spec: dict) -> list[float]:
@@ -240,17 +258,17 @@ def train_channel(decoder: HFDecoder, channel: SynergyActionChannel,
     losses = []
     source_pairs = _pairs(examples, arm)
     for step in range(1, spec["train_steps"] + 1):
-        indices = [rng.randrange(len(examples)) for _ in range(spec["batch_size"])]
-        pairs = [tuple(part.to(decoder.device) for part in source_pairs[index]) for index in indices]
+        batch_pairs, batch_targets = _training_batch(examples, source_pairs, rng, spec)
+        pairs = [tuple(part.to(decoder.device) for part in pair) for pair in batch_pairs]
         codes = channel.training_codes(pairs)
         gate = codes.unsqueeze(1).expand(-1, prompt.shape[1], -1)
-        tokens = prompt.expand(len(indices), -1)
+        tokens = prompt.expand(len(batch_targets), -1)
         logits = decoder(tokens, gate, gate_projector=channel.projector)[:, -1, :].float()
-        targets = torch.tensor([examples[index].target for index in indices], device=decoder.device)
+        targets = torch.tensor(batch_targets, device=decoder.device)
         action_loss = F.cross_entropy(logits.index_select(-1, actions), targets)
         neutral_tokens, base_lp = neutral[(step - 1) % len(neutral)]
         neutral_gate = codes.unsqueeze(1).expand(-1, neutral_tokens.shape[1], -1)
-        neutral_batch = neutral_tokens.expand(len(indices), -1)
+        neutral_batch = neutral_tokens.expand(len(batch_targets), -1)
         gated_lp = F.log_softmax(
             decoder(neutral_batch, neutral_gate, gate_projector=channel.projector)[:, -1, :].float(), -1
         )
@@ -422,6 +440,11 @@ def main() -> None:
             "results": json.loads(Path(spec["source_results"]).read_text()),
             "verdict": json.loads(Path(spec["source_verdict_path"]).read_text()),
         }
+        if "invalid_results" in spec:
+            payload["invalid_run"] = {
+                "results": json.loads(Path(spec["invalid_results"]).read_text()),
+                "verdict": json.loads(Path(spec["invalid_verdict"]).read_text()),
+            }
     temporary = output.with_name(output.name + ".tmp")
     temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
     temporary.replace(output)

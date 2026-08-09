@@ -86,7 +86,26 @@ RELATION_SPEC = {
 }
 
 
-REGISTERED_EXPERIMENTS = {RELATION_SPEC["experiment"]: RELATION_SPEC}
+RELATION_ROLE_REPAIR_SPEC = deepcopy(RELATION_SPEC)
+RELATION_ROLE_REPAIR_SPEC.update({
+    "experiment": "relation1_hippocampal_role_content_binding_role_training_repair",
+    "invalid_results": "measurement/relation_invalid_results.json",
+    "invalid_verdict": "measurement/relation_invalid_verdict.json",
+    "role_balanced_training": (
+        "each batch contains four registered normal pairs and the same four pairs "
+        "role-swapped with targets recomputed from the registered target table"
+    ),
+    "arm_seed_offsets": {
+        **RELATION_SPEC["arm_seed_offsets"],
+        "gru": 200_000,
+    },
+})
+
+
+REGISTERED_EXPERIMENTS = {
+    RELATION_SPEC["experiment"]: RELATION_SPEC,
+    RELATION_ROLE_REPAIR_SPEC["experiment"]: RELATION_ROLE_REPAIR_SPEC,
+}
 
 
 def experiment(name: str) -> dict:
