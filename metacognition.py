@@ -15,7 +15,7 @@ import torch.nn.functional as F
 import graft_behavior
 from graft_behavior import GraftActionChannel, bridge_hub_dim_for_arm, sha256_file
 from measurement.graft_behavior_registry import experiment as action_experiment
-from measurement.metacognition_registry import METACOGNITION_SPEC, spec_sha256
+from measurement.metacognition_registry import METACOGNITION_SPEC, experiment as meta_experiment, spec_sha256
 from trinity import HFDecoder
 
 
@@ -65,6 +65,8 @@ def _perturb_state(state: torch.Tensor, arm: str, level: float,
         theta = torch.atan2(state[..., half:], state[..., :half])
         theta = theta + level * noise[..., :half]
         return torch.cat((torch.cos(theta), torch.sin(theta)), dim=-1)
+    if METACOGNITION_SPEC.get("memory_noise_topology") == "global_broadcast":
+        noise = noise[:1].expand_as(state)
     scale = state.pow(2).mean().sqrt().clamp_min(1e-6)
     return state + level * scale * noise
 
@@ -273,7 +275,7 @@ def run_arm(decoder: HFDecoder, seed: int, arm: str, checkpoint_path: Path,
     reader_path = output_dir / f"seed_{seed}_{arm}_readers.pt"
     torch.save({
         "experiment": METACOGNITION_SPEC["experiment"],
-        "spec_sha256": spec_sha256(),
+        "spec_sha256": spec_sha256(METACOGNITION_SPEC),
         "seed": seed,
         "arm": arm,
         "source_checkpoint_sha256": expected_sha,
@@ -291,11 +293,14 @@ def run_arm(decoder: HFDecoder, seed: int, arm: str, checkpoint_path: Path,
 
 
 def main() -> None:
+    global METACOGNITION_SPEC
     parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment", default=METACOGNITION_SPEC["experiment"])
     parser.add_argument("--source-dir", default="checkpoints/graft_behavior_phase_state_bridge32_repair")
     parser.add_argument("--reader-dir", default="checkpoints/metacognition")
     parser.add_argument("--output", default="measurement/metacognition_results.json")
     args = parser.parse_args()
+    METACOGNITION_SPEC = meta_experiment(args.experiment)
     source_dir = Path(args.source_dir)
     reader_dir = Path(args.reader_dir)
     reader_dir.mkdir(parents=True, exist_ok=True)
@@ -317,7 +322,7 @@ def main() -> None:
     result = {
         "experiment": METACOGNITION_SPEC["experiment"],
         "spec": METACOGNITION_SPEC,
-        "spec_sha256": spec_sha256(),
+        "spec_sha256": spec_sha256(METACOGNITION_SPEC),
         "model": action_spec["model"],
         "seeds": rows,
     }

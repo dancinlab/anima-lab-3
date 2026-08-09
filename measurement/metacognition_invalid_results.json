@@ -1,0 +1,470 @@
+{
+  "experiment": "meta1_bridge32_self_monitoring",
+  "spec": {
+    "experiment": "meta1_bridge32_self_monitoring",
+    "action_experiment": "graft_behavior_causality_phase_state_bridge32_memory_control_repair",
+    "action_spec_sha256": "a4217c7ddd9f7af46a30da012bf7acf198e4471073c21cd703c3caf39f39807c",
+    "archive": {
+      "repo": "dancinlab/anima-lab-research-archive",
+      "revision": "graft-bridge32-behavior",
+      "checkpoint_sha256": {
+        "1337": {
+          "consciousness": "994dcd5e62a8b3d65ad097ab476e875ea5e7dbd00c590eadb491e22f4bfd9ff1",
+          "memory": "8c2446bf2ae6961473692a00e10842d927a5e698297006881a1610fba5298bf6"
+        },
+        "7331": {
+          "consciousness": "bf8ef98ec71ea79bac9d1d1dcb311b1ed0167fe9790edb11aedc40db2aa1799b",
+          "memory": "047b9ca6361c885cd0ca9d38852d36511d61adfbc0fef0e76520386b05349a0a"
+        }
+      }
+    },
+    "seeds": [
+      1337,
+      7331
+    ],
+    "arms": [
+      "consciousness",
+      "memory"
+    ],
+    "readout_noise_levels": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      2.0
+    ],
+    "reader": {
+      "hidden_dim": 32,
+      "train_steps": 500,
+      "batch_size": 64,
+      "learning_rate": 0.003,
+      "weight_decay": 0.001,
+      "ece_bins": 10,
+      "selective_fraction": 0.5
+    },
+    "interventions": [
+      "normal",
+      "off",
+      "shuffle",
+      "noise",
+      "recovered"
+    ],
+    "shuffle_constraint": "different_predicted_action_when_available",
+    "thresholds": {
+      "clean_action_accuracy": 0.9,
+      "hard_action_accuracy_max": 0.5,
+      "minimum_correct_examples": 32,
+      "minimum_incorrect_examples": 32,
+      "auroc": 0.75,
+      "brier": 0.2,
+      "ece": 0.15,
+      "selective_accuracy_gap": 0.2,
+      "shuffle_auroc_drop": 0.1,
+      "shuffle_brier_increase": 0.05,
+      "output_auroc_advantage": 0.05,
+      "output_brier_advantage": 0.02
+    }
+  },
+  "spec_sha256": "066725057cefcb23c337e291cde598a4c4485a69ccecb64f5a2f868dab37e91e",
+  "model": "mistralai/Mistral-7B-Instruct-v0.2",
+  "seeds": [
+    {
+      "seed": 1337,
+      "arms": {
+        "consciousness": {
+          "action": {
+            "accuracy": 0.840624988079071,
+            "correct_examples": 269,
+            "incorrect_examples": 51,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9996700882911682
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9995541572570801
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9963290691375732
+              },
+              "1.0": {
+                "accuracy": 0.921875,
+                "examples": 64,
+                "mean_confidence": 0.8689138293266296
+              },
+              "2.0": {
+                "accuracy": 0.28125,
+                "examples": 64,
+                "mean_confidence": 0.31035926938056946
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.9321379109264524,
+              "brier": 0.07098351418972015,
+              "ece": 0.05414920808244801,
+              "selective_accuracy_gap": 0.3062499761581421,
+              "high_confidence_accuracy": 0.9937499761581421,
+              "low_confidence_accuracy": 0.6875,
+              "mean_confidence": 0.8349653482437134
+            },
+            "off": {
+              "auroc": 0.593957285516437,
+              "brier": 0.15917280316352844,
+              "ece": 0.15871965885162354,
+              "selective_accuracy_gap": 0.10624998807907104,
+              "high_confidence_accuracy": 0.893750011920929,
+              "low_confidence_accuracy": 0.7875000238418579,
+              "mean_confidence": 0.9993446469306946
+            },
+            "shuffle": {
+              "auroc": 0.22578176251913404,
+              "brier": 0.4773123264312744,
+              "ece": 0.540366193033226,
+              "selective_accuracy_gap": -0.29374998807907104,
+              "high_confidence_accuracy": 0.6937500238418579,
+              "low_confidence_accuracy": 0.987500011920929,
+              "mean_confidence": 0.5964685678482056
+            },
+            "noise": {
+              "auroc": 0.49252860995699393,
+              "brier": 0.2515869438648224,
+              "ece": 0.25357993119822053,
+              "selective_accuracy_gap": 0.018750011920928955,
+              "high_confidence_accuracy": 0.8500000238418579,
+              "low_confidence_accuracy": 0.831250011920929,
+              "mean_confidence": 0.8374147415161133
+            },
+            "recovered": {
+              "auroc": 0.9321379109264524,
+              "brier": 0.07098351418972015,
+              "ece": 0.05414920808244801,
+              "selective_accuracy_gap": 0.3062499761581421,
+              "high_confidence_accuracy": 0.9937499761581421,
+              "low_confidence_accuracy": 0.6875,
+              "mean_confidence": 0.8349653482437134
+            }
+          },
+          "output_only": {
+            "auroc": 0.8999198192288068,
+            "brier": 0.07566054165363312,
+            "ece": 0.01992235918310175,
+            "selective_accuracy_gap": 0.28125,
+            "high_confidence_accuracy": 0.981249988079071,
+            "low_confidence_accuracy": 0.699999988079071,
+            "mean_confidence": 0.8508974313735962
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "994dcd5e62a8b3d65ad097ab476e875ea5e7dbd00c590eadb491e22f4bfd9ff1",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_1337_consciousness_readers.pt",
+            "sha256": "782d0aab529cac722b4b6d12ff084e05bbf137ef6fd0c3a73e46001425b4dade"
+          }
+        },
+        "memory": {
+          "action": {
+            "accuracy": 0.996874988079071,
+            "correct_examples": 319,
+            "incorrect_examples": 1,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9999983906745911
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9999991059303284
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9999924898147583
+              },
+              "1.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9998061656951904
+              },
+              "2.0": {
+                "accuracy": 0.984375,
+                "examples": 64,
+                "mean_confidence": 0.9754208326339722
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.44043887147335425,
+              "brier": 0.0068075344897806644,
+              "ece": 0.007873319048159827,
+              "selective_accuracy_gap": -0.00625002384185791,
+              "high_confidence_accuracy": 0.9937499761581421,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.9950433969497681
+            },
+            "off": {
+              "auroc": 0.6238244514106583,
+              "brier": 0.0034752306528389454,
+              "ece": 0.018882334232330322,
+              "selective_accuracy_gap": -0.00625002384185791,
+              "high_confidence_accuracy": 0.9937499761581421,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.9779926538467407
+            },
+            "shuffle": {
+              "auroc": 0.4373040752351097,
+              "brier": 0.0031250000465661287,
+              "ece": 0.003124058246612549,
+              "selective_accuracy_gap": 0.00625002384185791,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 0.9937499761581421,
+              "mean_confidence": 0.9999990463256836
+            },
+            "noise": {
+              "auroc": 0.5893416927899686,
+              "brier": 0.06557760387659073,
+              "ece": 0.10930960688518765,
+              "selective_accuracy_gap": 0.00625002384185791,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 0.9937499761581421,
+              "mean_confidence": 0.8875654339790344
+            },
+            "recovered": {
+              "auroc": 0.44043887147335425,
+              "brier": 0.0068075344897806644,
+              "ece": 0.007873319048159827,
+              "selective_accuracy_gap": -0.00625002384185791,
+              "high_confidence_accuracy": 0.9937499761581421,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.9950433969497681
+            }
+          },
+          "output_only": {
+            "auroc": 0.2413793103448276,
+            "brier": 0.003179714549332857,
+            "ece": 0.0029429197311401367,
+            "selective_accuracy_gap": -0.00625002384185791,
+            "high_confidence_accuracy": 0.9937499761581421,
+            "low_confidence_accuracy": 1.0,
+            "mean_confidence": 0.9939320683479309
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "8c2446bf2ae6961473692a00e10842d927a5e698297006881a1610fba5298bf6",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_1337_memory_readers.pt",
+            "sha256": "77dc5f3ae45c8e1a12d6b841b76c09c20ff3b97716775b67386219ec35c4c812"
+          }
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "arms": {
+        "consciousness": {
+          "action": {
+            "accuracy": 0.84375,
+            "correct_examples": 270,
+            "incorrect_examples": 50,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9646672010421753
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9607510566711426
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9180985689163208
+              },
+              "1.0": {
+                "accuracy": 0.890625,
+                "examples": 64,
+                "mean_confidence": 0.7541589140892029
+              },
+              "2.0": {
+                "accuracy": 0.328125,
+                "examples": 64,
+                "mean_confidence": 0.2851400673389435
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.9071481481481481,
+              "brier": 0.0927732065320015,
+              "ece": 0.08010898956000734,
+              "selective_accuracy_gap": 0.2875000238418579,
+              "high_confidence_accuracy": 0.987500011920929,
+              "low_confidence_accuracy": 0.699999988079071,
+              "mean_confidence": 0.7765631675720215
+            },
+            "off": {
+              "auroc": 0.6728888888888889,
+              "brier": 0.1475144922733307,
+              "ece": 0.13266503810882568,
+              "selective_accuracy_gap": 0.1625000238418579,
+              "high_confidence_accuracy": 0.925000011920929,
+              "low_confidence_accuracy": 0.762499988079071,
+              "mean_confidence": 0.9764150381088257
+            },
+            "shuffle": {
+              "auroc": 0.25355555555555553,
+              "brier": 0.4582354426383972,
+              "ece": 0.5033959874307918,
+              "selective_accuracy_gap": -0.23749995231628418,
+              "high_confidence_accuracy": 0.7250000238418579,
+              "low_confidence_accuracy": 0.9624999761581421,
+              "mean_confidence": 0.5859583616256714
+            },
+            "noise": {
+              "auroc": 0.5074074074074074,
+              "brier": 0.20084600150585175,
+              "ece": 0.18800780005485584,
+              "selective_accuracy_gap": -0.02499997615814209,
+              "high_confidence_accuracy": 0.831250011920929,
+              "low_confidence_accuracy": 0.856249988079071,
+              "mean_confidence": 0.8597814440727234
+            },
+            "recovered": {
+              "auroc": 0.9071481481481481,
+              "brier": 0.0927732065320015,
+              "ece": 0.08010898956000734,
+              "selective_accuracy_gap": 0.2875000238418579,
+              "high_confidence_accuracy": 0.987500011920929,
+              "low_confidence_accuracy": 0.699999988079071,
+              "mean_confidence": 0.7765631675720215
+            }
+          },
+          "output_only": {
+            "auroc": 0.8246296296296296,
+            "brier": 0.10454636812210083,
+            "ece": 0.038581075615226515,
+            "selective_accuracy_gap": 0.2124999761581421,
+            "high_confidence_accuracy": 0.949999988079071,
+            "low_confidence_accuracy": 0.737500011920929,
+            "mean_confidence": 0.8602854609489441
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "bf8ef98ec71ea79bac9d1d1dcb311b1ed0167fe9790edb11aedc40db2aa1799b",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_7331_consciousness_readers.pt",
+            "sha256": "22b7256609ff4ac652c94e9936c262944b1ca51d09eaa277a8daeefaa4044793"
+          }
+        },
+        "memory": {
+          "action": {
+            "accuracy": 1.0,
+            "correct_examples": 320,
+            "incorrect_examples": 0,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 1.0
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 1.0
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 1.0
+              },
+              "1.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 1.0
+              },
+              "2.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9849985837936401
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": NaN,
+              "brier": 0.0027938727289438248,
+              "ece": 0.0030003199788575935,
+              "selective_accuracy_gap": 0.0,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.9969997406005859
+            },
+            "off": {
+              "auroc": NaN,
+              "brier": 0.07541818916797638,
+              "ece": 0.2736429423093796,
+              "selective_accuracy_gap": 0.0,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.7263568639755249
+            },
+            "shuffle": {
+              "auroc": NaN,
+              "brier": 0.0,
+              "ece": 0.0,
+              "selective_accuracy_gap": 0.0,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 1.0
+            },
+            "noise": {
+              "auroc": NaN,
+              "brier": 0.030559781938791275,
+              "ece": 0.12028920001680946,
+              "selective_accuracy_gap": 0.0,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.8797107934951782
+            },
+            "recovered": {
+              "auroc": NaN,
+              "brier": 0.0027938727289438248,
+              "ece": 0.0030003199788575935,
+              "selective_accuracy_gap": 0.0,
+              "high_confidence_accuracy": 1.0,
+              "low_confidence_accuracy": 1.0,
+              "mean_confidence": 0.9969997406005859
+            }
+          },
+          "output_only": {
+            "auroc": NaN,
+            "brier": 1.2264854376553558e-05,
+            "ece": 0.0023260116577148438,
+            "selective_accuracy_gap": 0.0,
+            "high_confidence_accuracy": 1.0,
+            "low_confidence_accuracy": 1.0,
+            "mean_confidence": 0.9976739883422852
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "047b9ca6361c885cd0ca9d38852d36511d61adfbc0fef0e76520386b05349a0a",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_7331_memory_readers.pt",
+            "sha256": "dd9847479f2dbae759fecf36294e45810533ed8b5fdc46c65dd71c3231e2c558"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "experiment": "meta1_bridge32_self_monitoring",
+  "verdict": "M0_INVALID",
+  "reason": "result contains a non-finite measurement"
+}

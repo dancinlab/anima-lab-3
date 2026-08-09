@@ -8,9 +8,9 @@ import math
 from pathlib import Path
 
 try:
-    from measurement.metacognition_registry import METACOGNITION_SPEC, spec_sha256
+    from measurement.metacognition_registry import experiment, spec_sha256
 except ModuleNotFoundError:
-    from metacognition_registry import METACOGNITION_SPEC, spec_sha256
+    from metacognition_registry import experiment, spec_sha256
 
 
 def _finite_tree(value) -> bool:
@@ -69,11 +69,12 @@ def _judge_arm(row: dict, bars: dict, levels: list[float]) -> dict:
 
 
 def adjudicate(payload: dict) -> dict:
-    spec = METACOGNITION_SPEC
-    if payload.get("experiment") != spec["experiment"]:
+    try:
+        spec = experiment(payload.get("experiment"))
+    except ValueError:
         return {"experiment": payload.get("experiment"), "verdict": "M0_INVALID",
                 "reason": "result names an unregistered experiment"}
-    if payload.get("spec_sha256") != spec_sha256() or payload.get("spec") != spec:
+    if payload.get("spec_sha256") != spec_sha256(spec) or payload.get("spec") != spec:
         return {"experiment": spec["experiment"], "verdict": "M0_INVALID",
                 "reason": "result spec does not match the registered SSOT"}
     if not _finite_tree(payload):
@@ -113,7 +114,7 @@ def adjudicate(payload: dict) -> dict:
     else:
         verdict, reason = "M2_CALIBRATED_NOT_UNIQUE", "QuantumC readout calibrated correctness but output logits were equivalent"
     return {"experiment": spec["experiment"], "verdict": verdict, "reason": reason,
-            "spec_sha256": spec_sha256(), "seeds": judged}
+            "spec_sha256": spec_sha256(spec), "seeds": judged}
 
 
 def judged_seed_memory(judged: dict, spec: dict) -> list[dict]:

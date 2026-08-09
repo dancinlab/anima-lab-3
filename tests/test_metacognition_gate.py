@@ -1,7 +1,12 @@
 from copy import deepcopy
 
 from measurement.metacognition_gate import adjudicate
-from measurement.metacognition_registry import METACOGNITION_SPEC, spec_sha256
+from measurement.metacognition_registry import (
+    METACOGNITION_MEMORY_NOISE_REPAIR_SPEC,
+    METACOGNITION_SPEC,
+    experiment,
+    spec_sha256,
+)
 
 
 def confidence(auroc=0.85, brier=0.12, ece=0.08, gap=0.35):
@@ -29,11 +34,11 @@ def arm(seed, name, output_auroc=0.70, output_brier=0.16):
     }
 
 
-def payload():
+def payload(spec=METACOGNITION_SPEC):
     return {
-        "experiment": METACOGNITION_SPEC["experiment"],
-        "spec": deepcopy(METACOGNITION_SPEC),
-        "spec_sha256": spec_sha256(),
+        "experiment": spec["experiment"],
+        "spec": deepcopy(spec),
+        "spec_sha256": spec_sha256(spec),
         "seeds": [
             {"seed": seed, "arms": {name: arm(seed, name) for name in METACOGNITION_SPEC["arms"]}}
             for seed in METACOGNITION_SPEC["seeds"]
@@ -71,3 +76,12 @@ def test_meta_gate_rejects_non_finite_and_spec_drift():
     drift = payload()
     drift["spec"]["reader"]["train_steps"] += 1
     assert adjudicate(drift)["verdict"] == "M0_INVALID"
+
+
+def test_memory_noise_repair_changes_only_the_noise_topology():
+    repair = experiment(METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["experiment"])
+    assert repair["memory_noise_topology"] == "global_broadcast"
+    assert repair["readout_noise_levels"] == METACOGNITION_SPEC["readout_noise_levels"]
+    assert repair["thresholds"] == METACOGNITION_SPEC["thresholds"]
+    assert repair["reader"] == METACOGNITION_SPEC["reader"]
+    assert adjudicate(payload(repair))["verdict"] == "M1_STATE_MONITORING_ADVANTAGE"

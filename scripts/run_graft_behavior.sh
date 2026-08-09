@@ -90,7 +90,8 @@ case "$ACTION" in
         measurement/state_survival_results.json measurement/state_survival_verdict.json
     fi
     if [ "$ACTION" = meta1 ]; then
-      exec "$PYTHON_BIN" metacognition.py
+      exec "$PYTHON_BIN" metacognition.py \
+        --experiment meta1_bridge32_self_monitoring_memory_noise_repair
     fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \

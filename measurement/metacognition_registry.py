@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 
 
 METACOGNITION_SPEC = {
@@ -54,10 +55,32 @@ METACOGNITION_SPEC = {
     },
 }
 
+METACOGNITION_MEMORY_NOISE_REPAIR_SPEC = deepcopy(METACOGNITION_SPEC)
+METACOGNITION_MEMORY_NOISE_REPAIR_SPEC.update({
+    "experiment": "meta1_bridge32_self_monitoring_memory_noise_repair",
+    # Direct memory stores one global vector replicated across cells. Perturb that
+    # vector once and replicate the perturbation; independent per-cell noise is
+    # cancelled by the bridge's registered mean pooling.
+    "memory_noise_topology": "global_broadcast",
+})
 
-def canonical_spec() -> str:
-    return json.dumps(METACOGNITION_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+REGISTERED_EXPERIMENTS = {
+    METACOGNITION_SPEC["experiment"]: METACOGNITION_SPEC,
+    METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["experiment"]:
+        METACOGNITION_MEMORY_NOISE_REPAIR_SPEC,
+}
 
 
-def spec_sha256() -> str:
-    return hashlib.sha256(canonical_spec().encode()).hexdigest()
+def experiment(name: str) -> dict:
+    try:
+        return deepcopy(REGISTERED_EXPERIMENTS[name])
+    except KeyError as exc:
+        raise ValueError(f"unknown META-1 experiment: {name}") from exc
+
+
+def canonical_spec(spec: dict | None = None) -> str:
+    return json.dumps(spec or METACOGNITION_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def spec_sha256(spec: dict | None = None) -> str:
+    return hashlib.sha256(canonical_spec(spec).encode()).hexdigest()
