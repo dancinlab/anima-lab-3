@@ -41,7 +41,7 @@ case "$ACTION" in
       measurement/state_survival_gate.py measurement/bridge_capacity_gate.py metacognition.py \
       measurement/metacognition_gate.py synergy.py measurement/synergy_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1)
+  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -96,11 +96,18 @@ case "$ACTION" in
     if [ "$ACTION" = synergy1 ]; then
       exec "$PYTHON_BIN" synergy.py --experiment synergy1_split_cue_modular_sum
     fi
+    if [ "$ACTION" = synergy1-repair ]; then
+      exec "$PYTHON_BIN" synergy.py \
+        --experiment synergy1_split_cue_modular_sum_control_role_repair \
+        --output measurement/synergy_results.json \
+        --verdict measurement/synergy_verdict.json \
+        --checkpoint-dir checkpoints/synergy1_control_role_repair
+    fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1|launch-synergy1-repair)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -111,7 +118,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac

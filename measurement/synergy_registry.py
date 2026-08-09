@@ -64,7 +64,20 @@ SYNERGY_SPEC = {
 }
 
 
-REGISTERED_EXPERIMENTS = {SYNERGY_SPEC["experiment"]: SYNERGY_SPEC}
+SYNERGY_CONTROL_REPAIR_SPEC = deepcopy(SYNERGY_SPEC)
+SYNERGY_CONTROL_REPAIR_SPEC.update({
+    "experiment": "synergy1_split_cue_modular_sum_control_role_repair",
+    # A direct store preserves clues but is not guaranteed to compute their nonlinear
+    # modular relation. The trained recurrent arm is the registered task control.
+    "validation_arms": ["gru"],
+    "comparison_arms": ["direct_memory", "gru"],
+})
+
+
+REGISTERED_EXPERIMENTS = {
+    SYNERGY_SPEC["experiment"]: SYNERGY_SPEC,
+    SYNERGY_CONTROL_REPAIR_SPEC["experiment"]: SYNERGY_CONTROL_REPAIR_SPEC,
+}
 
 
 def experiment(name: str) -> dict:

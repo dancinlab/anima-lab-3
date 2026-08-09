@@ -116,19 +116,21 @@ def adjudicate(payload: dict) -> dict:
     except (KeyError, TypeError, ValueError) as exc:
         return {"experiment": spec["experiment"], "verdict": "Y0_INVALID", "reason": str(exc)}
 
-    controls = [judged[str(seed)][arm] for seed in spec["seeds"] for arm in ("direct_memory", "gru")]
+    validation_arms = spec.get("validation_arms", ["direct_memory", "gru"])
+    controls = [judged[str(seed)][arm] for seed in spec["seeds"] for arm in validation_arms]
     quantum = [judged[str(seed)]["quantum_pair"] for seed in spec["seeds"]]
     if not all(row["integrated"] and row["language_ok"] for row in controls):
-        verdict, reason = "Y0_INVALID", "direct-memory or GRU positive control did not validate the task"
+        verdict, reason = "Y0_INVALID", "a registered task-validation arm did not validate the task"
     elif not all(row["integrated"] for row in quantum):
         verdict, reason = "Y3_NOT_INTEGRATED", "QuantumC pair did not integrate both clues in both seeds"
     elif not all(row["language_ok"] for row in quantum):
         verdict, reason = "Y4_CONFOUNDED", "integration was accompanied by excessive neutral-language drift"
     else:
         margin = spec["thresholds"]["quantum_advantage_margin"]
+        comparison_arms = spec.get("comparison_arms", ["direct_memory", "gru"])
         advantage = all(
             judged[str(seed)]["quantum_pair"]["normal"]
-            > max(judged[str(seed)]["direct_memory"]["normal"], judged[str(seed)]["gru"]["normal"]) + margin
+            > max(judged[str(seed)][arm]["normal"] for arm in comparison_arms) + margin
             for seed in spec["seeds"]
         )
         if advantage:

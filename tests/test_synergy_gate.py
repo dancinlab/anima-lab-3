@@ -3,7 +3,11 @@ from copy import deepcopy
 import torch
 
 from measurement.synergy_gate import _expected_audit, adjudicate
-from measurement.synergy_registry import SYNERGY_SPEC, spec_sha256
+from measurement.synergy_registry import (
+    SYNERGY_CONTROL_REPAIR_SPEC,
+    SYNERGY_SPEC,
+    spec_sha256,
+)
 from synergy import SplitCueExample, _partner_permutation, audit_examples
 
 
@@ -20,16 +24,16 @@ def arm(normal=0.90, a_only=0.25, b_only=0.25, shuffled=0.25, kl=0.1):
     }
 
 
-def payload(quantum=None, memory=None, gru=None):
+def payload(quantum=None, memory=None, gru=None, spec=SYNERGY_SPEC):
     quantum = quantum or arm()
     memory = memory or arm(normal=0.90)
     gru = gru or arm(normal=0.90)
     return {
-        "experiment": SYNERGY_SPEC["experiment"],
-        "spec": deepcopy(SYNERGY_SPEC),
-        "spec_sha256": spec_sha256(SYNERGY_SPEC),
+        "experiment": spec["experiment"],
+        "spec": deepcopy(spec),
+        "spec_sha256": spec_sha256(spec),
         "dataset_audit": {
-            split: _expected_audit(SYNERGY_SPEC, split) for split in ("train", "eval")
+            split: _expected_audit(spec, split) for split in ("train", "eval")
         },
         "seeds": [
             {
@@ -41,10 +45,10 @@ def payload(quantum=None, memory=None, gru=None):
                 },
                 "checkpoints": {
                     name: {"path": f"seed_{seed}_{name}.pt", "sha256": str(index + 1) * 64}
-                    for index, name in enumerate(SYNERGY_SPEC["arms"])
+                    for index, name in enumerate(spec["arms"])
                 },
             }
-            for seed in SYNERGY_SPEC["seeds"]
+            for seed in spec["seeds"]
         ],
     }
 
@@ -73,6 +77,20 @@ def test_synergy_gate_fails_closed_on_balance_controls_hash_and_recovery():
         "logits_identical"
     ] = False
     assert adjudicate(bad_recovery)["verdict"] == "Y3_NOT_INTEGRATED"
+
+
+def test_control_role_repair_keeps_direct_memory_as_comparison_not_validator():
+    repaired = payload(
+        memory=arm(normal=0.35, kl=2.0),
+        spec=SYNERGY_CONTROL_REPAIR_SPEC,
+    )
+    assert adjudicate(repaired)["verdict"] == "Y1_INTEGRATED_NOT_UNIQUE"
+    weak_gru = payload(
+        memory=arm(normal=0.35, kl=2.0),
+        gru=arm(normal=0.50),
+        spec=SYNERGY_CONTROL_REPAIR_SPEC,
+    )
+    assert adjudicate(weak_gru)["verdict"] == "Y0_INVALID"
 
 
 def test_synergy_gate_rejects_non_finite_and_spec_drift():
