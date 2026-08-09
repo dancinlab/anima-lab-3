@@ -1,0 +1,239 @@
+{
+  "experiment": "workspace1_split_cue_information_map",
+  "spec": {
+    "experiment": "workspace1_split_cue_information_map",
+    "source_experiment": "synergy1_split_cue_modular_sum_control_role_repair",
+    "source_verdict": "Y3_NOT_INTEGRATED",
+    "source_results": "measurement/synergy_results.json",
+    "source_verdict_path": "measurement/synergy_verdict.json",
+    "checkpoint_dir": "checkpoints/synergy1_control_role_repair",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "module_a_cues": [
+      "붉음",
+      "푸름",
+      "초록",
+      "금빛"
+    ],
+    "module_b_cues": [
+      "원형",
+      "사각",
+      "삼각",
+      "별빛"
+    ],
+    "nuisance_words": [
+      "아침",
+      "저녁",
+      "실내",
+      "실외",
+      "가까이",
+      "멀리",
+      "조용히",
+      "빠르게"
+    ],
+    "cells_per_module": 48,
+    "engine_dim": 48,
+    "state_dim": 96,
+    "bridge_hub_dim": 32,
+    "warm_steps": 5,
+    "sense_steps": 3,
+    "delay_steps": [
+      1,
+      4
+    ],
+    "train_repeats_per_pair": 6,
+    "eval_repeats_per_pair": 4,
+    "probe_ridge": 1.0,
+    "label_control": {
+      "method": "mean_random_permutation",
+      "permutations": 32
+    },
+    "channels": [
+      "raw_pair",
+      "bridge_cells",
+      "bridge_pooled",
+      "bridge_gate",
+      "normalized_code"
+    ],
+    "labels": [
+      "module_a",
+      "module_b"
+    ],
+    "thresholds": {
+      "signal_accuracy": 0.75,
+      "positive_control_accuracy": 0.9,
+      "shuffled_label_max_accuracy": 0.4
+    }
+  },
+  "spec_sha256": "07b5761bb9308a8b31f77dbf12bb987be4ceb1e13569f76570d8690544b5b59e",
+  "source": {
+    "experiment": "synergy1_split_cue_modular_sum_control_role_repair",
+    "verdict": "Y3_NOT_INTEGRATED",
+    "results_path": "measurement/synergy_results.json",
+    "results_sha256": "357bc31c24a11350fc9797851af5f5a993b1d101289136521e7b63bd600935b3",
+    "verdict_path": "measurement/synergy_verdict.json",
+    "verdict_sha256": "ab9d32f5dbfc965e0a0e21c87769be2175e6528993cd0ef9477d716e1988f281"
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "checkpoint": {
+        "path": "checkpoints/synergy1_control_role_repair/seed_1337_quantum_pair.pt",
+        "sha256": "bb1c76b55d2001d6ed8d84dd684a056b2635a2831797c98db88857fa9531f35a"
+      },
+      "channels": {
+        "raw_pair": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23876953125,
+            "shuffled_label_accuracy_std": 0.07383064180612564,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25244140625,
+            "shuffled_label_accuracy_std": 0.08415311574935913,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_cells": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26708984375,
+            "shuffled_label_accuracy_std": 0.08833303302526474,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27734375,
+            "shuffled_label_accuracy_std": 0.09943689405918121,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_pooled": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25146484375,
+            "shuffled_label_accuracy_std": 0.08131752163171768,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.08888193964958191,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_gate": {
+          "module_a": {
+            "accuracy": 0.71875,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.0740128755569458,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 0.890625,
+            "shuffled_label_accuracy": 0.26123046875,
+            "shuffled_label_accuracy_std": 0.09221020340919495,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "normalized_code": {
+          "module_a": {
+            "accuracy": 0.546875,
+            "shuffled_label_accuracy": 0.2509765625,
+            "shuffled_label_accuracy_std": 0.052398744970560074,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 0.796875,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.07395486533641815,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "checkpoint": {
+        "path": "checkpoints/synergy1_control_role_repair/seed_7331_quantum_pair.pt",
+        "sha256": "332192d49270d81c7a00f1cb4401d45ef992ddfa96a14e590a079beefcc252ee"
+      },
+      "channels": {
+        "raw_pair": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2412109375,
+            "shuffled_label_accuracy_std": 0.09591712802648544,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.11979122459888458,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_cells": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24365234375,
+            "shuffled_label_accuracy_std": 0.07613273710012436,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23046875,
+            "shuffled_label_accuracy_std": 0.09663528949022293,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_pooled": {
+          "module_a": {
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.09407495707273483,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22216796875,
+            "shuffled_label_accuracy_std": 0.09007564932107925,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "bridge_gate": {
+          "module_a": {
+            "accuracy": 0.625,
+            "shuffled_label_accuracy": 0.25537109375,
+            "shuffled_label_accuracy_std": 0.10471441596746445,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 0.828125,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.12847551703453064,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "normalized_code": {
+          "module_a": {
+            "accuracy": 0.578125,
+            "shuffled_label_accuracy": 0.2255859375,
+            "shuffled_label_accuracy_std": 0.08404680341482162,
+            "shuffled_label_permutations": 32
+          },
+          "module_b": {
+            "accuracy": 0.75,
+            "shuffled_label_accuracy": 0.23876953125,
+            "shuffled_label_accuracy_std": 0.09930133074522018,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    }
+  ]
+}
