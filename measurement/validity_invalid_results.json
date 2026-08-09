@@ -1,0 +1,2615 @@
+{
+  "experiment": "validity1_action_path_decomposition",
+  "spec": {
+    "experiment": "validity1_action_path_decomposition",
+    "source_experiment": "relation1_hippocampal_role_content_binding_role_training_repair",
+    "source_verdict": "R0_INVALID",
+    "source_results": "measurement/relation_results.json",
+    "source_results_sha256": "ac4988bb8253b03d77637228d3db6a223f4eeec80fbe81ea3b6ee17b55f77d17",
+    "source_verdict_path": "measurement/relation_verdict.json",
+    "source_verdict_sha256": "85fcdfeca7e1d3b81b44dbcb68cb95bd62a76ed0e860b24f5e312b9ced586e4c",
+    "checkpoint_dir": "checkpoints/validity1_source/repair/checkpoints",
+    "archive": {
+      "repo_id": "dancinlab/anima-lab-research-archive",
+      "revision": "relation1-role-binding",
+      "prefix": "repair/checkpoints"
+    },
+    "checkpoint_sha256": {
+      "1337": {
+        "quantum_workspace_2": "b579ef5047a0564afc53307ee6696e322a793fb65fc53577b68c179cf9d429b8",
+        "quantum_relation": "1d9f0faf7ef9ad61163f31fe1cbcd80e0df40f754e34c3b45b119046e734c2a0",
+        "memory_relation": "4aa7ce30ebc975bc2faec3829fa097d7a21fcf4e5efcad3a81ee6b9dd95f6e21",
+        "gru": "6a1237d3eba631cbac42b5a25ff4da330b2196faf32d5badde418b7ddca06303"
+      },
+      "7331": {
+        "quantum_workspace_2": "b9ac017aa24751e2074e2fb1df15c6d1690a91d46ad32bf31ee4bc1bd048e92c",
+        "quantum_relation": "2f592b5af633fdf49115a558efac7d53fb728e6fc27726e2d5505bbafd1fab95",
+        "memory_relation": "70bc32d7346137e40470b13b7adb200f8e582d6b0fca9e5d9fa8a3015ac6ee87",
+        "gru": "3046307f30f7e24c24bbd159a87c3737e3bfacdceb9c136da618dd6cf6dae2bb"
+      }
+    },
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "arms": [
+      "quantum_workspace_2",
+      "quantum_relation",
+      "memory_relation",
+      "gru"
+    ],
+    "validation_arm": "gru",
+    "reference_arm": "memory_relation",
+    "actions": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ],
+    "probe_ridge": 1.0,
+    "label_control": {
+      "method": "mean_random_permutation",
+      "permutations": 32
+    },
+    "normalization_modes": [
+      "train_style",
+      "runtime_style"
+    ],
+    "stages": [
+      "sensory",
+      "relation",
+      "direct_action",
+      "language"
+    ],
+    "thresholds": {
+      "sensory_accuracy": 0.9,
+      "relation_accuracy": 0.8,
+      "direct_action_accuracy": 0.8,
+      "language_accuracy": 0.8,
+      "shuffled_label_max_accuracy": 0.4
+    }
+  },
+  "spec_sha256": "e2809d5572b13ba962bed9e312bfec28ed3173018124af801b20382b97624046",
+  "model": "mistralai/Mistral-7B-Instruct-v0.2",
+  "source": {
+    "experiment": "relation1_hippocampal_role_content_binding_role_training_repair",
+    "verdict": "R0_INVALID",
+    "results_path": "measurement/relation_results.json",
+    "results_sha256": "ac4988bb8253b03d77637228d3db6a223f4eeec80fbe81ea3b6ee17b55f77d17",
+    "verdict_path": "measurement/relation_verdict.json",
+    "verdict_sha256": "85fcdfeca7e1d3b81b44dbcb68cb95bd62a76ed0e860b24f5e312b9ced586e4c",
+    "dataset_audit": {
+      "train": {
+        "examples": 150,
+        "pair_count": 25,
+        "examples_per_pair": 6,
+        "target_counts": {
+          "0": 30,
+          "1": 30,
+          "2": 30,
+          "3": 30,
+          "4": 30
+        },
+        "module_a_target_counts": {
+          "0": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "1": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "2": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "3": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "4": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          }
+        },
+        "module_b_target_counts": {
+          "0": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "1": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "2": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "3": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          },
+          "4": {
+            "0": 6,
+            "1": 6,
+            "2": 6,
+            "3": 6,
+            "4": 6
+          }
+        }
+      },
+      "eval": {
+        "examples": 100,
+        "pair_count": 25,
+        "examples_per_pair": 4,
+        "target_counts": {
+          "0": 20,
+          "1": 20,
+          "2": 20,
+          "3": 20,
+          "4": 20
+        },
+        "module_a_target_counts": {
+          "0": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "1": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "2": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "3": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "4": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          }
+        },
+        "module_b_target_counts": {
+          "0": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "1": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "2": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "3": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          },
+          "4": {
+            "0": 4,
+            "1": 4,
+            "2": 4,
+            "3": 4,
+            "4": 4
+          }
+        }
+      }
+    },
+    "reproduced": true
+  },
+  "dataset_audit": {
+    "train": {
+      "examples": 150,
+      "pair_count": 25,
+      "examples_per_pair": 6,
+      "target_counts": {
+        "0": 30,
+        "1": 30,
+        "2": 30,
+        "3": 30,
+        "4": 30
+      },
+      "module_a_target_counts": {
+        "0": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "1": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "2": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "3": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "4": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        }
+      },
+      "module_b_target_counts": {
+        "0": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "1": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "2": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "3": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        },
+        "4": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6,
+          "4": 6
+        }
+      }
+    },
+    "eval": {
+      "examples": 100,
+      "pair_count": 25,
+      "examples_per_pair": 4,
+      "target_counts": {
+        "0": 20,
+        "1": 20,
+        "2": 20,
+        "3": 20,
+        "4": 20
+      },
+      "module_a_target_counts": {
+        "0": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "1": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "2": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "3": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "4": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        }
+      },
+      "module_b_target_counts": {
+        "0": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "1": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "2": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "3": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        },
+        "4": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4,
+          "4": 4
+        }
+      }
+    }
+  },
+  "action_tokens": {
+    "token_ids": {
+      "A": 330,
+      "B": 365,
+      "C": 334,
+      "D": 384,
+      "E": 413
+    },
+    "unique_single_tokens": true
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "sensory": {
+        "quantum": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1796875149011612,
+            "shuffled_label_accuracy_std": 0.08826396614313126,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.17812500894069672,
+            "shuffled_label_accuracy_std": 0.09514585882425308,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "memory": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.16718749701976776,
+            "shuffled_label_accuracy_std": 0.08979958295822144,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.16250000894069672,
+            "shuffled_label_accuracy_std": 0.0927024781703949,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "arms": {
+        "quantum_workspace_2": {
+          "relation": {
+            "accuracy": 0.28999999165534973,
+            "shuffled_label_accuracy": 0.19937501847743988,
+            "shuffled_label_accuracy_std": 0.03181366249918938,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                6,
+                4,
+                4,
+                3,
+                3
+              ],
+              [
+                4,
+                8,
+                3,
+                3,
+                2
+              ],
+              [
+                6,
+                4,
+                3,
+                5,
+                2
+              ],
+              [
+                2,
+                6,
+                2,
+                5,
+                5
+              ],
+              [
+                6,
+                4,
+                0,
+                3,
+                7
+              ]
+            ],
+            "per_class_recall": [
+              0.3,
+              0.4,
+              0.15,
+              0.25,
+              0.35
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.20999999344348907,
+              "shuffled_label_accuracy": 0.20406250655651093,
+              "shuffled_label_accuracy_std": 0.022200698032975197,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  6,
+                  7,
+                  1,
+                  0,
+                  6
+                ],
+                [
+                  6,
+                  6,
+                  1,
+                  2,
+                  5
+                ],
+                [
+                  6,
+                  5,
+                  2,
+                  3,
+                  4
+                ],
+                [
+                  4,
+                  9,
+                  0,
+                  1,
+                  6
+                ],
+                [
+                  5,
+                  7,
+                  1,
+                  1,
+                  6
+                ]
+              ],
+              "per_class_recall": [
+                0.3,
+                0.3,
+                0.1,
+                0.05,
+                0.3
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.27000001072883606,
+              "shuffled_label_accuracy": 0.2056249976158142,
+              "shuffled_label_accuracy_std": 0.0281666349619627,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  2,
+                  8,
+                  0,
+                  5,
+                  5
+                ],
+                [
+                  1,
+                  11,
+                  1,
+                  3,
+                  4
+                ],
+                [
+                  2,
+                  8,
+                  2,
+                  3,
+                  5
+                ],
+                [
+                  0,
+                  11,
+                  0,
+                  6,
+                  3
+                ],
+                [
+                  0,
+                  10,
+                  2,
+                  2,
+                  6
+                ]
+              ],
+              "per_class_recall": [
+                0.1,
+                0.55,
+                0.1,
+                0.3,
+                0.3
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 1.0919564962387085,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.18000000715255737,
+            "source_accuracy": 0.18000000715255737,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 94,
+              "B": 0,
+              "C": 6,
+              "D": 0,
+              "E": 0
+            },
+            "confusion_matrix": [
+              [
+                17,
+                0,
+                3,
+                0,
+                0
+              ],
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                19,
+                0,
+                1,
+                0,
+                0
+              ],
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                18,
+                0,
+                2,
+                0,
+                0
+              ]
+            ],
+            "per_class_recall": [
+              0.85,
+              0.0,
+              0.05,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "quantum_relation": {
+          "relation": {
+            "accuracy": 0.23999999463558197,
+            "shuffled_label_accuracy": 0.19312500953674316,
+            "shuffled_label_accuracy_std": 0.030252840369939804,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                6,
+                3,
+                3,
+                4,
+                4
+              ],
+              [
+                5,
+                4,
+                4,
+                4,
+                3
+              ],
+              [
+                5,
+                3,
+                5,
+                3,
+                4
+              ],
+              [
+                5,
+                3,
+                4,
+                5,
+                3
+              ],
+              [
+                3,
+                5,
+                4,
+                4,
+                4
+              ]
+            ],
+            "per_class_recall": [
+              0.3,
+              0.2,
+              0.25,
+              0.25,
+              0.2
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.1899999976158142,
+              "shuffled_label_accuracy": 0.1993750035762787,
+              "shuffled_label_accuracy_std": 0.021350860595703125,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  6,
+                  2,
+                  3,
+                  2,
+                  7
+                ],
+                [
+                  7,
+                  2,
+                  3,
+                  2,
+                  6
+                ],
+                [
+                  7,
+                  2,
+                  4,
+                  3,
+                  4
+                ],
+                [
+                  8,
+                  2,
+                  5,
+                  1,
+                  4
+                ],
+                [
+                  5,
+                  5,
+                  3,
+                  1,
+                  6
+                ]
+              ],
+              "per_class_recall": [
+                0.3,
+                0.1,
+                0.2,
+                0.05,
+                0.3
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.1899999976158142,
+              "shuffled_label_accuracy": 0.1993750035762787,
+              "shuffled_label_accuracy_std": 0.024358967319130898,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  5,
+                  2,
+                  3,
+                  2,
+                  8
+                ],
+                [
+                  5,
+                  3,
+                  4,
+                  1,
+                  7
+                ],
+                [
+                  4,
+                  3,
+                  2,
+                  0,
+                  11
+                ],
+                [
+                  2,
+                  3,
+                  4,
+                  1,
+                  10
+                ],
+                [
+                  5,
+                  3,
+                  4,
+                  0,
+                  8
+                ]
+              ],
+              "per_class_recall": [
+                0.25,
+                0.15,
+                0.1,
+                0.05,
+                0.4
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.725469172000885,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.18000000715255737,
+            "source_accuracy": 0.1899999976158142,
+            "source_accuracy_exact": false,
+            "selection_counts": {
+              "A": 44,
+              "B": 45,
+              "C": 9,
+              "D": 2,
+              "E": 0
+            },
+            "confusion_matrix": [
+              [
+                8,
+                9,
+                2,
+                1,
+                0
+              ],
+              [
+                11,
+                8,
+                0,
+                1,
+                0
+              ],
+              [
+                9,
+                9,
+                2,
+                0,
+                0
+              ],
+              [
+                8,
+                9,
+                3,
+                0,
+                0
+              ],
+              [
+                8,
+                10,
+                2,
+                0,
+                0
+              ]
+            ],
+            "per_class_recall": [
+              0.4,
+              0.4,
+              0.1,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "memory_relation": {
+          "relation": {
+            "accuracy": 0.5199999809265137,
+            "shuffled_label_accuracy": 0.19249999523162842,
+            "shuffled_label_accuracy_std": 0.0251246877014637,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                14,
+                1,
+                1,
+                2,
+                2
+              ],
+              [
+                4,
+                6,
+                2,
+                3,
+                5
+              ],
+              [
+                1,
+                3,
+                11,
+                4,
+                1
+              ],
+              [
+                4,
+                0,
+                7,
+                9,
+                0
+              ],
+              [
+                5,
+                2,
+                0,
+                1,
+                12
+              ]
+            ],
+            "per_class_recall": [
+              0.7,
+              0.3,
+              0.55,
+              0.45,
+              0.6
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.36000001430511475,
+              "shuffled_label_accuracy": 0.18718750774860382,
+              "shuffled_label_accuracy_std": 0.0431736595928669,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  9,
+                  3,
+                  2,
+                  1,
+                  5
+                ],
+                [
+                  4,
+                  7,
+                  5,
+                  3,
+                  1
+                ],
+                [
+                  3,
+                  3,
+                  5,
+                  3,
+                  6
+                ],
+                [
+                  3,
+                  2,
+                  4,
+                  6,
+                  5
+                ],
+                [
+                  4,
+                  4,
+                  1,
+                  2,
+                  9
+                ]
+              ],
+              "per_class_recall": [
+                0.45,
+                0.35,
+                0.25,
+                0.3,
+                0.45
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.33000001311302185,
+              "shuffled_label_accuracy": 0.18968749046325684,
+              "shuffled_label_accuracy_std": 0.04626583307981491,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  13,
+                  2,
+                  3,
+                  1,
+                  1
+                ],
+                [
+                  7,
+                  8,
+                  1,
+                  3,
+                  1
+                ],
+                [
+                  8,
+                  6,
+                  1,
+                  4,
+                  1
+                ],
+                [
+                  4,
+                  5,
+                  2,
+                  7,
+                  2
+                ],
+                [
+                  8,
+                  7,
+                  0,
+                  1,
+                  4
+                ]
+              ],
+              "per_class_recall": [
+                0.65,
+                0.4,
+                0.05,
+                0.35,
+                0.2
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.42237889766693115,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.4399999976158142,
+            "source_accuracy": 0.44999998807907104,
+            "source_accuracy_exact": false,
+            "selection_counts": {
+              "A": 17,
+              "B": 13,
+              "C": 17,
+              "D": 27,
+              "E": 26
+            },
+            "confusion_matrix": [
+              [
+                11,
+                1,
+                2,
+                3,
+                3
+              ],
+              [
+                0,
+                6,
+                4,
+                5,
+                5
+              ],
+              [
+                3,
+                1,
+                7,
+                4,
+                5
+              ],
+              [
+                0,
+                4,
+                3,
+                10,
+                3
+              ],
+              [
+                3,
+                1,
+                1,
+                5,
+                10
+              ]
+            ],
+            "per_class_recall": [
+              0.55,
+              0.3,
+              0.35,
+              0.5,
+              0.5
+            ]
+          }
+        },
+        "gru": {
+          "relation": {
+            "accuracy": 0.44999998807907104,
+            "shuffled_label_accuracy": 0.20031249523162842,
+            "shuffled_label_accuracy_std": 0.02627788484096527,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                10,
+                1,
+                3,
+                2,
+                4
+              ],
+              [
+                3,
+                10,
+                2,
+                2,
+                3
+              ],
+              [
+                3,
+                5,
+                6,
+                3,
+                3
+              ],
+              [
+                2,
+                2,
+                3,
+                8,
+                5
+              ],
+              [
+                4,
+                3,
+                0,
+                2,
+                11
+              ]
+            ],
+            "per_class_recall": [
+              0.5,
+              0.5,
+              0.3,
+              0.4,
+              0.55
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.4399999976158142,
+              "shuffled_label_accuracy": 0.1965624988079071,
+              "shuffled_label_accuracy_std": 0.05277365446090698,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  13,
+                  1,
+                  1,
+                  2,
+                  3
+                ],
+                [
+                  4,
+                  11,
+                  1,
+                  2,
+                  2
+                ],
+                [
+                  5,
+                  4,
+                  5,
+                  4,
+                  2
+                ],
+                [
+                  7,
+                  0,
+                  2,
+                  7,
+                  4
+                ],
+                [
+                  1,
+                  3,
+                  3,
+                  5,
+                  8
+                ]
+              ],
+              "per_class_recall": [
+                0.65,
+                0.55,
+                0.25,
+                0.35,
+                0.4
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.5199999809265137,
+              "shuffled_label_accuracy": 0.1915625035762787,
+              "shuffled_label_accuracy_std": 0.05368364602327347,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  12,
+                  1,
+                  1,
+                  1,
+                  5
+                ],
+                [
+                  2,
+                  14,
+                  0,
+                  1,
+                  3
+                ],
+                [
+                  4,
+                  4,
+                  7,
+                  5,
+                  0
+                ],
+                [
+                  3,
+                  3,
+                  3,
+                  7,
+                  4
+                ],
+                [
+                  0,
+                  2,
+                  3,
+                  3,
+                  12
+                ]
+              ],
+              "per_class_recall": [
+                0.6,
+                0.7,
+                0.35,
+                0.35,
+                0.6
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.4598538279533386,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.3499999940395355,
+            "source_accuracy": 0.3499999940395355,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 7,
+              "B": 30,
+              "C": 19,
+              "D": 28,
+              "E": 16
+            },
+            "confusion_matrix": [
+              [
+                3,
+                7,
+                1,
+                4,
+                5
+              ],
+              [
+                1,
+                13,
+                3,
+                1,
+                2
+              ],
+              [
+                1,
+                7,
+                6,
+                6,
+                0
+              ],
+              [
+                1,
+                2,
+                5,
+                8,
+                4
+              ],
+              [
+                1,
+                1,
+                4,
+                9,
+                5
+              ]
+            ],
+            "per_class_recall": [
+              0.15,
+              0.65,
+              0.3,
+              0.4,
+              0.25
+            ]
+          }
+        }
+      },
+      "checkpoints": {
+        "quantum_workspace_2": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_1337_quantum_workspace_2.pt",
+          "sha256": "b579ef5047a0564afc53307ee6696e322a793fb65fc53577b68c179cf9d429b8"
+        },
+        "quantum_relation": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_1337_quantum_relation.pt",
+          "sha256": "1d9f0faf7ef9ad61163f31fe1cbcd80e0df40f754e34c3b45b119046e734c2a0"
+        },
+        "memory_relation": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_1337_memory_relation.pt",
+          "sha256": "4aa7ce30ebc975bc2faec3829fa097d7a21fcf4e5efcad3a81ee6b9dd95f6e21"
+        },
+        "gru": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_1337_gru.pt",
+          "sha256": "6a1237d3eba631cbac42b5a25ff4da330b2196faf32d5badde418b7ddca06303"
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "sensory": {
+        "quantum": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2015625238418579,
+            "shuffled_label_accuracy_std": 0.12592431902885437,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2343749850988388,
+            "shuffled_label_accuracy_std": 0.10638777911663055,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "memory": {
+          "module_a": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21562500298023224,
+            "shuffled_label_accuracy_std": 0.12464793771505356,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "module_b": {
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.19218750298023224,
+            "shuffled_label_accuracy_std": 0.08111467212438583,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                20,
+                0,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                20,
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                20,
+                0
+              ],
+              [
+                0,
+                0,
+                0,
+                0,
+                20
+              ]
+            ],
+            "per_class_recall": [
+              1.0,
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "arms": {
+        "quantum_workspace_2": {
+          "relation": {
+            "accuracy": 0.23000000417232513,
+            "shuffled_label_accuracy": 0.20374998450279236,
+            "shuffled_label_accuracy_std": 0.026663411408662796,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                6,
+                4,
+                4,
+                4,
+                2
+              ],
+              [
+                5,
+                4,
+                3,
+                5,
+                3
+              ],
+              [
+                2,
+                5,
+                3,
+                4,
+                6
+              ],
+              [
+                5,
+                3,
+                3,
+                5,
+                4
+              ],
+              [
+                5,
+                3,
+                3,
+                4,
+                5
+              ]
+            ],
+            "per_class_recall": [
+              0.3,
+              0.2,
+              0.15,
+              0.25,
+              0.25
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.23000000417232513,
+              "shuffled_label_accuracy": 0.20218747854232788,
+              "shuffled_label_accuracy_std": 0.036032482981681824,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  0,
+                  8,
+                  2,
+                  5,
+                  5
+                ],
+                [
+                  1,
+                  8,
+                  5,
+                  3,
+                  3
+                ],
+                [
+                  1,
+                  3,
+                  7,
+                  3,
+                  6
+                ],
+                [
+                  0,
+                  6,
+                  6,
+                  3,
+                  5
+                ],
+                [
+                  1,
+                  5,
+                  5,
+                  4,
+                  5
+                ]
+              ],
+              "per_class_recall": [
+                0.0,
+                0.4,
+                0.35,
+                0.15,
+                0.25
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.25,
+              "shuffled_label_accuracy": 0.2018750160932541,
+              "shuffled_label_accuracy_std": 0.0309674721211195,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  4,
+                  2,
+                  6,
+                  3,
+                  5
+                ],
+                [
+                  2,
+                  7,
+                  5,
+                  2,
+                  4
+                ],
+                [
+                  3,
+                  1,
+                  5,
+                  5,
+                  6
+                ],
+                [
+                  2,
+                  3,
+                  5,
+                  5,
+                  5
+                ],
+                [
+                  4,
+                  4,
+                  3,
+                  5,
+                  4
+                ]
+              ],
+              "per_class_recall": [
+                0.2,
+                0.35,
+                0.25,
+                0.25,
+                0.2
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.6426791548728943,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.20000000298023224,
+            "source_accuracy": 0.20000000298023224,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 75,
+              "B": 1,
+              "C": 4,
+              "D": 18,
+              "E": 2
+            },
+            "confusion_matrix": [
+              [
+                15,
+                0,
+                1,
+                3,
+                1
+              ],
+              [
+                15,
+                0,
+                2,
+                3,
+                0
+              ],
+              [
+                14,
+                0,
+                0,
+                5,
+                1
+              ],
+              [
+                13,
+                1,
+                1,
+                5,
+                0
+              ],
+              [
+                18,
+                0,
+                0,
+                2,
+                0
+              ]
+            ],
+            "per_class_recall": [
+              0.75,
+              0.0,
+              0.0,
+              0.25,
+              0.0
+            ]
+          }
+        },
+        "quantum_relation": {
+          "relation": {
+            "accuracy": 0.25999999046325684,
+            "shuffled_label_accuracy": 0.19749999046325684,
+            "shuffled_label_accuracy_std": 0.0296858549118042,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                5,
+                8,
+                3,
+                1,
+                3
+              ],
+              [
+                1,
+                8,
+                2,
+                4,
+                5
+              ],
+              [
+                1,
+                5,
+                3,
+                6,
+                5
+              ],
+              [
+                2,
+                7,
+                4,
+                3,
+                4
+              ],
+              [
+                1,
+                4,
+                5,
+                3,
+                7
+              ]
+            ],
+            "per_class_recall": [
+              0.25,
+              0.4,
+              0.15,
+              0.15,
+              0.35
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.1899999976158142,
+              "shuffled_label_accuracy": 0.19875001907348633,
+              "shuffled_label_accuracy_std": 0.030898015946149826,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  2,
+                  5,
+                  5,
+                  7,
+                  1
+                ],
+                [
+                  1,
+                  7,
+                  2,
+                  8,
+                  2
+                ],
+                [
+                  1,
+                  11,
+                  2,
+                  5,
+                  1
+                ],
+                [
+                  2,
+                  8,
+                  3,
+                  5,
+                  2
+                ],
+                [
+                  1,
+                  10,
+                  1,
+                  5,
+                  3
+                ]
+              ],
+              "per_class_recall": [
+                0.1,
+                0.35,
+                0.1,
+                0.25,
+                0.15
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.25,
+              "shuffled_label_accuracy": 0.20250000059604645,
+              "shuffled_label_accuracy_std": 0.03640054911375046,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  3,
+                  5,
+                  2,
+                  3,
+                  7
+                ],
+                [
+                  4,
+                  9,
+                  5,
+                  1,
+                  1
+                ],
+                [
+                  4,
+                  4,
+                  7,
+                  2,
+                  3
+                ],
+                [
+                  4,
+                  3,
+                  2,
+                  5,
+                  6
+                ],
+                [
+                  9,
+                  7,
+                  1,
+                  2,
+                  1
+                ]
+              ],
+              "per_class_recall": [
+                0.15,
+                0.45,
+                0.35,
+                0.25,
+                0.05
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.6257604956626892,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.1899999976158142,
+            "source_accuracy": 0.1899999976158142,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 3,
+              "B": 6,
+              "C": 91,
+              "D": 0,
+              "E": 0
+            },
+            "confusion_matrix": [
+              [
+                0,
+                2,
+                18,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                20,
+                0,
+                0
+              ],
+              [
+                1,
+                0,
+                19,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                19,
+                0,
+                0
+              ],
+              [
+                2,
+                3,
+                15,
+                0,
+                0
+              ]
+            ],
+            "per_class_recall": [
+              0.0,
+              0.0,
+              0.95,
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "memory_relation": {
+          "relation": {
+            "accuracy": 0.3700000047683716,
+            "shuffled_label_accuracy": 0.2043749839067459,
+            "shuffled_label_accuracy_std": 0.027719294652342796,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                8,
+                3,
+                5,
+                2,
+                2
+              ],
+              [
+                6,
+                5,
+                5,
+                2,
+                2
+              ],
+              [
+                1,
+                4,
+                11,
+                3,
+                1
+              ],
+              [
+                4,
+                2,
+                2,
+                9,
+                3
+              ],
+              [
+                1,
+                5,
+                6,
+                4,
+                4
+              ]
+            ],
+            "per_class_recall": [
+              0.4,
+              0.25,
+              0.55,
+              0.45,
+              0.2
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.3100000023841858,
+              "shuffled_label_accuracy": 0.20781248807907104,
+              "shuffled_label_accuracy_std": 0.029340071603655815,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  2,
+                  3,
+                  6,
+                  8,
+                  1
+                ],
+                [
+                  3,
+                  5,
+                  5,
+                  5,
+                  2
+                ],
+                [
+                  1,
+                  2,
+                  10,
+                  4,
+                  3
+                ],
+                [
+                  1,
+                  3,
+                  4,
+                  11,
+                  1
+                ],
+                [
+                  2,
+                  8,
+                  3,
+                  4,
+                  3
+                ]
+              ],
+              "per_class_recall": [
+                0.1,
+                0.25,
+                0.5,
+                0.55,
+                0.15
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.3499999940395355,
+              "shuffled_label_accuracy": 0.19968751072883606,
+              "shuffled_label_accuracy_std": 0.03046353906393051,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  7,
+                  1,
+                  6,
+                  3,
+                  3
+                ],
+                [
+                  5,
+                  5,
+                  6,
+                  2,
+                  2
+                ],
+                [
+                  3,
+                  2,
+                  10,
+                  4,
+                  1
+                ],
+                [
+                  8,
+                  2,
+                  3,
+                  6,
+                  1
+                ],
+                [
+                  3,
+                  2,
+                  5,
+                  3,
+                  7
+                ]
+              ],
+              "per_class_recall": [
+                0.35,
+                0.25,
+                0.5,
+                0.3,
+                0.35
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.45805642008781433,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.20000000298023224,
+            "source_accuracy": 0.20000000298023224,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 53,
+              "B": 5,
+              "C": 10,
+              "D": 31,
+              "E": 1
+            },
+            "confusion_matrix": [
+              [
+                9,
+                0,
+                1,
+                10,
+                0
+              ],
+              [
+                12,
+                0,
+                3,
+                5,
+                0
+              ],
+              [
+                12,
+                2,
+                2,
+                4,
+                0
+              ],
+              [
+                8,
+                1,
+                1,
+                9,
+                1
+              ],
+              [
+                12,
+                2,
+                3,
+                3,
+                0
+              ]
+            ],
+            "per_class_recall": [
+              0.45,
+              0.0,
+              0.1,
+              0.45,
+              0.0
+            ]
+          }
+        },
+        "gru": {
+          "relation": {
+            "accuracy": 0.49000000953674316,
+            "shuffled_label_accuracy": 0.1912499964237213,
+            "shuffled_label_accuracy_std": 0.030898017808794975,
+            "shuffled_label_permutations": 32,
+            "confusion_matrix": [
+              [
+                9,
+                2,
+                2,
+                2,
+                5
+              ],
+              [
+                2,
+                8,
+                4,
+                2,
+                4
+              ],
+              [
+                3,
+                2,
+                11,
+                1,
+                3
+              ],
+              [
+                2,
+                0,
+                6,
+                8,
+                4
+              ],
+              [
+                1,
+                4,
+                1,
+                1,
+                13
+              ]
+            ],
+            "per_class_recall": [
+              0.45,
+              0.4,
+              0.55,
+              0.4,
+              0.65
+            ]
+          },
+          "direct_action": {
+            "train_style": {
+              "accuracy": 0.33000001311302185,
+              "shuffled_label_accuracy": 0.19374999403953552,
+              "shuffled_label_accuracy_std": 0.036033835262060165,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  3,
+                  4,
+                  7,
+                  2,
+                  4
+                ],
+                [
+                  3,
+                  5,
+                  2,
+                  4,
+                  6
+                ],
+                [
+                  5,
+                  1,
+                  7,
+                  2,
+                  5
+                ],
+                [
+                  6,
+                  1,
+                  0,
+                  9,
+                  4
+                ],
+                [
+                  2,
+                  1,
+                  3,
+                  5,
+                  9
+                ]
+              ],
+              "per_class_recall": [
+                0.15,
+                0.25,
+                0.35,
+                0.45,
+                0.45
+              ]
+            },
+            "runtime_style": {
+              "accuracy": 0.3499999940395355,
+              "shuffled_label_accuracy": 0.19499999284744263,
+              "shuffled_label_accuracy_std": 0.031917862594127655,
+              "shuffled_label_permutations": 32,
+              "confusion_matrix": [
+                [
+                  5,
+                  3,
+                  6,
+                  3,
+                  3
+                ],
+                [
+                  2,
+                  9,
+                  2,
+                  5,
+                  2
+                ],
+                [
+                  5,
+                  5,
+                  7,
+                  2,
+                  1
+                ],
+                [
+                  4,
+                  7,
+                  2,
+                  7,
+                  0
+                ],
+                [
+                  2,
+                  4,
+                  2,
+                  5,
+                  7
+                ]
+              ],
+              "per_class_recall": [
+                0.25,
+                0.45,
+                0.35,
+                0.35,
+                0.35
+              ]
+            }
+          },
+          "normalization": {
+            "eval_rms_difference": 0.31136372685432434,
+            "population_mean_ready": true
+          },
+          "language": {
+            "accuracy": 0.1899999976158142,
+            "source_accuracy": 0.1899999976158142,
+            "source_accuracy_exact": true,
+            "selection_counts": {
+              "A": 26,
+              "B": 2,
+              "C": 69,
+              "D": 0,
+              "E": 3
+            },
+            "confusion_matrix": [
+              [
+                6,
+                1,
+                12,
+                0,
+                1
+              ],
+              [
+                4,
+                1,
+                15,
+                0,
+                0
+              ],
+              [
+                8,
+                0,
+                11,
+                0,
+                1
+              ],
+              [
+                4,
+                0,
+                16,
+                0,
+                0
+              ],
+              [
+                4,
+                0,
+                15,
+                0,
+                1
+              ]
+            ],
+            "per_class_recall": [
+              0.3,
+              0.05,
+              0.55,
+              0.0,
+              0.05
+            ]
+          }
+        }
+      },
+      "checkpoints": {
+        "quantum_workspace_2": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_7331_quantum_workspace_2.pt",
+          "sha256": "b9ac017aa24751e2074e2fb1df15c6d1690a91d46ad32bf31ee4bc1bd048e92c"
+        },
+        "quantum_relation": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_7331_quantum_relation.pt",
+          "sha256": "2f592b5af633fdf49115a558efac7d53fb728e6fc27726e2d5505bbafd1fab95"
+        },
+        "memory_relation": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_7331_memory_relation.pt",
+          "sha256": "70bc32d7346137e40470b13b7adb200f8e582d6b0fca9e5d9fa8a3015ac6ee87"
+        },
+        "gru": {
+          "path": "checkpoints/validity1_source/repair/checkpoints/seed_7331_gru.pt",
+          "sha256": "3046307f30f7e24c24bbd159a87c3737e3bfacdceb9c136da618dd6cf6dae2bb"
+        }
+      }
+    }
+  ]
+}

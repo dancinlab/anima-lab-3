@@ -975,6 +975,12 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    V4_PROTOCOL_LOSS / V5_PATH_VALID` 중 하나로 고정한다. 가짜 정답 읽기가 40%를 넘거나 원본
    결과·체크포인트 지문이 어긋나면 `V0_INVALID`로 중단한다. 상세 기준은
    `docs/hypotheses/VALIDITY-1-action-path-decomposition.md`가 정본이다.
+   1차 재생은 원본 8팔 중 seed 1337의 두 팔에서 각각 1/100 문항이 달라 `V0_INVALID`로
+   보존했다. 같은 공용 평가 함수도 같은 값을 내므로 새 측정기의 계산 차이는 아니었다. 원본이
+   Mistral 파일 revision과 torch·transformers 환경을 영수증에 고정하지 않은 것이 근본 원인이다.
+   수리 실행은 현재 모델 revision `63a8b081895390a26e140280378bc85ec8bce07a`을 고정하고,
+   팔별 정확도 차이를 최대 평가 문항 1개까지 허용하되 원본과 재생값이 모두 같은 80% 판정 구간에
+   있어야 한다. 중간 구간의 문턱·seed·팔·읽기 방식은 바꾸지 않는다.
 6. **EPISODE-1 — 회차별 관계 기억 (VALIDITY-1 통과 후):** 매 회차 임의 관계를 한 번 보여준 뒤
    방해 정보를 넣고 일부 단서만으로 짝을 복원한다. 회차마다 관계를 바꾸고 평가 중 가중치 학습을
    금지해 25개 고정 조합 암기를 막는다. 기존 `VectorMemory`·`MEngine`과 표준 `GRU`, 기억 없음,
