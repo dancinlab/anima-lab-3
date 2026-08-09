@@ -9,9 +9,9 @@ import os
 from pathlib import Path
 
 try:
-    from measurement.validity_registry import VALIDITY_SPEC, spec_sha256
+    from measurement.validity_registry import VALIDITY_SPEC, experiment, spec_sha256
 except ModuleNotFoundError:
-    from validity_registry import VALIDITY_SPEC, spec_sha256
+    from validity_registry import VALIDITY_SPEC, experiment, spec_sha256
 
 
 def _finite_tree(value) -> bool:
@@ -30,17 +30,18 @@ def _probe_pass(metrics: dict, threshold: float, shuffled_max: float) -> bool:
     return accuracy >= threshold and shuffled <= shuffled_max
 
 
-def _all_actions_selected(metrics: dict) -> bool:
+def _all_actions_selected(metrics: dict, spec: dict) -> bool:
     matrix = metrics["confusion_matrix"]
-    count = len(VALIDITY_SPEC["actions"])
+    count = len(spec["actions"])
     if len(matrix) != count or any(len(row) != count for row in matrix):
         raise ValueError("probe confusion matrix shape is invalid")
     return all(sum(matrix[row][column] for row in range(count)) > 0 for column in range(count))
 
 
 def adjudicate(payload: dict) -> dict:
-    spec = VALIDITY_SPEC
-    if payload.get("experiment") != spec["experiment"]:
+    try:
+        spec = experiment(payload.get("experiment"))
+    except (TypeError, ValueError):
         return {"verdict": "V0_INVALID", "reason": "result names an unregistered experiment"}
     if payload.get("spec") != spec or payload.get("spec_sha256") != spec_sha256(spec):
         return {"verdict": "V0_INVALID", "reason": "result spec does not match the registered SSOT"}
@@ -63,9 +64,22 @@ def adjudicate(payload: dict) -> dict:
     if set(rows) != set(spec["seeds"]):
         return {"verdict": "V0_INVALID", "reason": "registered seed pair is incomplete"}
 
+    if "invalid_results" in spec:
+        invalid = payload.get("invalid_run", {})
+        if (invalid.get("results_sha256") != spec["invalid_results_sha256"]
+                or invalid.get("verdict_sha256") != spec["invalid_verdict_sha256"]
+                or not isinstance(invalid.get("results"), dict)
+                or not isinstance(invalid.get("verdict"), dict)
+                or adjudicate(invalid["results"]) != invalid["verdict"]
+                or invalid["verdict"].get("verdict") != "V0_INVALID"):
+            return {"verdict": "V0_INVALID", "reason": "registered invalid first run is missing or changed"}
+        if payload.get("model_revision") != spec["model_revision"]:
+            return {"verdict": "V0_INVALID", "reason": "pinned language-model revision changed"}
+
     bars = spec["thresholds"]
     shuffled_max = bars["shuffled_label_max_accuracy"]
     judged = {}
+    exact_language_replays = 0
     try:
         for seed in spec["seeds"]:
             row = rows[seed]
@@ -92,8 +106,23 @@ def adjudicate(payload: dict) -> dict:
                 if set(metrics["direct_action"]) != set(spec["normalization_modes"]):
                     raise ValueError(f"seed {seed} {arm} normalization modes are incomplete")
                 language = metrics["language"]
-                if (language["source_accuracy_exact"] is not True
-                        or float(language["accuracy"]) != float(language["source_accuracy"])):
+                accuracy = float(language["accuracy"])
+                source_accuracy = float(language["source_accuracy"])
+                exact = accuracy == source_accuracy
+                exact_language_replays += int(exact)
+                replay = spec.get("language_replay")
+                if replay is None:
+                    replay_ok = language["source_accuracy_exact"] is True and exact
+                else:
+                    same_side = ((accuracy >= bars["language_accuracy"])
+                                 == (source_accuracy >= bars["language_accuracy"]))
+                    replay_ok = (
+                        bool(language["source_accuracy_exact"]) is exact
+                        and abs(accuracy - source_accuracy)
+                        <= replay["maximum_accuracy_delta"] + 1e-8
+                        and (same_side or not replay["require_same_threshold_side"])
+                    )
+                if not replay_ok:
                     raise ValueError(f"seed {seed} {arm} language result did not reproduce")
                 if set(language["selection_counts"]) != set(spec["actions"]):
                     raise ValueError(f"seed {seed} {arm} action selection count is incomplete")
@@ -114,6 +143,10 @@ def adjudicate(payload: dict) -> dict:
                 }
     except (KeyError, TypeError, ValueError) as exc:
         return {"verdict": "V0_INVALID", "reason": str(exc)}
+
+    replay = spec.get("language_replay")
+    if replay is not None and exact_language_replays < replay["minimum_exact_arms"]:
+        return {"verdict": "V0_INVALID", "reason": "too few language arms reproduced exactly"}
 
     all_probes = []
     for seed in spec["seeds"]:
@@ -136,7 +169,7 @@ def adjudicate(payload: dict) -> dict:
     runtime_style_ok = all(judged[str(seed)][control]["runtime_style_pass"] for seed in spec["seeds"])
     try:
         direct_actions_available = all(
-            _all_actions_selected(rows[seed]["arms"][control]["direct_action"][mode])
+            _all_actions_selected(rows[seed]["arms"][control]["direct_action"][mode], spec)
             for seed in spec["seeds"] for mode in spec["normalization_modes"]
         )
     except (KeyError, TypeError, ValueError) as exc:

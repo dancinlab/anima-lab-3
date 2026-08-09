@@ -13,7 +13,7 @@ except ModuleNotFoundError:
 
 SOURCE = RELATION_ROLE_REPAIR_SPEC
 
-VALIDITY_SPEC = {
+VALIDITY_BASE_SPEC = {
     "experiment": "validity1_action_path_decomposition",
     "source_experiment": SOURCE["experiment"],
     "source_verdict": "R0_INVALID",
@@ -59,6 +59,36 @@ VALIDITY_SPEC = {
         "shuffled_label_max_accuracy": 0.40,
     },
 }
+
+
+VALIDITY_REPLAY_REPAIR_SPEC = deepcopy(VALIDITY_BASE_SPEC)
+VALIDITY_REPLAY_REPAIR_SPEC.update({
+    "experiment": "validity1_action_path_decomposition_numerical_replay_repair",
+    "invalid_results": "measurement/validity_invalid_results.json",
+    "invalid_results_sha256": "e9a208ff48ce94da47f8de6d0afe5d3d9b3c239563ea307ff8e035202025adeb",
+    "invalid_verdict": "measurement/validity_invalid_verdict.json",
+    "invalid_verdict_sha256": "d50e384d58e0ae60d05c879be362db1ac6f801016f7571e8cd88abf1502b8bd4",
+    "model_revision": "63a8b081895390a26e140280378bc85ec8bce07a",
+    "language_replay": {
+        "maximum_accuracy_delta": 0.01,
+        "minimum_exact_arms": 6,
+        "require_same_threshold_side": True,
+    },
+})
+
+VALIDITY_SPEC = VALIDITY_REPLAY_REPAIR_SPEC
+
+REGISTERED_EXPERIMENTS = {
+    VALIDITY_BASE_SPEC["experiment"]: VALIDITY_BASE_SPEC,
+    VALIDITY_REPLAY_REPAIR_SPEC["experiment"]: VALIDITY_REPLAY_REPAIR_SPEC,
+}
+
+
+def experiment(name: str) -> dict:
+    try:
+        return deepcopy(REGISTERED_EXPERIMENTS[name])
+    except KeyError as exc:
+        raise ValueError(f"unknown VALIDITY-1 experiment: {name}") from exc
 
 
 def canonical_spec(spec: dict = VALIDITY_SPEC) -> str:

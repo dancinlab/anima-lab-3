@@ -60,6 +60,24 @@ def _load_source() -> tuple[dict, dict, dict]:
     return results, verdict, source
 
 
+def _load_invalid_run() -> dict | None:
+    spec = VALIDITY_SPEC
+    if "invalid_results" not in spec:
+        return None
+    results_path = Path(spec["invalid_results"])
+    verdict_path = Path(spec["invalid_verdict"])
+    if sha256_file(results_path) != spec["invalid_results_sha256"]:
+        raise ValueError("VALIDITY-1 invalid result SHA-256 changed")
+    if sha256_file(verdict_path) != spec["invalid_verdict_sha256"]:
+        raise ValueError("VALIDITY-1 invalid verdict SHA-256 changed")
+    return {
+        "results": json.loads(results_path.read_text()),
+        "verdict": json.loads(verdict_path.read_text()),
+        "results_sha256": spec["invalid_results_sha256"],
+        "verdict_sha256": spec["invalid_verdict_sha256"],
+    }
+
+
 def _confusion(labels: torch.Tensor, predictions: torch.Tensor, classes: int) -> list[list[int]]:
     matrix = torch.zeros(classes, classes, dtype=torch.long)
     for expected, actual in zip(labels.tolist(), predictions.tolist()):
@@ -290,6 +308,7 @@ def main() -> None:
     parser.add_argument("--model", default=VALIDITY_SPEC["model"])
     args = parser.parse_args()
     source_results, _, source = _load_source()
+    invalid_run = _load_invalid_run()
     spec = RELATION_ROLE_REPAIR_SPEC
     audits = {
         split: audit_examples(build_examples(spec["seeds"][0], split, spec))
@@ -297,8 +316,13 @@ def main() -> None:
     }
     if audits != source_results.get("dataset_audit"):
         raise ValueError("recreated RELATION-1 dataset audit changed")
+    model_source = args.model
+    model_revision = VALIDITY_SPEC.get("model_revision")
+    if model_revision is not None:
+        from huggingface_hub import snapshot_download
+        model_source = snapshot_download(args.model, revision=model_revision)
     decoder = HFDecoder(
-        args.model, lora=False, freeze_base=True,
+        model_source, lora=False, freeze_base=True,
         gate_strength=spec["gate_strength"], gate_rms_max=spec["gate_rms_max"],
     )
     decoder.model.eval()
@@ -310,6 +334,7 @@ def main() -> None:
         "spec": VALIDITY_SPEC,
         "spec_sha256": spec_sha256(VALIDITY_SPEC),
         "model": args.model,
+        "model_revision": model_revision,
         "source": source,
         "dataset_audit": audits,
         "action_tokens": {
@@ -319,6 +344,8 @@ def main() -> None:
         "seeds": [run_seed(decoder, seed, source_results, action_ids)
                   for seed in VALIDITY_SPEC["seeds"]],
     }
+    if invalid_run is not None:
+        payload["invalid_run"] = invalid_run
     _atomic_json(Path(args.output), payload)
     from measurement.validity_gate import adjudicate
     verdict = adjudicate(payload)

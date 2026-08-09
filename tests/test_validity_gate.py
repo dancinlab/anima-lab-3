@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 from measurement.validity_gate import adjudicate
 from measurement.validity_registry import VALIDITY_SPEC, spec_sha256
@@ -29,11 +31,13 @@ def payload():
         "dataset_audit": audit,
         "reproduced": True,
     }
-    return {
+    root = Path(__file__).resolve().parents[1]
+    value = {
         "experiment": spec["experiment"],
         "spec": deepcopy(spec),
         "spec_sha256": spec_sha256(spec),
         "source": source,
+        "model_revision": spec["model_revision"],
         "dataset_audit": audit,
         "action_tokens": {
             "token_ids": {action: index for index, action in enumerate(spec["actions"])},
@@ -77,6 +81,13 @@ def payload():
             for seed in spec["seeds"]
         ],
     }
+    value["invalid_run"] = {
+        "results": json.loads((root / spec["invalid_results"]).read_text()),
+        "verdict": json.loads((root / spec["invalid_verdict"]).read_text()),
+        "results_sha256": spec["invalid_results_sha256"],
+        "verdict_sha256": spec["invalid_verdict_sha256"],
+    }
+    return value
 
 
 def row(value, seed=1337, arm="gru"):
@@ -105,6 +116,11 @@ def test_validity_gate_locates_registered_failure_stages():
     row(value)["language"]["source_accuracy"] = 0.50
     assert adjudicate(value)["verdict"] == "V3_LANGUAGE_LOSS"
 
+    value = payload()
+    row(value)["language"]["accuracy"] = 0.94
+    row(value)["language"]["source_accuracy_exact"] = False
+    assert adjudicate(value)["verdict"] == "V5_PATH_VALID"
+
 
 def test_validity_gate_fails_closed_on_source_checkpoint_fake_and_tokens():
     value = payload()
@@ -121,6 +137,10 @@ def test_validity_gate_fails_closed_on_source_checkpoint_fake_and_tokens():
 
     value = payload()
     value["action_tokens"]["unique_single_tokens"] = False
+    assert adjudicate(value)["verdict"] == "V0_INVALID"
+
+    value = payload()
+    value["model_revision"] = "main"
     assert adjudicate(value)["verdict"] == "V0_INVALID"
 
 
