@@ -1,0 +1,400 @@
+{
+  "experiment": "synergy1_split_cue_modular_sum_control_role_repair",
+  "spec": {
+    "experiment": "synergy1_split_cue_modular_sum_control_role_repair",
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "arms": [
+      "quantum_pair",
+      "direct_memory",
+      "gru"
+    ],
+    "module_a_cues": [
+      "붉음",
+      "푸름",
+      "초록",
+      "금빛"
+    ],
+    "module_b_cues": [
+      "원형",
+      "사각",
+      "삼각",
+      "별빛"
+    ],
+    "nuisance_words": [
+      "아침",
+      "저녁",
+      "실내",
+      "실외",
+      "가까이",
+      "멀리",
+      "조용히",
+      "빠르게"
+    ],
+    "target_rule": "(module_a_index + module_b_index) modulo 4",
+    "actions": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ],
+    "question": "Two hidden modules each sensed one clue. Combine both clues and choose exactly one registered action A, B, C, or D. Answer:",
+    "neutral_prompts": [
+      "The capital of France is",
+      "Two plus two equals",
+      "Water freezes at",
+      "A short greeting is"
+    ],
+    "cells_per_module": 48,
+    "engine_dim": 48,
+    "state_dim": 96,
+    "bridge_hub_dim": 32,
+    "warm_steps": 5,
+    "sense_steps": 3,
+    "delay_steps": [
+      1,
+      4
+    ],
+    "train_repeats_per_pair": 6,
+    "eval_repeats_per_pair": 4,
+    "train_steps": 800,
+    "batch_size": 8,
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0,
+    "gate_strength": 0.1,
+    "gate_rms_max": 4.0,
+    "gate_rho": 1.0,
+    "language_kl_weight": 1.0,
+    "gru_hidden_dim": 96,
+    "interventions": [
+      "normal",
+      "module_a_only",
+      "module_b_only",
+      "partner_shuffle",
+      "recovered"
+    ],
+    "pair_shuffle_constraint": "different_module_b_and_different_target",
+    "thresholds": {
+      "joint_accuracy": 0.75,
+      "positive_control_accuracy": 0.8,
+      "single_module_max_accuracy": 0.4,
+      "partner_shuffle_max_accuracy": 0.4,
+      "minimum_joint_gain": 0.35,
+      "recovery_accuracy_tolerance": 0.0,
+      "neutral_kl_nats": 0.5,
+      "quantum_advantage_margin": 0.05
+    },
+    "validation_arms": [
+      "gru"
+    ],
+    "comparison_arms": [
+      "direct_memory",
+      "gru"
+    ]
+  },
+  "spec_sha256": "88724cd45ede8d925a289063156874bfda0817fa4b416ca6d92bd06b7c5ad5fa",
+  "model": "mistralai/Mistral-7B-Instruct-v0.2",
+  "dataset_audit": {
+    "train": {
+      "examples": 96,
+      "pair_count": 16,
+      "examples_per_pair": 6,
+      "target_counts": {
+        "0": 24,
+        "1": 24,
+        "2": 24,
+        "3": 24
+      },
+      "module_a_target_counts": {
+        "0": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "1": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "2": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "3": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        }
+      },
+      "module_b_target_counts": {
+        "0": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "1": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "2": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        },
+        "3": {
+          "0": 6,
+          "1": 6,
+          "2": 6,
+          "3": 6
+        }
+      }
+    },
+    "eval": {
+      "examples": 64,
+      "pair_count": 16,
+      "examples_per_pair": 4,
+      "target_counts": {
+        "0": 16,
+        "1": 16,
+        "2": 16,
+        "3": 16
+      },
+      "module_a_target_counts": {
+        "0": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "1": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "2": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "3": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        }
+      },
+      "module_b_target_counts": {
+        "0": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "1": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "2": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        },
+        "3": {
+          "0": 4,
+          "1": 4,
+          "2": 4,
+          "3": 4
+        }
+      }
+    }
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "arms": {
+        "quantum_pair": {
+          "conditions": {
+            "normal": {
+              "accuracy": 0.296875
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.28125
+            },
+            "recovered": {
+              "accuracy": 0.296875,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 2.0659627297427505,
+          "final_loss_mean_50": 3.112917170524597
+        },
+        "direct_memory": {
+          "conditions": {
+            "normal": {
+              "accuracy": 0.328125
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.28125
+            },
+            "recovered": {
+              "accuracy": 0.328125,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 2.3423229064792395,
+          "final_loss_mean_50": 4.045902667045593
+        },
+        "gru": {
+          "conditions": {
+            "normal": {
+              "accuracy": 1.0
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.109375
+            },
+            "recovered": {
+              "accuracy": 1.0,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 0.030806224793195724,
+          "final_loss_mean_50": 0.13710648093372582
+        }
+      },
+      "checkpoints": {
+        "quantum_pair": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_1337_quantum_pair.pt",
+          "sha256": "bb1c76b55d2001d6ed8d84dd684a056b2635a2831797c98db88857fa9531f35a"
+        },
+        "direct_memory": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_1337_direct_memory.pt",
+          "sha256": "7b28fe27a2863dbe499cb3afbb506ffd194dbc1b9bebccee188ba344370cb646"
+        },
+        "gru": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_1337_gru.pt",
+          "sha256": "4000f00d09e2c6bd6b3a403eb118d9ca5033dd0099e30ef4e3f9df5e052b9a2c"
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "arms": {
+        "quantum_pair": {
+          "conditions": {
+            "normal": {
+              "accuracy": 0.296875
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.25
+            },
+            "recovered": {
+              "accuracy": 0.296875,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 2.574938169156667,
+          "final_loss_mean_50": 2.977565665245056
+        },
+        "direct_memory": {
+          "conditions": {
+            "normal": {
+              "accuracy": 0.390625
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.171875
+            },
+            "recovered": {
+              "accuracy": 0.390625,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 3.281907021999359,
+          "final_loss_mean_50": 2.8421819686889647
+        },
+        "gru": {
+          "conditions": {
+            "normal": {
+              "accuracy": 0.9375
+            },
+            "module_a_only": {
+              "accuracy": 0.25
+            },
+            "module_b_only": {
+              "accuracy": 0.25
+            },
+            "partner_shuffle": {
+              "accuracy": 0.046875
+            },
+            "recovered": {
+              "accuracy": 0.9375,
+              "logits_identical": true
+            }
+          },
+          "neutral_kl_nats": 0.01710014184936881,
+          "final_loss_mean_50": 0.17853318541310728
+        }
+      },
+      "checkpoints": {
+        "quantum_pair": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_7331_quantum_pair.pt",
+          "sha256": "332192d49270d81c7a00f1cb4401d45ef992ddfa96a14e590a079beefcc252ee"
+        },
+        "direct_memory": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_7331_direct_memory.pt",
+          "sha256": "4173644222833d85c90297ad1f07b4edeb3d62d53fc10ae5de4f1fbedb18d311"
+        },
+        "gru": {
+          "path": "checkpoints/synergy1_control_role_repair/seed_7331_gru.pt",
+          "sha256": "413256694feda2cd08ff78cdb79be7d0049fb2c4e329fb46a14b780a83a9926d"
+        }
+      }
+    }
+  ]
+}

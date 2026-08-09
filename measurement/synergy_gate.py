@@ -120,7 +120,12 @@ def adjudicate(payload: dict) -> dict:
     controls = [judged[str(seed)][arm] for seed in spec["seeds"] for arm in validation_arms]
     quantum = [judged[str(seed)]["quantum_pair"] for seed in spec["seeds"]]
     if not all(row["integrated"] and row["language_ok"] for row in controls):
-        verdict, reason = "Y0_INVALID", "a registered task-validation arm did not validate the task"
+        reason = (
+            "a registered task-validation arm did not validate the task"
+            if "validation_arms" in spec
+            else "direct-memory or GRU positive control did not validate the task"
+        )
+        verdict = "Y0_INVALID"
     elif not all(row["integrated"] for row in quantum):
         verdict, reason = "Y3_NOT_INTEGRATED", "QuantumC pair did not integrate both clues in both seeds"
     elif not all(row["language_ok"] for row in quantum):

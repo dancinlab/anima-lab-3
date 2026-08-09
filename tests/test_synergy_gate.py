@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 import torch
 
@@ -123,3 +125,12 @@ def test_split_cue_audit_is_balanced_and_partner_shuffle_breaks_the_target():
         (examples[index].module_a + examples[source].module_b) % 4 != examples[index].target
         for index, source in enumerate(permutation)
     )
+
+
+def test_committed_synergy_results_reproduce_registered_verdicts():
+    root = Path(__file__).resolve().parents[1]
+    for stem, expected in (("synergy_invalid", "Y0_INVALID"), ("synergy", "Y3_NOT_INTEGRATED")):
+        result = json.loads((root / f"measurement/{stem}_results.json").read_text())
+        verdict = json.loads((root / f"measurement/{stem}_verdict.json").read_text())
+        assert adjudicate(result) == verdict
+        assert verdict["verdict"] == expected

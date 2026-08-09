@@ -11,6 +11,7 @@
 | `graft-phase-behavior` | 임시 RTX 5090의 GRAFT 위상 행동 인과 무효 1차·양성 비교군 수리 실험 체크포인트·로그·결과·판정 | 16 | 1,612,427,203 | `a54b81643d5e8854972d49bc1f02a7fe28bb86fce378d2d92c309734e6a85e94` |
 | `graft-bridge32-behavior` | 임시 RTX 5090의 폭 32 행동 인과 무효 1차·양성 비교군 수리 실험 체크포인트·로그·결과·판정 | 15 | 1,614,925,450 | `55e98a02e8f3f0eaa799b4f634ea3927c6c77c2fcf775b1d21af5354d0afa5a4` |
 | `meta1-self-monitoring` | 임시 RTX 5090의 META-1 무효 2회·최종 결과·확신 판독기·로그 | 11 | 2,329,458 | `4b3e5b976f70462a1e5f6d96fa799c7e765c59f41b4ecab9417aa36f0db89ae7` |
+| `synergy1-split-cue` | 임시 RTX 5090의 SYNERGY-1 무효·최종 실행 체크포인트 12개·로그·결과·판정 | 21 | 2,424,573,584 | `bc8bbbb91d028fb404384526f78d6e20bed2d36769cfe999e2e4b3710844311d` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -42,3 +43,7 @@ META-1 보관은 `meta1-self-monitoring` revision에 올렸다. 원격 revision�
 내려받아 manifest 11개 항목을 전수 확인했고, 다운로드한 manifest 자체의 SHA-256도 위 표와
 일치한다. 원본 행동 체크포인트는 중복 보관하지 않고 `graft-bridge32-behavior` revision의 등록
 SHA-256 네 개를 참조한다.
+
+SYNERGY-1 보관은 Hugging Face 커밋 `10a729cfe448826a4a1a801b73f5ad97f2001f67`에 올렸다. 원격
+revision을 새 디렉토리로 다시 내려받아 manifest 21개 항목을 전수 확인했고, 다운로드한 manifest
+자체의 SHA-256도 위 표와 일치한다. 1차 무효와 비교군 역할 수리 실행의 체크포인트를 모두 보존했다.
