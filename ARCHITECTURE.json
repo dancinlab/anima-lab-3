@@ -169,7 +169,7 @@
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1·WORKSPACE-1·RELATION-1·VALIDITY-1 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 계열은 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1은 `synergy1-split-cue`에, WORKSPACE-1은 `workspace1-recurrent`에 보존했다. RELATION-1의 1차 무효와 역할 학습 수리 체크포인트 16개·결과·판정·로그 22개 항목은 `relation1-role-binding` revision에 보존했다. VALIDITY-1의 1차 무효와 수리 결과·판정·로그 6개는 `validity1-action-path` revision에 manifest SHA-256과 함께 보존하고 재다운로드 검증했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 현재 대여 GPU는 0대다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1·WORKSPACE-1·RELATION-1·VALIDITY-1 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 계열은 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1은 `synergy1-split-cue`에, WORKSPACE-1은 `workspace1-recurrent`에 보존했다. RELATION-1의 1차 무효와 역할 학습 수리 체크포인트 16개·결과·판정·로그 22개 항목은 `relation1-role-binding` revision에 보존했다. VALIDITY-1의 1차 무효와 수리 결과·판정·로그 6개는 `validity1-action-path` revision에 manifest SHA-256과 함께 보존하고 재다운로드 검증했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. VALIDITY-1용 임시 GPU는 종료했다. 완료 시점 계정에는 이 실험 범위 밖의 `anima-store-causality-multiseed` RTX 3090 한 대가 실행 중이어서 건드리지 않았다."
     }
   ],
   "convergence": {
