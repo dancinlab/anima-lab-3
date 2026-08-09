@@ -1,9 +1,15 @@
+import inspect
+
 import pytest
 import torch
 
 from measurement.workspace_registry import WORKSPACE_CONTROL_SEED_REPAIR_SPEC
 from synergy import _arm_seed
-from trinity import RecurrentWorkspaceBridge, ThalamicBridge
+from trinity import HFDecoder, RecurrentWorkspaceBridge, ThalamicBridge
+
+
+def test_hf_decoder_accepts_a_pinned_model_revision():
+    assert "revision" in inspect.signature(HFDecoder).parameters
 
 
 def test_thalamic_refactor_preserves_forward_and_trace_identity():

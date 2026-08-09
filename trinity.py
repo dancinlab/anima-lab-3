@@ -727,7 +727,7 @@ class HFDecoder(DEngine):
 
     def __init__(self, model_name="gpt2", lora=False, lora_rank=16,
                  gate_mode="additive", freeze_base=True, device=None,
-                 gate_strength=0.01, gate_rms_max=None):
+                 gate_strength=0.01, gate_rms_max=None, revision=None):
         super().__init__()
         try:
             from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -752,7 +752,9 @@ class HFDecoder(DEngine):
 
         # Load model + tokenizer
         print(f"  [HFDecoder] Loading {model_name}...")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_name, revision=revision, trust_remote_code=True
+        )
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -762,7 +764,7 @@ class HFDecoder(DEngine):
         _dtype = torch.bfloat16 if (torch.cuda.is_available()
                                     and torch.cuda.is_bf16_supported()) else torch.float32
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_name, torch_dtype=_dtype, trust_remote_code=True
+            model_name, revision=revision, torch_dtype=_dtype, trust_remote_code=True
         ).to(self.device)
 
         # Detect d_model from model config

@@ -316,13 +316,9 @@ def main() -> None:
     }
     if audits != source_results.get("dataset_audit"):
         raise ValueError("recreated RELATION-1 dataset audit changed")
-    model_source = args.model
     model_revision = VALIDITY_SPEC.get("model_revision")
-    if model_revision is not None:
-        from huggingface_hub import snapshot_download
-        model_source = snapshot_download(args.model, revision=model_revision)
     decoder = HFDecoder(
-        model_source, lora=False, freeze_base=True,
+        args.model, lora=False, freeze_base=True, revision=model_revision,
         gate_strength=spec["gate_strength"], gate_rms_max=spec["gate_rms_max"],
     )
     decoder.model.eval()
