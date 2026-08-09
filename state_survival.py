@@ -113,12 +113,19 @@ def probe_channel(train_x: torch.Tensor, train_y: torch.Tensor, eval_x: torch.Te
                   eval_y: torch.Tensor, seed: int) -> dict:
     ridge = STATE_SURVIVAL_SPEC["probe_ridge"]
     logits = _ridge_predict(train_x, train_y, eval_x, ridge)
-    generator = torch.Generator().manual_seed(seed)
-    shuffled_y = train_y.index_select(0, torch.randperm(len(train_y), generator=generator))
-    shuffled_logits = _ridge_predict(train_x, shuffled_y, eval_x, ridge)
+    shuffled_accuracies = []
+    permutations = STATE_SURVIVAL_SPEC["label_control"]["permutations"]
+    for index in range(permutations):
+        generator = torch.Generator().manual_seed(seed + index * 1_000_003)
+        shuffled_y = train_y.index_select(0, torch.randperm(len(train_y), generator=generator))
+        shuffled_logits = _ridge_predict(train_x, shuffled_y, eval_x, ridge)
+        shuffled_accuracies.append(float((shuffled_logits.argmax(-1) == eval_y).float().mean()))
+    shuffled = torch.tensor(shuffled_accuracies)
     return {
         "accuracy": float((logits.argmax(-1) == eval_y).float().mean()),
-        "shuffled_label_accuracy": float((shuffled_logits.argmax(-1) == eval_y).float().mean()),
+        "shuffled_label_accuracy": float(shuffled.mean()),
+        "shuffled_label_accuracy_std": float(shuffled.std(unbiased=False)),
+        "shuffled_label_permutations": permutations,
     }
 
 

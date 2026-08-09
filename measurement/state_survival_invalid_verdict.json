@@ -1,0 +1,746 @@
+{
+  "experiment": "state_information_survival",
+  "verdict": "S0_INVALID",
+  "reason": "direct sense-input positive control did not validate the probe",
+  "spec_sha256": "b0abc4bdd11ebf19f82833abec7ec28e1385184b9aba4f3df64dc291defcef16",
+  "seeds": {
+    "1337": {
+      "0": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.09375
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.28125,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.234375
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.328125,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.296875
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.046875
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.984375,
+          "shuffled_label_accuracy": 0.171875
+        }
+      },
+      "1": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.078125
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.46875,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.3125
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.40625,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.125
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.3125
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.984375,
+          "shuffled_label_accuracy": 0.25
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.984375,
+          "shuffled_label_accuracy": 0.21875
+        }
+      },
+      "2": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.734375,
+          "shuffled_label_accuracy": 0.25
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.5,
+          "shuffled_label_accuracy": 0.328125
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.328125
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.96875,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.96875,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.984375,
+          "shuffled_label_accuracy": 0.28125
+        }
+      },
+      "4": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.0625
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.140625
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 0.90625,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.296875
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.578125,
+          "shuffled_label_accuracy": 0.328125
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.09375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.96875,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.90625,
+          "shuffled_label_accuracy": 0.375
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.890625,
+          "shuffled_label_accuracy": 0.09375
+        }
+      },
+      "8": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "phase": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.4375
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.328125
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "tension_frustration": {
+          "pass": true,
+          "accuracy": 0.8125,
+          "shuffled_label_accuracy": 0.25
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.9375,
+          "shuffled_label_accuracy": 0.25
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.78125,
+          "shuffled_label_accuracy": 0.328125
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.796875,
+          "shuffled_label_accuracy": 0.21875
+        }
+      },
+      "16": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.125
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.140625
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.59375,
+          "shuffled_label_accuracy": 0.078125
+        },
+        "full_state": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.484375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.0625
+        },
+        "bridge_cells": {
+          "pass": false,
+          "accuracy": 0.96875,
+          "shuffled_label_accuracy": 0.40625
+        },
+        "bridge_pooled": {
+          "pass": false,
+          "accuracy": 0.71875,
+          "shuffled_label_accuracy": 0.125
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.75,
+          "shuffled_label_accuracy": 0.234375
+        }
+      },
+      "32": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "phase": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.40625
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.375
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.265625,
+          "shuffled_label_accuracy": 0.25
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.515625,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.3125
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.0
+        },
+        "bridge_cells": {
+          "pass": false,
+          "accuracy": 0.640625,
+          "shuffled_label_accuracy": 0.3125
+        },
+        "bridge_pooled": {
+          "pass": false,
+          "accuracy": 0.484375,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "bridge_gate": {
+          "pass": false,
+          "accuracy": 0.484375,
+          "shuffled_label_accuracy": 0.25
+        }
+      }
+    },
+    "7331": {
+      "0": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.25
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.109375
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.4375,
+          "shuffled_label_accuracy": 0.171875
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.4375,
+          "shuffled_label_accuracy": 0.25
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.140625
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.96875,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.90625,
+          "shuffled_label_accuracy": 0.109375
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.890625,
+          "shuffled_label_accuracy": 0.265625
+        }
+      },
+      "1": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "phase": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.671875
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.53125,
+          "shuffled_label_accuracy": 0.359375
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.5,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.09375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.296875
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.953125,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.90625,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.875,
+          "shuffled_label_accuracy": 0.28125
+        }
+      },
+      "2": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.03125
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.125
+        },
+        "amplitude": {
+          "pass": false,
+          "accuracy": 0.6875,
+          "shuffled_label_accuracy": 0.15625
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.546875,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.9375,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.8125,
+          "shuffled_label_accuracy": 0.171875
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.84375,
+          "shuffled_label_accuracy": 0.234375
+        }
+      },
+      "4": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.078125
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 0.875,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.546875,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.171875
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.375
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.90625,
+          "shuffled_label_accuracy": 0.296875
+        },
+        "bridge_pooled": {
+          "pass": false,
+          "accuracy": 0.71875,
+          "shuffled_label_accuracy": 0.4375
+        },
+        "bridge_gate": {
+          "pass": false,
+          "accuracy": 0.671875,
+          "shuffled_label_accuracy": 0.203125
+        }
+      },
+      "8": {
+        "sense_input": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.53125
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.25
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.125
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.34375
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.703125,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.125
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.140625
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.9375,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "bridge_pooled": {
+          "pass": true,
+          "accuracy": 0.859375,
+          "shuffled_label_accuracy": 0.09375
+        },
+        "bridge_gate": {
+          "pass": true,
+          "accuracy": 0.765625,
+          "shuffled_label_accuracy": 0.25
+        }
+      },
+      "16": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.09375
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.359375
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.25
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.71875,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "full_state": {
+          "pass": false,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.484375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.296875
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.859375,
+          "shuffled_label_accuracy": 0.203125
+        },
+        "bridge_pooled": {
+          "pass": false,
+          "accuracy": 0.640625,
+          "shuffled_label_accuracy": 0.21875
+        },
+        "bridge_gate": {
+          "pass": false,
+          "accuracy": 0.46875,
+          "shuffled_label_accuracy": 0.25
+        }
+      },
+      "32": {
+        "sense_input": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.28125
+        },
+        "amplitude": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.046875
+        },
+        "phase_velocity": {
+          "pass": false,
+          "accuracy": 0.234375,
+          "shuffled_label_accuracy": 0.265625
+        },
+        "tension_frustration": {
+          "pass": false,
+          "accuracy": 0.5,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "full_state": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.109375
+        },
+        "temporal_phase": {
+          "pass": true,
+          "accuracy": 1.0,
+          "shuffled_label_accuracy": 0.015625
+        },
+        "bridge_cells": {
+          "pass": true,
+          "accuracy": 0.75,
+          "shuffled_label_accuracy": 0.1875
+        },
+        "bridge_pooled": {
+          "pass": false,
+          "accuracy": 0.59375,
+          "shuffled_label_accuracy": 0.3125
+        },
+        "bridge_gate": {
+          "pass": false,
+          "accuracy": 0.5625,
+          "shuffled_label_accuracy": 0.265625
+        }
+      }
+    }
+  },
+  "downstream_behavior": {
+    "experiment": "graft_behavior_causality_phase_state_memory_control_repair",
+    "verdict": "B3_NOT_CAUSAL",
+    "path": "measurement/graft_behavior_phase_state_repair_verdict.json",
+    "sha256": "1b42789abce913eeb96a3b25d62e33e941b24c97749360c2ea2e9f4079033c53"
+  }
+}

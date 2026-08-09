@@ -5,7 +5,10 @@ import hashlib
 import json
 from copy import deepcopy
 
-from measurement.graft_behavior_registry import BEHAVIOR_SPEC
+try:
+    from measurement.graft_behavior_registry import BEHAVIOR_SPEC
+except ModuleNotFoundError:
+    from graft_behavior_registry import BEHAVIOR_SPEC
 
 
 STATE_SURVIVAL_SPEC = {
@@ -21,6 +24,7 @@ STATE_SURVIVAL_SPEC = {
     "train_examples_per_situation": 24,
     "eval_examples_per_situation": 16,
     "probe_ridge": 1.0,
+    "label_control": {"method": "mean_random_permutation", "permutations": 32},
     "bridge": {"hub_dim": 8, "output_dim": 96, "readout": "phase"},
     "channels": [
         "sense_input",

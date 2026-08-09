@@ -4,6 +4,7 @@ import torch
 
 from measurement.state_survival_gate import adjudicate
 from measurement.state_survival_registry import STATE_SURVIVAL_SPEC, spec_sha256
+from state_survival import probe_channel
 from trinity import QuantumC, ThalamicBridge
 
 
@@ -60,3 +61,13 @@ def test_state_gate_fails_closed_and_localizes_pooling_loss():
     assert adjudicate(payload)["verdict"] == "S5_CELL_POOLING_LOSS"
     payload["spec_sha256"] = "wrong"
     assert adjudicate(payload)["verdict"] == "S0_INVALID"
+
+
+def test_probe_averages_the_registered_number_of_label_permutations():
+    train_y = torch.arange(4).repeat_interleave(8)
+    train_x = torch.nn.functional.one_hot(train_y, num_classes=4).float()
+    metrics = probe_channel(train_x, train_y, train_x, train_y, seed=19)
+
+    assert metrics["accuracy"] == 1.0
+    assert metrics["shuffled_label_permutations"] == STATE_SURVIVAL_SPEC["label_control"]["permutations"]
+    assert metrics["shuffled_label_accuracy"] <= STATE_SURVIVAL_SPEC["thresholds"]["shuffled_label_max_accuracy"]
