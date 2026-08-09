@@ -85,7 +85,7 @@
       "name": "measurement/ — 계측기",
       "id": "measurement-tools",
       "role": "모든 판정이 나오는 곳. 계측 코드와 결과 JSON이 실행 계약과 영수증의 SSOT다.",
-      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동·상태 등급(g_gates·lambda4·graft_behavior·state_survival·bridge_capacity). lambda_registry.py가 corpus family·floor·팔·seed 형제·λ4 roster의 단일 SSOT이고 graft_behavior_registry.py·state_survival_registry.py·bridge_capacity_registry.py가 행동 인과·정보 생존·연결 다리 폭 비교의 조건과 바를 고정한다. bridge_config.py가 공용 다리의 현재 폭과 이전 체크포인트 폭을 고정한다. runtime.py가 현재 체크아웃과 GPU/Metal/CPU 선택을 공통으로 해결한다. 등록 실행기는 공통 GPU lock으로 학습·채점 중복을 거부한다.",
+      "detail": "계측기는 세 층이다: 판정기(gate) · 통제 실측(panel) · 행동·상태 등급(g_gates·lambda4·graft_behavior·state_survival·bridge_capacity·metacognition). lambda_registry.py가 corpus family·floor·팔·seed 형제·λ4 roster의 단일 SSOT이고 graft_behavior_registry.py·state_survival_registry.py·bridge_capacity_registry.py·metacognition_registry.py가 행동 인과·정보 생존·연결 다리 폭·자기 판단 조건과 바를 고정한다. bridge_config.py가 공용 다리의 현재 폭과 이전 체크포인트 폭을 고정한다. runtime.py가 현재 체크아웃과 GPU/Metal/CPU 선택을 공통으로 해결한다. 등록 실행기는 공통 GPU lock으로 학습·채점 중복을 거부한다.",
       "children": [
         {
           "name": "gate.py — 판정기",
@@ -113,6 +113,11 @@
           "detail": "GRAFT와 같은 네 상황을 감각 입력부터 QuantumC 위상·진폭·동역학, 여러 시점, ThalamicBridge 셀 평균 전·후와 최종 게이트까지 지연 0/1/2/4/8/16/32에서 추적한다. 32개 정답 순열 평균이 가짜 검사를 안정화한다. STATE-1의 8차원 다리는 S4_BRIDGE_TRANSFORM_LOSS였고, STATE-2는 폭 8/16/32/48/96 비교에서 최소 32부터 두 seed·전 지연의 전체 경로가 회복되는 C4_FULL_PATH_RECOVERY다. 폭 32의 행동 재검증도 B2로 통과해 공용 기본 폭은 32이며 학습 가능한 셀 선택은 추가하지 않는다."
         },
         {
+          "name": "metacognition.py · metacognition_gate.py — 자기 판단 정확도",
+          "id": "tool-metacognition",
+          "detail": "검증된 폭 32 행동 체크포인트를 얼리고 위상·직접 기억 읽기에 단계별 잡음을 넣어 정답과 오답을 만든다. 확신 판독기는 현재 내부 코드와 이미 고른 행동만 읽으며 행동 경로에 되먹임하지 않는다. QuantumC 두 seed의 AUROC는 0.923/0.907이고 내부 코드 뒤섞기에서 0.250/0.275로 무너졌지만, 출력 점수 비교군도 한 seed에서 등록 우세 폭 안이라 M2_CALIBRATED_NOT_UNIQUE다. 내부 코드는 오류 가능성을 담지만 독립적인 자기 인식 증거는 아니다."
+        },
+        {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
           "id": "tool-corpus",
           "detail": "regime이 Λ REGIME 신호를 재고, 위키 빌더와 범용 JSONL register 빌더가 산문을 추출한다. register 빌더는 문서 해시 분리·전역 줄 중복 제거·출처 revision/SHA 영수증으로 train/fresh를 만든다."
@@ -133,18 +138,18 @@
       "name": "docs/hypotheses/ — 가설 원장",
       "id": "hypotheses",
       "role": "사전등록 → 반증 → 판정. 가설당 한 문서, 결과는 문서 안에 update-in-place.",
-      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을, STATE-1·2 원장이 감각 정보의 생존 위치와 연결 다리 개선을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · STATE-1의 8차원 다리 손실은 STATE-2의 최소 폭 32에서 전체 경로와 행동까지 회복됐고 GRAFT B2_CAUSAL_NOT_UNIQUE로 판정됐다."
+      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을, STATE-1·2 원장이 감각 정보의 생존 위치와 연결 다리 개선을, META-1 원장이 자기 판단 정확도를 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · STATE-1의 8차원 다리 손실은 STATE-2의 최소 폭 32에서 전체 경로와 행동까지 회복됐고 GRAFT B2_CAUSAL_NOT_UNIQUE로 판정됐다 · META-1은 내부 코드가 오류 가능성을 원인적으로 보존하지만 출력 점수와 독립적이지 않은 M2다."
     },
     {
       "name": "학습기 · 모델",
       "id": "trainers",
-      "detail": "train_conscious_lm.py 가 정본 언어 학습기 · conscious_lm.py 가 PureFieldFFN과 표준 FFN, 체크포인트 복원, 층간 긴장 신호 개입을 제공한다. graft_behavior.py는 기존 QuantumC·PureMind 감각 인코더·ThalamicBridge·HFDecoder를 재사용해 숨겨진 상황의 행동 인과성을 학습·개입한다. state_survival.py와 bridge_capacity.py는 같은 감각 경로와 QuantumC.get_state_channels·ThalamicBridge.trace 읽기 API로 정보 소실 위치와 최소 통과 폭을 잰다. ThalamicBridge 기본 폭은 32이며 이전 체크포인트는 저장된 compress.weight 모양에서 폭을 복원한다. 목적함수나 구조를 바꾸면 step 0부터 새 체크포인트 디렉토리를 쓰고, seed별 전용 생성기로 비교 가능성을 보존한다.",
+      "detail": "train_conscious_lm.py 가 정본 언어 학습기 · conscious_lm.py 가 PureFieldFFN과 표준 FFN, 체크포인트 복원, 층간 긴장 신호 개입을 제공한다. graft_behavior.py는 기존 QuantumC·PureMind 감각 인코더·ThalamicBridge·HFDecoder를 재사용해 숨겨진 상황의 행동 인과성을 학습·개입한다. state_survival.py와 bridge_capacity.py는 같은 감각 경로와 QuantumC.get_state_channels·ThalamicBridge.trace 읽기 API로 정보 소실 위치와 최소 통과 폭을 잰다. metacognition.py는 검증된 행동 모델을 얼리고 내부 코드를 읽는 확신 판독기만 학습하며 확신 개입이 행동으로 역류하지 않게 한다. ThalamicBridge 기본 폭은 32이며 이전 체크포인트는 저장된 compress.weight 모양에서 폭을 복원한다. 목적함수나 구조를 바꾸면 step 0부터 새 체크포인트 디렉토리를 쓰고, seed별 전용 생성기로 비교 가능성을 보존한다.",
       "verdict": "🟢 안정 — NaN/발산/skip 0. 300M 백과 두 seed, 27.7M 문학 PureField 두 seed, 27.689M 문학 일반 FFN 두 seed가 모두 12,000 step 완료. 일반 FFN 신규 구간 BPC는 2.0883/2.0553."
     },
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭·위상·폭 32 실험은 조직 archive의 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭·위상·폭 32 실험은 조직 archive의 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1 최종·무효 결과와 확신 판독기는 `meta1-self-monitoring` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
     }
   ],
   "convergence": {

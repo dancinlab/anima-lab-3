@@ -91,18 +91,19 @@ def adjudicate(payload: dict) -> dict:
             arms = rows[seed]["arms"]
             if set(arms) != set(spec["arms"]):
                 raise KeyError(f"seed {seed} arm set is incomplete")
-            judged[seed] = {}
+            seed_key = str(seed)
+            judged[seed_key] = {}
             for arm in spec["arms"]:
                 if arms[arm]["source_checkpoint_sha256"] != expected_hashes[str(seed)][arm]:
                     raise KeyError(f"seed {seed} {arm} source checkpoint mismatch")
-                judged[seed][arm] = _judge_arm(
+                judged[seed_key][arm] = _judge_arm(
                     arms[arm], spec["thresholds"], spec["readout_noise_levels"]
                 )
     except (KeyError, TypeError) as exc:
         return {"experiment": spec["experiment"], "verdict": "M0_INVALID", "reason": str(exc)}
 
-    all_rows = [judged[seed][arm] for seed in spec["seeds"] for arm in spec["arms"]]
-    consciousness = [judged[seed]["consciousness"] for seed in spec["seeds"]]
+    all_rows = [judged[str(seed)][arm] for seed in spec["seeds"] for arm in spec["arms"]]
+    consciousness = [judged[str(seed)]["consciousness"] for seed in spec["seeds"]]
     if not all(row["difficulty_valid"] for row in all_rows):
         verdict, reason = "M0_INVALID", "noise range did not produce a valid easy-to-hard action task"
     elif not all(row["reader_pass"] and row["causal"] for row in judged_seed_memory(judged, spec)):
@@ -118,7 +119,7 @@ def adjudicate(payload: dict) -> dict:
 
 
 def judged_seed_memory(judged: dict, spec: dict) -> list[dict]:
-    return [judged[seed]["memory"] for seed in spec["seeds"]]
+    return [judged[str(seed)]["memory"] for seed in spec["seeds"]]
 
 
 def main() -> None:

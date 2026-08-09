@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 from measurement.metacognition_gate import adjudicate
 from measurement.metacognition_registry import (
@@ -95,3 +97,11 @@ def test_noise_range_repair_only_adds_the_prospective_endpoint():
     assert repair["thresholds"] == METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["thresholds"]
     assert repair["reader"] == METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["reader"]
     assert adjudicate(payload(repair))["verdict"] == "M1_STATE_MONITORING_ADVANTAGE"
+
+
+def test_committed_meta_result_reproduces_the_registered_verdict():
+    root = Path(__file__).resolve().parents[1]
+    result = json.loads((root / "measurement/metacognition_results.json").read_text())
+    verdict = json.loads((root / "measurement/metacognition_verdict.json").read_text())
+    assert adjudicate(result) == verdict
+    assert verdict["verdict"] == "M2_CALIBRATED_NOT_UNIQUE"

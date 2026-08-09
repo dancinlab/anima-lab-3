@@ -1,0 +1,492 @@
+{
+  "experiment": "meta1_bridge32_self_monitoring_noise_range_repair",
+  "spec": {
+    "experiment": "meta1_bridge32_self_monitoring_noise_range_repair",
+    "action_experiment": "graft_behavior_causality_phase_state_bridge32_memory_control_repair",
+    "action_spec_sha256": "a4217c7ddd9f7af46a30da012bf7acf198e4471073c21cd703c3caf39f39807c",
+    "archive": {
+      "repo": "dancinlab/anima-lab-research-archive",
+      "revision": "graft-bridge32-behavior",
+      "checkpoint_sha256": {
+        "1337": {
+          "consciousness": "994dcd5e62a8b3d65ad097ab476e875ea5e7dbd00c590eadb491e22f4bfd9ff1",
+          "memory": "8c2446bf2ae6961473692a00e10842d927a5e698297006881a1610fba5298bf6"
+        },
+        "7331": {
+          "consciousness": "bf8ef98ec71ea79bac9d1d1dcb311b1ed0167fe9790edb11aedc40db2aa1799b",
+          "memory": "047b9ca6361c885cd0ca9d38852d36511d61adfbc0fef0e76520386b05349a0a"
+        }
+      }
+    },
+    "seeds": [
+      1337,
+      7331
+    ],
+    "arms": [
+      "consciousness",
+      "memory"
+    ],
+    "readout_noise_levels": [
+      0.0,
+      0.25,
+      0.5,
+      1.0,
+      2.0,
+      4.0
+    ],
+    "reader": {
+      "hidden_dim": 32,
+      "train_steps": 500,
+      "batch_size": 64,
+      "learning_rate": 0.003,
+      "weight_decay": 0.001,
+      "ece_bins": 10,
+      "selective_fraction": 0.5
+    },
+    "interventions": [
+      "normal",
+      "off",
+      "shuffle",
+      "noise",
+      "recovered"
+    ],
+    "shuffle_constraint": "different_predicted_action_when_available",
+    "thresholds": {
+      "clean_action_accuracy": 0.9,
+      "hard_action_accuracy_max": 0.5,
+      "minimum_correct_examples": 32,
+      "minimum_incorrect_examples": 32,
+      "auroc": 0.75,
+      "brier": 0.2,
+      "ece": 0.15,
+      "selective_accuracy_gap": 0.2,
+      "shuffle_auroc_drop": 0.1,
+      "shuffle_brier_increase": 0.05,
+      "output_auroc_advantage": 0.05,
+      "output_brier_advantage": 0.02
+    },
+    "memory_noise_topology": "global_broadcast"
+  },
+  "spec_sha256": "04467b88d38a4d92f73c827459f60257187f74968fd55db4e5a0e7c4f7876b0b",
+  "model": "mistralai/Mistral-7B-Instruct-v0.2",
+  "seeds": [
+    {
+      "seed": 1337,
+      "arms": {
+        "consciousness": {
+          "action": {
+            "accuracy": 0.7395833134651184,
+            "correct_examples": 284,
+            "incorrect_examples": 100,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9999133944511414
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9997634291648865
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9976674318313599
+              },
+              "1.0": {
+                "accuracy": 0.921875,
+                "examples": 64,
+                "mean_confidence": 0.9164573550224304
+              },
+              "2.0": {
+                "accuracy": 0.28125,
+                "examples": 64,
+                "mean_confidence": 0.3177597224712372
+              },
+              "4.0": {
+                "accuracy": 0.234375,
+                "examples": 64,
+                "mean_confidence": 0.25791865587234497
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.9229577464788732,
+              "brier": 0.0900898277759552,
+              "ece": 0.04713058577402002,
+              "selective_accuracy_gap": 0.4791666865348816,
+              "high_confidence_accuracy": 0.9791666865348816,
+              "low_confidence_accuracy": 0.5,
+              "mean_confidence": 0.7482466697692871
+            },
+            "off": {
+              "auroc": 0.5736619718309859,
+              "brier": 0.2604140341281891,
+              "ece": 0.2604113817214966,
+              "selective_accuracy_gap": 0.1666666865348816,
+              "high_confidence_accuracy": 0.8229166865348816,
+              "low_confidence_accuracy": 0.65625,
+              "mean_confidence": 0.999994695186615
+            },
+            "shuffle": {
+              "auroc": 0.25026408450704224,
+              "brier": 0.49358513951301575,
+              "ece": 0.5589916344866119,
+              "selective_accuracy_gap": -0.34375,
+              "high_confidence_accuracy": 0.5677083134651184,
+              "low_confidence_accuracy": 0.9114583134651184,
+              "mean_confidence": 0.6088980436325073
+            },
+            "noise": {
+              "auroc": 0.4573943661971831,
+              "brier": 0.3085786700248718,
+              "ece": 0.31046773645394543,
+              "selective_accuracy_gap": -0.0625,
+              "high_confidence_accuracy": 0.7083333134651184,
+              "low_confidence_accuracy": 0.7708333134651184,
+              "mean_confidence": 0.8952997326850891
+            },
+            "recovered": {
+              "auroc": 0.9229577464788732,
+              "brier": 0.0900898277759552,
+              "ece": 0.04713058577402002,
+              "selective_accuracy_gap": 0.4791666865348816,
+              "high_confidence_accuracy": 0.9791666865348816,
+              "low_confidence_accuracy": 0.5,
+              "mean_confidence": 0.7482466697692871
+            }
+          },
+          "output_only": {
+            "auroc": 0.8900352112676057,
+            "brier": 0.110462985932827,
+            "ece": 0.03751023984079205,
+            "selective_accuracy_gap": 0.4166666865348816,
+            "high_confidence_accuracy": 0.9479166865348816,
+            "low_confidence_accuracy": 0.53125,
+            "mean_confidence": 0.7449884414672852
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "994dcd5e62a8b3d65ad097ab476e875ea5e7dbd00c590eadb491e22f4bfd9ff1",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_1337_consciousness_readers.pt",
+            "sha256": "93f556ca78cc250edfeec3cd1063ec10e2b54a631ccbe21cc395ab2de2afe254"
+          }
+        },
+        "memory": {
+          "action": {
+            "accuracy": 0.7578125,
+            "correct_examples": 291,
+            "incorrect_examples": 93,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9552236795425415
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.931643009185791
+              },
+              "0.5": {
+                "accuracy": 0.859375,
+                "examples": 64,
+                "mean_confidence": 0.852927565574646
+              },
+              "1.0": {
+                "accuracy": 0.765625,
+                "examples": 64,
+                "mean_confidence": 0.7615869045257568
+              },
+              "2.0": {
+                "accuracy": 0.59375,
+                "examples": 64,
+                "mean_confidence": 0.549773633480072
+              },
+              "4.0": {
+                "accuracy": 0.328125,
+                "examples": 64,
+                "mean_confidence": 0.484840452671051
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.8152828585153161,
+              "brier": 0.14906230568885803,
+              "ece": 0.09232464360934706,
+              "selective_accuracy_gap": 0.328125,
+              "high_confidence_accuracy": 0.921875,
+              "low_confidence_accuracy": 0.59375,
+              "mean_confidence": 0.7559991478919983
+            },
+            "off": {
+              "auroc": 0.5287107859439086,
+              "brier": 0.1837901473045349,
+              "ece": 0.028866589069366455,
+              "selective_accuracy_gap": -0.015625,
+              "high_confidence_accuracy": 0.75,
+              "low_confidence_accuracy": 0.765625,
+              "mean_confidence": 0.7289459109306335
+            },
+            "shuffle": {
+              "auroc": 0.4439271329859956,
+              "brier": 0.34861502051353455,
+              "ece": 0.35098663090378956,
+              "selective_accuracy_gap": -0.08854162693023682,
+              "high_confidence_accuracy": 0.7135416865348816,
+              "low_confidence_accuracy": 0.8020833134651184,
+              "mean_confidence": 0.6539958119392395
+            },
+            "noise": {
+              "auroc": 0.5169049994457378,
+              "brier": 0.2700226604938507,
+              "ece": 0.2393711816452916,
+              "selective_accuracy_gap": -0.005208373069763184,
+              "high_confidence_accuracy": 0.7552083134651184,
+              "low_confidence_accuracy": 0.7604166865348816,
+              "mean_confidence": 0.6976608633995056
+            },
+            "recovered": {
+              "auroc": 0.8152828585153161,
+              "brier": 0.14906230568885803,
+              "ece": 0.09232464360934706,
+              "selective_accuracy_gap": 0.328125,
+              "high_confidence_accuracy": 0.921875,
+              "low_confidence_accuracy": 0.59375,
+              "mean_confidence": 0.7559991478919983
+            }
+          },
+          "output_only": {
+            "auroc": 0.7100838783579057,
+            "brier": 0.1610637605190277,
+            "ece": 0.03901969333664668,
+            "selective_accuracy_gap": 0.21354162693023682,
+            "high_confidence_accuracy": 0.8645833134651184,
+            "low_confidence_accuracy": 0.6510416865348816,
+            "mean_confidence": 0.7603333592414856
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "8c2446bf2ae6961473692a00e10842d927a5e698297006881a1610fba5298bf6",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_1337_memory_readers.pt",
+            "sha256": "4034c60d37705c34728e362a029a39526fe09ab7d139e5fffad8d50f617b2d5c"
+          }
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "arms": {
+        "consciousness": {
+          "action": {
+            "accuracy": 0.7421875,
+            "correct_examples": 285,
+            "incorrect_examples": 99,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9986328482627869
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9981580972671509
+              },
+              "0.5": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9953296184539795
+              },
+              "1.0": {
+                "accuracy": 0.890625,
+                "examples": 64,
+                "mean_confidence": 0.8272908329963684
+              },
+              "2.0": {
+                "accuracy": 0.328125,
+                "examples": 64,
+                "mean_confidence": 0.4342345893383026
+              },
+              "4.0": {
+                "accuracy": 0.234375,
+                "examples": 64,
+                "mean_confidence": 0.4312802851200104
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.9071415913521177,
+              "brier": 0.10784710198640823,
+              "ece": 0.07627523414070125,
+              "selective_accuracy_gap": 0.4739583730697632,
+              "high_confidence_accuracy": 0.9791666865348816,
+              "low_confidence_accuracy": 0.5052083134651184,
+              "mean_confidence": 0.7808210253715515
+            },
+            "off": {
+              "auroc": 0.6908736487683856,
+              "brier": 0.25764158368110657,
+              "ece": 0.2575507164001465,
+              "selective_accuracy_gap": 0.2864583730697632,
+              "high_confidence_accuracy": 0.8854166865348816,
+              "low_confidence_accuracy": 0.5989583134651184,
+              "mean_confidence": 0.9997382164001465
+            },
+            "shuffle": {
+              "auroc": 0.27534999113946484,
+              "brier": 0.4336385726928711,
+              "ece": 0.4741782414878028,
+              "selective_accuracy_gap": -0.24479162693023682,
+              "high_confidence_accuracy": 0.6197916865348816,
+              "low_confidence_accuracy": 0.8645833134651184,
+              "mean_confidence": 0.6211392879486084
+            },
+            "noise": {
+              "auroc": 0.550274676590466,
+              "brier": 0.2645782232284546,
+              "ece": 0.2545669703166828,
+              "selective_accuracy_gap": 0.036458373069763184,
+              "high_confidence_accuracy": 0.7604166865348816,
+              "low_confidence_accuracy": 0.7239583134651184,
+              "mean_confidence": 0.9307770133018494
+            },
+            "recovered": {
+              "auroc": 0.9071415913521177,
+              "brier": 0.10784710198640823,
+              "ece": 0.07627523414070125,
+              "selective_accuracy_gap": 0.4739583730697632,
+              "high_confidence_accuracy": 0.9791666865348816,
+              "low_confidence_accuracy": 0.5052083134651184,
+              "mean_confidence": 0.7808210253715515
+            }
+          },
+          "output_only": {
+            "auroc": 0.7951798688640794,
+            "brier": 0.15656740963459015,
+            "ece": 0.04192958295041424,
+            "selective_accuracy_gap": 0.3385416269302368,
+            "high_confidence_accuracy": 0.9114583134651184,
+            "low_confidence_accuracy": 0.5729166865348816,
+            "mean_confidence": 0.7461270689964294
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "bf8ef98ec71ea79bac9d1d1dcb311b1ed0167fe9790edb11aedc40db2aa1799b",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_7331_consciousness_readers.pt",
+            "sha256": "f56f6ce8810bdce65f74543aa7ab7c3168a958495b538cc435bcb11e324f6bcd"
+          }
+        },
+        "memory": {
+          "action": {
+            "accuracy": 0.7473958134651184,
+            "correct_examples": 287,
+            "incorrect_examples": 97,
+            "by_noise_level": {
+              "0.0": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.9632556438446045
+              },
+              "0.25": {
+                "accuracy": 1.0,
+                "examples": 64,
+                "mean_confidence": 0.937667965888977
+              },
+              "0.5": {
+                "accuracy": 0.9375,
+                "examples": 64,
+                "mean_confidence": 0.8571766018867493
+              },
+              "1.0": {
+                "accuracy": 0.71875,
+                "examples": 64,
+                "mean_confidence": 0.8010029196739197
+              },
+              "2.0": {
+                "accuracy": 0.484375,
+                "examples": 64,
+                "mean_confidence": 0.763198971748352
+              },
+              "4.0": {
+                "accuracy": 0.34375,
+                "examples": 64,
+                "mean_confidence": 0.693781852722168
+              }
+            }
+          },
+          "confidence": {
+            "normal": {
+              "auroc": 0.758863464923309,
+              "brier": 0.179271399974823,
+              "ece": 0.12491648341695336,
+              "selective_accuracy_gap": 0.296875,
+              "high_confidence_accuracy": 0.8958333134651184,
+              "low_confidence_accuracy": 0.5989583134651184,
+              "mean_confidence": 0.8360140323638916
+            },
+            "off": {
+              "auroc": 0.5403750134703115,
+              "brier": 0.19693386554718018,
+              "ece": 0.09457651337576856,
+              "selective_accuracy_gap": 0.06770831346511841,
+              "high_confidence_accuracy": 0.78125,
+              "low_confidence_accuracy": 0.7135416865348816,
+              "mean_confidence": 0.6528193354606628
+            },
+            "shuffle": {
+              "auroc": 0.4376773591005424,
+              "brier": 0.27732789516448975,
+              "ece": 0.26042774618403475,
+              "selective_accuracy_gap": -0.08854168653488159,
+              "high_confidence_accuracy": 0.703125,
+              "low_confidence_accuracy": 0.7916666865348816,
+              "mean_confidence": 0.7501891255378723
+            },
+            "noise": {
+              "auroc": 0.46923380868565684,
+              "brier": 0.2468603104352951,
+              "ece": 0.20135461241664865,
+              "selective_accuracy_gap": -0.03645831346511841,
+              "high_confidence_accuracy": 0.7291666865348816,
+              "low_confidence_accuracy": 0.765625,
+              "mean_confidence": 0.6478396058082581
+            },
+            "recovered": {
+              "auroc": 0.758863464923309,
+              "brier": 0.179271399974823,
+              "ece": 0.12491648341695336,
+              "selective_accuracy_gap": 0.296875,
+              "high_confidence_accuracy": 0.8958333134651184,
+              "low_confidence_accuracy": 0.5989583134651184,
+              "mean_confidence": 0.8360140323638916
+            }
+          },
+          "output_only": {
+            "auroc": 0.7105858687452854,
+            "brier": 0.17423440515995026,
+            "ece": 0.06761504542697147,
+            "selective_accuracy_gap": 0.2447916865348816,
+            "high_confidence_accuracy": 0.8697916865348816,
+            "low_confidence_accuracy": 0.625,
+            "mean_confidence": 0.7960224151611328
+          },
+          "intervention_actions_identical": true,
+          "recovery_confidence_identical": true,
+          "source_checkpoint_sha256": "047b9ca6361c885cd0ca9d38852d36511d61adfbc0fef0e76520386b05349a0a",
+          "reader_checkpoint": {
+            "path": "checkpoints/metacognition/seed_7331_memory_readers.pt",
+            "sha256": "7536c623c4feed71443d94767ecc2e302f2d00d188283b3821820ea031cd17ae"
+          }
+        }
+      }
+    }
+  ]
+}
