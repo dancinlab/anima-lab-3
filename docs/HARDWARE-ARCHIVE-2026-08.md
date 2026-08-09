@@ -16,6 +16,7 @@
 | `episode-control1-dynamic-relation` | 로컬 CPU CONTROL-1 결과·판정·표준 GRU 두 seed 체크포인트 | 5 | 353,592 | `0cbc1373f0afd01892b95a3c130b0fbcd95e5658737fd013212fb47fc5dd94c1` |
 | `episode-control2-online-dynamic-relation` | 로컬 CPU CONTROL-2 온라인 자료 결과·판정·표준 GRU 두 seed 체크포인트 | 5 | 357,690 | `51e44840f19ab605a5e1243980f72854d7a6ef2fdaa16fcf3fd6f7bd19db95f8` |
 | `episode-control3-keyed-attention` | 로컬 CPU CONTROL-3 온라인 자료 결과·판정·표준 주의집중 두 seed 체크포인트 | 5 | 362,920 | `8884dcde70235caae5c2b2e254bd221e4b8decc0fcc5033f46a6bbac71ec9b35` |
+| `episode1-one-shot-relation` | 로컬 CPU EPISODE-1 결과·판정·두 seed 값 원형 체크포인트 | 5 | 79,196 | `a252762d60cd8833360a7a0a5aa9018a1bb5ef53dc7d92d8f3fa33d7c22d3815` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -68,3 +69,8 @@ revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 �
 CONTROL-3 보관은 Hugging Face 커밋 `c3d6c6eaebf94e3b7ff9474faa86b230da992079`에 올렸다. 원격
 revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 체크포인트의 SHA-256을 전수 확인했고,
 다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. GPU를 빌리지 않은 로컬 CPU 실행이다.
+
+EPISODE-1 보관은 Hugging Face 커밋 `a41546afdf5bbab9ed414c7d963f746787928819`에 올렸다. 원격
+revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 값 원형 체크포인트의 SHA-256을 전수
+확인했고, 다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. GPU를 빌리지 않은 로컬 CPU
+실행이다.

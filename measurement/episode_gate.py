@@ -203,7 +203,7 @@ def adjudicate(payload: dict, spec: dict = EPISODE_SPEC) -> dict:
                 "arms": arms,
                 "checkpoint": receipt,
             }
-    except (KeyError, TypeError, ValueError, OSError) as exc:
+    except (KeyError, TypeError, ValueError, OSError, RuntimeError, EOFError) as exc:
         return invalid(str(exc))
     threshold = spec["thresholds"]
     rows = list(judged.values())
