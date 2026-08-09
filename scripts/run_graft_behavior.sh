@@ -38,14 +38,16 @@ case "$ACTION" in
       tests/test_consciousness_intervention.py tests/test_state_survival.py \
       tests/test_bridge_capacity.py tests/test_metacognition_gate.py tests/test_synergy_gate.py \
       tests/test_workspace_information_gate.py tests/test_recurrent_workspace.py \
-      tests/test_workspace_gate.py
+      tests/test_workspace_gate.py tests/test_relation_gate.py tests/test_relation_runtime.py \
+      tests/test_validity_gate.py
     "$PYTHON_BIN" -m py_compile graft_behavior.py state_survival.py measurement/graft_behavior_gate.py \
       measurement/state_survival_gate.py measurement/bridge_capacity_gate.py metacognition.py \
       measurement/metacognition_gate.py synergy.py measurement/synergy_gate.py \
       workspace_information.py measurement/workspace_information_gate.py workspace.py \
-      measurement/workspace_gate.py pure.py trinity.py
+      measurement/workspace_gate.py measurement/relation_gate.py validity.py \
+      measurement/validity_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair)
+  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair|validity1)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -124,11 +126,16 @@ case "$ACTION" in
         --verdict measurement/workspace_verdict.json \
         --checkpoint-dir checkpoints/workspace1_control_seed_repair
     fi
+    if [ "$ACTION" = validity1 ]; then
+      exec "$PYTHON_BIN" validity.py \
+        --output measurement/validity_results.json \
+        --verdict measurement/validity_verdict.json
+    fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1|launch-synergy1-repair|launch-workspace-map|launch-workspace1|launch-workspace1-repair)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1|launch-synergy1-repair|launch-workspace-map|launch-workspace1|launch-workspace1-repair|launch-validity1)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -139,7 +146,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair|validity1|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac
