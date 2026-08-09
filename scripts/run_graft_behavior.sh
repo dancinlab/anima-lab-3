@@ -16,10 +16,11 @@ case "$ACTION" in
     git -C "$ROOT" checkout --detach "$REVISION"
     python -m pip install --quiet 'transformers>=4.51,<5' accelerate sentencepiece pytest
     cd "$ROOT"
-    python -m pytest -q tests/test_graft_behavior_gate.py tests/test_consciousness_intervention.py
+    python -m pytest -q tests/test_graft_behavior_gate.py tests/test_quantum_phase_readout.py \
+      tests/test_consciousness_intervention.py
     python -m py_compile graft_behavior.py measurement/graft_behavior_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved)
+  smoke|full|language-preserved|phase-state)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -38,11 +39,17 @@ case "$ACTION" in
         --output measurement/graft_behavior_language_preserved_results.json \
         --checkpoint-dir checkpoints/graft_behavior_language_preserved
     fi
+    if [ "$ACTION" = phase-state ]; then
+      exec python graft_behavior.py \
+        --experiment graft_behavior_causality_phase_state \
+        --output measurement/graft_behavior_phase_state_results.json \
+        --checkpoint-dir checkpoints/graft_behavior_phase_state
+    fi
     exec python graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -53,7 +60,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac

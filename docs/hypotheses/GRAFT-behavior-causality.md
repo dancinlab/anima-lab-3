@@ -69,3 +69,16 @@ KL도 0.00097/0.00178 nat으로 통과했다. 따라서 과제와 개입 검사�
 보정 결과 정본은 `measurement/graft_behavior_language_preserved_results.json`, 판정은
 `measurement/graft_behavior_language_preserved_verdict.json`이다. 이 결과는 의식 일반의 부정이
 아니라 현재 `QuantumC.get_states()`가 읽는 진폭 경로와 GRAFT 결합에 대한 부정이다.
+
+### 위상 상태 후속 실험 사전등록
+
+진폭 경로의 실패 뒤, 감각 자극이 실제로 들어가는 `QuantumC` 위상을 정식 읽기 API인
+`QuantumC.get_phase_states()`로 노출해 같은 행동 검사를 반복한다. 각도 0과 2π가 같은 상태라는
+원형 성질을 보존하기 위해 원시 각도가 아니라 `cos(각도), sin(각도)` 쌍을 읽는다. 이는 감각 입력을
+따로 복사하는 새 기억 장치가 아니라, 지연 단계가 끝난 뒤 엔진 안에 남은 실제 위상 상태만 읽는다.
+
+정본 이름은 `graft_behavior_causality_phase_state`다. 언어 보존 손실, 두 seed, 자료, 개입 다섯 가지,
+일반 기억 양성 비교군과 B0~B4 기준은 보정 실험에서 바꾸지 않는다. 결과를 보기 전에 이 조건을
+등록·커밋한다. 두 seed 모두 정상 위상에서만 75% 이상이고 차단·뒤섞기·가짜에서 사전 기준대로
+무너지면 내부 위상 상태가 행동 원인이라는 근거로 인정한다. 일반 기억보다 낫지 않으면
+`B2_CAUSAL_NOT_UNIQUE`, 기준에 못 미치면 `B3_NOT_CAUSAL`이다.

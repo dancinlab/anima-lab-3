@@ -88,6 +88,10 @@ class CEngine:
         """Return [n_cells, state_dim] tensor of consciousness states."""
         raise NotImplementedError
 
+    def get_phase_states(self) -> torch.Tensor:
+        """Return wrap-safe phase coordinates when the engine has native phases."""
+        raise NotImplementedError(f"{type(self).__name__} has no native phase state")
+
     @property
     def state_dim(self) -> int:
         raise NotImplementedError
@@ -302,6 +306,13 @@ class QuantumC(CEngine):
         if amp.numel() == 0:
             return torch.randn(self.n_cells, self._dim)
         return amp.detach()
+
+    def get_phase_states(self) -> torch.Tensor:
+        """Return native phases as circularly continuous cos/sin coordinates."""
+        phase = self.engine._phases
+        if phase.numel() == 0:
+            return torch.zeros(self.n_cells, 2 * self._dim)
+        return torch.cat((torch.cos(phase), torch.sin(phase)), dim=-1).detach()
 
     @property
     def state_dim(self):

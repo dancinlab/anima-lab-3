@@ -56,15 +56,23 @@ LANGUAGE_PRESERVED_SPEC.update({
     "language_kl_weight": 1.0,
 })
 
+PHASE_STATE_SPEC = deepcopy(LANGUAGE_PRESERVED_SPEC)
+PHASE_STATE_SPEC.update({
+    "experiment": "graft_behavior_causality_phase_state",
+    "readout": "phase",
+    "state_dim": 2 * BEHAVIOR_SPEC["state_dim"],
+})
+
 REGISTERED_EXPERIMENTS = {
     BEHAVIOR_SPEC["experiment"]: BEHAVIOR_SPEC,
     LANGUAGE_PRESERVED_SPEC["experiment"]: LANGUAGE_PRESERVED_SPEC,
+    PHASE_STATE_SPEC["experiment"]: PHASE_STATE_SPEC,
 }
 
 
 def experiment(name: str) -> dict:
     try:
-        return REGISTERED_EXPERIMENTS[name]
+        return deepcopy(REGISTERED_EXPERIMENTS[name])
     except KeyError as exc:
         raise ValueError(f"unknown GRAFT behavior experiment: {name}") from exc
 

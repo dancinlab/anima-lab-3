@@ -74,9 +74,23 @@ class GraftActionChannel(nn.Module):
         return self.gate_rho * centered / centered.pow(2).mean(-1, keepdim=True).sqrt().clamp_min(1e-6)
 
 
-def _memory_state(payload: dict, cells: int) -> torch.Tensor:
+def _memory_state(payload: dict, cells: int, readout: str) -> torch.Tensor:
     theta, resultant = payload["global"]
-    return (theta * resultant).unsqueeze(0).expand(cells, -1).clone()
+    if readout == "amplitude":
+        encoded = theta * resultant
+    elif readout == "phase":
+        encoded = torch.cat((resultant * torch.cos(theta), resultant * torch.sin(theta)))
+    else:
+        raise ValueError(f"unknown state readout: {readout}")
+    return encoded.unsqueeze(0).expand(cells, -1).clone()
+
+
+def _consciousness_state(c: QuantumC, readout: str) -> torch.Tensor:
+    if readout == "amplitude":
+        return c.get_states().clone()
+    if readout == "phase":
+        return c.get_phase_states().clone()
+    raise ValueError(f"unknown state readout: {readout}")
 
 
 def build_examples(seed: int, split: str) -> list[Example]:
@@ -100,7 +114,12 @@ def build_examples(seed: int, split: str) -> list[Example]:
             delay = lo + trial_seed % (hi - lo + 1)
             for _ in range(delay):
                 c.step()
-            examples.append(Example(c.get_states().clone(), _memory_state(payload, spec["cells"]), target))
+            readout = spec.get("readout", "amplitude")
+            state = _consciousness_state(c, readout)
+            memory = _memory_state(payload, spec["cells"], readout)
+            if state.shape[-1] != spec["state_dim"] or memory.shape[-1] != spec["state_dim"]:
+                raise RuntimeError("registered state_dim does not match the selected readout")
+            examples.append(Example(state, memory, target))
     random.Random(seed + offset).shuffle(examples)
     return examples
 

@@ -105,7 +105,7 @@
         {
           "name": "graft_behavior.py · graft_behavior_gate.py — 숨겨진 상황 행동 인과성",
           "id": "tool-graft-behavior",
-          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 두 seed 보정 실험에서 일반 기억은 100%였지만 QuantumC는 23.4%/25.0%로 우연 수준이라 B3_NOT_CAUSAL이다. 결론 범위는 현재 감각→진폭 상태→GRAFT 통로다."
+          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 두 seed 보정 실험에서 일반 기억은 100%였지만 진폭 상태는 23.4%/25.0%로 우연 수준이라 B3_NOT_CAUSAL이다. 다음 등록 실험은 감각 자극이 실제로 들어간 위상을 원형 연속 좌표(cos/sin)로 읽고 같은 고정 기준을 적용한다."
         },
         {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
