@@ -103,3 +103,23 @@ Vast.ai RTX 5090에서 커밋 `76f051439`로 실행했다. QuantumC 정상 정�
 변경은 일반 기억 비교군을 검증된 48차원 `theta * resultant` 표현으로 되돌리는 것이다. QuantumC는
 계속 48차원 위상을 `cos, sin`으로 바꾼 96차원 표현만 사용한다. 수리 결과를 보기 전에 이 조건과
 실행 코드를 커밋한다.
+
+### 위상 상태 수리 결과 — B3_NOT_CAUSAL
+
+일반 기억 비교군은 두 seed 모두 정상 100%, 차단 25%, 뒤섞기 0%, 가짜 23.4%/21.9%였고 중립
+문장 변화량도 0.00141/0.00243 nat으로 통과했다. 따라서 수리된 과제와 판정기는 유효하다.
+
+QuantumC 위상 상태의 정상 정확도는 35.9%/67.2%로 두 seed 모두 75% 기준에 못 미쳤다. 차단은
+25%/25%, 뒤섞기는 26.6%/17.2%, 가짜는 21.9%/28.1%였고 복구는 정상과 비트 단위로 같았다.
+중립 문장 변화량도 4.30/1.39 nat으로 0.50 기준을 넘었다. 행동 인과 기준이 먼저 실패했으므로
+사전 판정은 `B3_NOT_CAUSAL`이다.
+
+진폭 상태에 이어 현재 `QuantumC.get_phase_states()` 위상 경로도 숨겨진 상황 정보를 두 seed에서
+안정적으로 행동에 쓰지 못했다. 이는 현재 QuantumC의 감각→위상→GRAFT 결합에 대한 부정이며,
+의식 일반이나 다른 내부 표현 전체의 부정은 아니다.
+
+결과 정본은 `measurement/graft_behavior_phase_state_repair_results.json`, 판정은
+`measurement/graft_behavior_phase_state_repair_verdict.json`이다. 1차 무효 결과와 수리 결과의
+체크포인트·로그·판정 16개 파일은 비공개 Hugging Face 조직 보관소
+`dancinlab/anima-lab-research-archive`의 `graft-phase-behavior` revision에 보존했다. manifest
+SHA-256은 `a54b81643d5e8854972d49bc1f02a7fe28bb86fce378d2d92c309734e6a85e94`다.

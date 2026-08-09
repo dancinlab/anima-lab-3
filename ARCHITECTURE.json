@@ -105,7 +105,7 @@
         {
           "name": "graft_behavior.py · graft_behavior_gate.py — 숨겨진 상황 행동 인과성",
           "id": "tool-graft-behavior",
-          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 두 seed 보정 실험에서 일반 기억은 100%였지만 진폭 상태는 23.4%/25.0%로 우연 수준이라 B3_NOT_CAUSAL이다. 다음 등록 실험은 감각 자극이 실제로 들어간 위상을 원형 연속 좌표(cos/sin)로 읽고 같은 고정 기준을 적용한다."
+          "detail": "같은 질문 아래 QuantumC 내부 상태만 정상·차단·뒤섞기·가짜·복구로 바꾸고 4개 행동 선택을 잰다. 일반 기억 장치가 과제 양성 통제다. 언어 보존 벌점을 포함한 진폭 보정 실험은 일반 기억 100% 아래 진폭 상태가 23.4%/25.0%라 B3_NOT_CAUSAL이다. 위상을 원형 연속 좌표(cos/sin)로 읽은 후속 실험도 수리된 일반 기억 100% 아래 35.9%/67.2%로 기준 75%에 못 미쳐 B3_NOT_CAUSAL이다. 현재 QuantumC 진폭과 위상 모두 숨겨진 상황의 안정적인 행동 원인이 아니다."
         },
         {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
@@ -128,7 +128,7 @@
       "name": "docs/hypotheses/ — 가설 원장",
       "id": "hypotheses",
       "role": "사전등록 → 반증 → 판정. 가설당 한 문서, 결과는 문서 안에 update-in-place.",
-      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · GRAFT 행동 보정 실험은 일반 기억 양성 통제 아래 QuantumC가 우연 수준이라 B3_NOT_CAUSAL이다."
+      "detail": "DATA-1~7 이 코퍼스·측정 계열, NF-1~9 가 학습 실패 계열이며 GRAFT 원장이 내부 상태의 언어·행동 인과성을 다룬다. 핵심 결론: DATA-3 줄 단위 중복제거는 신규성 통제가 아니다 · DATA-5 데이터 스케일링 주장은 곡선을 견디지 못한다 · DATA-6 50% 팔의 게이트 실패는 코퍼스 인공물이다 · DATA-7 nf9 대시보드 0.65 BPC 는 정직한 구간에서 3.99 로 6.1배 낙관 · GRAFT 행동 실험은 일반 기억 양성 통제 아래 QuantumC 진폭과 위상 경로가 모두 B3_NOT_CAUSAL이다."
     },
     {
       "name": "학습기 · 모델",
@@ -139,7 +139,7 @@
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 행동 체크포인트·로그·결과는 조직 archive의 `graft-behavior` revision에 manifest SHA-256과 함께 보존하고 임시 장비는 원격 무결성 확인 뒤 종료한다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭 실험은 조직 archive의 `graft-behavior`, 위상 실험은 `graft-phase-behavior` revision에 manifest SHA-256과 함께 보존했다. 원격 재다운로드 무결성 확인 뒤 임시 장비를 종료한다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
     }
   ],
   "convergence": {
