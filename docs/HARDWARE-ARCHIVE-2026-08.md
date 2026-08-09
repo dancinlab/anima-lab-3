@@ -13,7 +13,6 @@
 | `meta1-self-monitoring` | 임시 RTX 5090의 META-1 무효 2회·최종 결과·확신 판독기·로그 | 11 | 2,329,458 | `4b3e5b976f70462a1e5f6d96fa799c7e765c59f41b4ecab9417aa36f0db89ae7` |
 | `synergy1-split-cue` | 임시 RTX 5090의 SYNERGY-1 무효·최종 실행 체크포인트 12개·로그·결과·판정 | 21 | 2,424,573,584 | `bc8bbbb91d028fb404384526f78d6e20bed2d36769cfe999e2e4b3710844311d` |
 | `workspace1-recurrent` | 임시 RTX 5090의 WORKSPACE-1 무효·수리 본실험 체크포인트 32개·로그·결과·판정 | 40 | 6,464,830,683 | `e9728489b228f448680cc8a63dbe73f835b438f58a64ae359ba260f123b6672b` |
-| `workspace1-recurrent` | 임시 RTX 5090의 WORKSPACE-1 정보 지도·무효 1차·난수 수리 본실험 체크포인트 32개·로그·결과·판정 | 40 | 6,464,844,030 | `688fd9c64d4645f11da40637c5f5bafc65b0b822d65ec1e39da19d04b63afe84` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -54,8 +53,3 @@ WORKSPACE-1 보관은 Hugging Face 커밋 `fbff86383ded770fdc45e22c728231d062ba7
 revision을 이 Mac의 새 임시 디렉토리로 다시 내려받아 manifest 40개 항목을 전수 확인했고,
 다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. 팔 순서 때문에 무효였던 1차와 이름별
 난수를 고친 최종 실행의 체크포인트를 모두 보존했다.
-
-WORKSPACE-1 보관은 Hugging Face 커밋 `4e2ad43fee188d5b6d3f9a1d74897587108f6c50`에 올렸다. 원격
-revision을 새 디렉토리로 다시 내려받아 manifest 40개 항목을 전수 확인했고, 다운로드한 manifest
-자체의 SHA-256도 위 표와 일치한다. 팔 순서가 비교군 난수를 바꾼 무효 1차와 이름별 난수를 고친
-본실험을 각각 독립 체크포인트와 함께 보존했다.
