@@ -102,7 +102,8 @@ def build_examples(seed: int, split: str) -> list[Example]:
         for index in range(per_situation):
             trial_seed = seed * 10_000 + target * per_situation + index + offset
             torch.manual_seed(trial_seed)
-            c = QuantumC(nc=spec["cells"], dim=spec["state_dim"], max_cells=spec["cells"])
+            c = QuantumC(nc=spec["cells"], dim=spec.get("engine_dim", spec["state_dim"]),
+                         max_cells=spec["cells"])
             encoder = PureMind(store=None, c_engine=c)
             for _ in range(spec["warm_steps"]):
                 c.step()

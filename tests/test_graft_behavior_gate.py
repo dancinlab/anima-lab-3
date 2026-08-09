@@ -50,6 +50,7 @@ def test_phase_experiment_is_registered_and_independently_copied():
     first["train_steps"] = 1
     second = experiment(PHASE_STATE_SPEC["experiment"])
     assert second["readout"] == "phase"
+    assert second["engine_dim"] == BEHAVIOR_SPEC["state_dim"]
     assert second["state_dim"] == 2 * BEHAVIOR_SPEC["state_dim"]
     assert second["train_steps"] == PHASE_STATE_SPEC["train_steps"]
 

@@ -1,5 +1,7 @@
 import torch
 
+import graft_behavior
+from measurement.graft_behavior_registry import PHASE_STATE_SPEC, experiment
 from trinity import QuantumC
 
 
@@ -15,3 +17,18 @@ def test_quantum_phase_readout_is_wrap_safe_and_read_only():
     assert states.shape == (4, 12)
     assert torch.allclose(states, wrapped, atol=1e-5)
     assert torch.equal(engine.engine._phases, before)
+
+
+def test_phase_examples_keep_engine_and_readout_dimensions_separate(monkeypatch):
+    spec = experiment(PHASE_STATE_SPEC["experiment"])
+    spec["situations"] = spec["situations"][:1]
+    spec["train_examples_per_situation"] = 1
+    spec["warm_steps"] = 0
+    spec["sense_steps"] = 1
+    spec["delay_steps"] = [0, 0]
+    monkeypatch.setattr(graft_behavior, "BEHAVIOR_SPEC", spec)
+
+    row = graft_behavior.build_examples(7, "train")[0]
+
+    assert row.state.shape == (spec["cells"], spec["state_dim"])
+    assert row.memory.shape == (spec["cells"], spec["state_dim"])

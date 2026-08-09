@@ -60,6 +60,7 @@ PHASE_STATE_SPEC = deepcopy(LANGUAGE_PRESERVED_SPEC)
 PHASE_STATE_SPEC.update({
     "experiment": "graft_behavior_causality_phase_state",
     "readout": "phase",
+    "engine_dim": BEHAVIOR_SPEC["state_dim"],
     "state_dim": 2 * BEHAVIOR_SPEC["state_dim"],
 })
 
