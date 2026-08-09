@@ -61,3 +61,18 @@ AUROC를 계산할 양쪽 사례가 없으므로 사전 규칙대로 `M0_INVALID
 행동·확신 모델, 학습량, 모든 숫자 기준과 M0~M3 판정은 1차와 같다. 이 한 가지 수리만 결과를 보기
 전에 등록하고 커밋한다. 1차 무효 결과는 `measurement/metacognition_invalid_{results,verdict}.json`에
 보존한다.
+
+### 직접 기억 잡음 수리 결과 — M0_INVALID
+
+전역 잡음 수리 뒤 직접 기억의 가장 강한 조건 정확도는 seed 7331에서 48.4%로 유효했지만 seed
+1337은 59.4%로 등록 상한 50%를 넘었다. 오답 수는 50/55개로 늘어 셀 평균 상쇄 문제는 해결됐지만,
+등록한 난이도 끝점이 한 seed에서 충분히 어렵지 않았다. 판정은 다시 `M0_INVALID`다. 결과는
+`measurement/metacognition_memory_noise_repair_invalid_{results,verdict}.json`에 보존한다.
+
+### 잡음 범위 수리 — 사전등록
+
+새 정본은 `meta1_bridge32_self_monitoring_noise_range_repair`다. 기존 다섯 잡음 세기는 그대로
+보존하고 가장 강한 끝점 `4.0` 하나만 추가한다. 이 끝점은 위상 좌표에는 4라디안 표준편차의 원형
+잡음, 직접 기억에는 전역 벡터 크기의 4배 잡음이다. 두 seed, 원본 체크포인트, 판독기, 개입,
+학습량, AUROC·Brier·보정·선별 정확도와 모든 M0~M3 기준은 바꾸지 않는다. 결과를 보기 전에 이
+범위만 등록하고 커밋한다.

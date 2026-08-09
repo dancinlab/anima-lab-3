@@ -1,0 +1,272 @@
+{
+  "experiment": "meta1_bridge32_self_monitoring_memory_noise_repair",
+  "verdict": "M0_INVALID",
+  "reason": "noise range did not produce a valid easy-to-hard action task",
+  "spec_sha256": "33eaae10d9d2d2911403b0fa4a4cef387865671830c999041a1d23f8b559db45",
+  "seeds": {
+    "1337": {
+      "consciousness": {
+        "difficulty_valid": true,
+        "reader_pass": true,
+        "causal": true,
+        "output_advantage": false,
+        "normal": {
+          "auroc": 0.9321379109264524,
+          "brier": 0.07098351418972015,
+          "ece": 0.05414920808244801,
+          "selective_accuracy_gap": 0.3062499761581421,
+          "high_confidence_accuracy": 0.9937499761581421,
+          "low_confidence_accuracy": 0.6875,
+          "mean_confidence": 0.8349653482437134
+        },
+        "shuffle": {
+          "auroc": 0.22578176251913404,
+          "brier": 0.4773123264312744,
+          "ece": 0.540366193033226,
+          "selective_accuracy_gap": -0.29374998807907104,
+          "high_confidence_accuracy": 0.6937500238418579,
+          "low_confidence_accuracy": 0.987500011920929,
+          "mean_confidence": 0.5964685678482056
+        },
+        "output_only": {
+          "auroc": 0.8999198192288068,
+          "brier": 0.07566054165363312,
+          "ece": 0.01992235918310175,
+          "selective_accuracy_gap": 0.28125,
+          "high_confidence_accuracy": 0.981249988079071,
+          "low_confidence_accuracy": 0.699999988079071,
+          "mean_confidence": 0.8508974313735962
+        },
+        "action": {
+          "accuracy": 0.840624988079071,
+          "correct_examples": 269,
+          "incorrect_examples": 51,
+          "by_noise_level": {
+            "0.0": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9996700882911682
+            },
+            "0.25": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9995541572570801
+            },
+            "0.5": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9963290691375732
+            },
+            "1.0": {
+              "accuracy": 0.921875,
+              "examples": 64,
+              "mean_confidence": 0.8689138293266296
+            },
+            "2.0": {
+              "accuracy": 0.28125,
+              "examples": 64,
+              "mean_confidence": 0.31035926938056946
+            }
+          }
+        }
+      },
+      "memory": {
+        "difficulty_valid": false,
+        "reader_pass": true,
+        "causal": true,
+        "output_advantage": false,
+        "normal": {
+          "auroc": 0.8017037037037037,
+          "brier": 0.12176284939050674,
+          "ece": 0.08907106984335622,
+          "selective_accuracy_gap": 0.2250000238418579,
+          "high_confidence_accuracy": 0.956250011920929,
+          "low_confidence_accuracy": 0.731249988079071,
+          "mean_confidence": 0.8293033838272095
+        },
+        "shuffle": {
+          "auroc": 0.5593703703703704,
+          "brier": 0.23456065356731415,
+          "ece": 0.22355846704016324,
+          "selective_accuracy_gap": 0.125,
+          "high_confidence_accuracy": 0.90625,
+          "low_confidence_accuracy": 0.78125,
+          "mean_confidence": 0.782333493232727
+        },
+        "output_only": {
+          "auroc": 0.7592592592592593,
+          "brier": 0.10912510007619858,
+          "ece": 0.05294068572604249,
+          "selective_accuracy_gap": 0.1625000238418579,
+          "high_confidence_accuracy": 0.925000011920929,
+          "low_confidence_accuracy": 0.762499988079071,
+          "mean_confidence": 0.8184689283370972
+        },
+        "action": {
+          "accuracy": 0.84375,
+          "correct_examples": 270,
+          "incorrect_examples": 50,
+          "by_noise_level": {
+            "0.0": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9784657955169678
+            },
+            "0.25": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9624647498130798
+            },
+            "0.5": {
+              "accuracy": 0.859375,
+              "examples": 64,
+              "mean_confidence": 0.884357213973999
+            },
+            "1.0": {
+              "accuracy": 0.765625,
+              "examples": 64,
+              "mean_confidence": 0.7536736726760864
+            },
+            "2.0": {
+              "accuracy": 0.59375,
+              "examples": 64,
+              "mean_confidence": 0.5675550699234009
+            }
+          }
+        }
+      }
+    },
+    "7331": {
+      "consciousness": {
+        "difficulty_valid": true,
+        "reader_pass": true,
+        "causal": true,
+        "output_advantage": false,
+        "normal": {
+          "auroc": 0.9071481481481481,
+          "brier": 0.0927732065320015,
+          "ece": 0.08010898956000734,
+          "selective_accuracy_gap": 0.2875000238418579,
+          "high_confidence_accuracy": 0.987500011920929,
+          "low_confidence_accuracy": 0.699999988079071,
+          "mean_confidence": 0.7765631675720215
+        },
+        "shuffle": {
+          "auroc": 0.25355555555555553,
+          "brier": 0.4582354426383972,
+          "ece": 0.5033959874307918,
+          "selective_accuracy_gap": -0.23749995231628418,
+          "high_confidence_accuracy": 0.7250000238418579,
+          "low_confidence_accuracy": 0.9624999761581421,
+          "mean_confidence": 0.5859583616256714
+        },
+        "output_only": {
+          "auroc": 0.8246296296296296,
+          "brier": 0.10454636812210083,
+          "ece": 0.038581075615226515,
+          "selective_accuracy_gap": 0.2124999761581421,
+          "high_confidence_accuracy": 0.949999988079071,
+          "low_confidence_accuracy": 0.737500011920929,
+          "mean_confidence": 0.8602854609489441
+        },
+        "action": {
+          "accuracy": 0.84375,
+          "correct_examples": 270,
+          "incorrect_examples": 50,
+          "by_noise_level": {
+            "0.0": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9646672010421753
+            },
+            "0.25": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9607510566711426
+            },
+            "0.5": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9180985689163208
+            },
+            "1.0": {
+              "accuracy": 0.890625,
+              "examples": 64,
+              "mean_confidence": 0.7541589140892029
+            },
+            "2.0": {
+              "accuracy": 0.328125,
+              "examples": 64,
+              "mean_confidence": 0.2851400673389435
+            }
+          }
+        }
+      },
+      "memory": {
+        "difficulty_valid": true,
+        "reader_pass": false,
+        "causal": true,
+        "output_advantage": false,
+        "normal": {
+          "auroc": 0.7468953687821612,
+          "brier": 0.13897208869457245,
+          "ece": 0.11469084241148841,
+          "selective_accuracy_gap": 0.20624995231628418,
+          "high_confidence_accuracy": 0.9312499761581421,
+          "low_confidence_accuracy": 0.7250000238418579,
+          "mean_confidence": 0.8684026598930359
+        },
+        "shuffle": {
+          "auroc": 0.48126929674099483,
+          "brier": 0.22074148058891296,
+          "ece": 0.21096767831455038,
+          "selective_accuracy_gap": -0.03125,
+          "high_confidence_accuracy": 0.8125,
+          "low_confidence_accuracy": 0.84375,
+          "mean_confidence": 0.8222100138664246
+        },
+        "output_only": {
+          "auroc": 0.7560205831903946,
+          "brier": 0.1311710923910141,
+          "ece": 0.06864816919356115,
+          "selective_accuracy_gap": 0.1937500238418579,
+          "high_confidence_accuracy": 0.925000011920929,
+          "low_confidence_accuracy": 0.731249988079071,
+          "mean_confidence": 0.8675013780593872
+        },
+        "action": {
+          "accuracy": 0.828125,
+          "correct_examples": 265,
+          "incorrect_examples": 55,
+          "by_noise_level": {
+            "0.0": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9764824509620667
+            },
+            "0.25": {
+              "accuracy": 1.0,
+              "examples": 64,
+              "mean_confidence": 0.9567973017692566
+            },
+            "0.5": {
+              "accuracy": 0.9375,
+              "examples": 64,
+              "mean_confidence": 0.8845685124397278
+            },
+            "1.0": {
+              "accuracy": 0.71875,
+              "examples": 64,
+              "mean_confidence": 0.8009819388389587
+            },
+            "2.0": {
+              "accuracy": 0.484375,
+              "examples": 64,
+              "mean_confidence": 0.7231832146644592
+            }
+          }
+        }
+      }
+    }
+  }
+}

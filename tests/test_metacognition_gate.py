@@ -3,6 +3,7 @@ from copy import deepcopy
 from measurement.metacognition_gate import adjudicate
 from measurement.metacognition_registry import (
     METACOGNITION_MEMORY_NOISE_REPAIR_SPEC,
+    METACOGNITION_NOISE_RANGE_REPAIR_SPEC,
     METACOGNITION_SPEC,
     experiment,
     spec_sha256,
@@ -14,8 +15,8 @@ def confidence(auroc=0.85, brier=0.12, ece=0.08, gap=0.35):
             "selective_accuracy_gap": gap, "mean_confidence": 0.6}
 
 
-def arm(seed, name, output_auroc=0.70, output_brier=0.16):
-    levels = METACOGNITION_SPEC["readout_noise_levels"]
+def arm(seed, name, spec=METACOGNITION_SPEC, output_auroc=0.70, output_brier=0.16):
+    levels = spec["readout_noise_levels"]
     by_level = {
         str(level): {"accuracy": 0.95 if level == levels[0] else 0.45 if level == levels[-1] else 0.70}
         for level in levels
@@ -40,7 +41,7 @@ def payload(spec=METACOGNITION_SPEC):
         "spec": deepcopy(spec),
         "spec_sha256": spec_sha256(spec),
         "seeds": [
-            {"seed": seed, "arms": {name: arm(seed, name) for name in METACOGNITION_SPEC["arms"]}}
+            {"seed": seed, "arms": {name: arm(seed, name, spec=spec) for name in spec["arms"]}}
             for seed in METACOGNITION_SPEC["seeds"]
         ],
     }
@@ -84,4 +85,13 @@ def test_memory_noise_repair_changes_only_the_noise_topology():
     assert repair["readout_noise_levels"] == METACOGNITION_SPEC["readout_noise_levels"]
     assert repair["thresholds"] == METACOGNITION_SPEC["thresholds"]
     assert repair["reader"] == METACOGNITION_SPEC["reader"]
+    assert adjudicate(payload(repair))["verdict"] == "M1_STATE_MONITORING_ADVANTAGE"
+
+
+def test_noise_range_repair_only_adds_the_prospective_endpoint():
+    repair = experiment(METACOGNITION_NOISE_RANGE_REPAIR_SPEC["experiment"])
+    assert repair["readout_noise_levels"] == [*METACOGNITION_SPEC["readout_noise_levels"], 4.0]
+    assert repair["memory_noise_topology"] == "global_broadcast"
+    assert repair["thresholds"] == METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["thresholds"]
+    assert repair["reader"] == METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["reader"]
     assert adjudicate(payload(repair))["verdict"] == "M1_STATE_MONITORING_ADVANTAGE"

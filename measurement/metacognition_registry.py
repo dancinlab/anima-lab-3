@@ -64,10 +64,20 @@ METACOGNITION_MEMORY_NOISE_REPAIR_SPEC.update({
     "memory_noise_topology": "global_broadcast",
 })
 
+METACOGNITION_NOISE_RANGE_REPAIR_SPEC = deepcopy(METACOGNITION_MEMORY_NOISE_REPAIR_SPEC)
+METACOGNITION_NOISE_RANGE_REPAIR_SPEC.update({
+    "experiment": "meta1_bridge32_self_monitoring_noise_range_repair",
+    # The registered 2.0 endpoint left one valid direct-memory seed at 59.4%.
+    # Add one prospective endpoint; do not move any scoring threshold.
+    "readout_noise_levels": [0.0, 0.25, 0.5, 1.0, 2.0, 4.0],
+})
+
 REGISTERED_EXPERIMENTS = {
     METACOGNITION_SPEC["experiment"]: METACOGNITION_SPEC,
     METACOGNITION_MEMORY_NOISE_REPAIR_SPEC["experiment"]:
         METACOGNITION_MEMORY_NOISE_REPAIR_SPEC,
+    METACOGNITION_NOISE_RANGE_REPAIR_SPEC["experiment"]:
+        METACOGNITION_NOISE_RANGE_REPAIR_SPEC,
 }
 
 

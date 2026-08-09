@@ -91,7 +91,7 @@ case "$ACTION" in
     fi
     if [ "$ACTION" = meta1 ]; then
       exec "$PYTHON_BIN" metacognition.py \
-        --experiment meta1_bridge32_self_monitoring_memory_noise_repair
+        --experiment meta1_bridge32_self_monitoring_noise_range_repair
     fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
