@@ -104,3 +104,8 @@ SYNERGY-1에서 실제로 학습한 `quantum_pair` 체크포인트를 다시 불
 모듈에 되돌리는 최소 반복 공유 공간이 `QuantumC`의 두 단서를 안정적으로 결합하지 못했다는
 것이다. 한 `QuantumC` 상태가 행동 원인이었던 GRAFT 결과나 각 단서가 셀 평균 뒤까지 남았던
 정보 지도는 철회되지 않는다. 다만 반복 횟수만 늘려서는 두 상태의 관계 계산이 생기지 않았다.
+
+무효·최종 결과, 두 실행의 체크포인트 32개와 로그는 HF 조직 보관소
+`dancinlab/anima-lab-research-archive`의 `workspace1-recurrent` revision에 보존했다. 원격에서
+다시 받은 manifest 40개 항목을 전수 확인했으며 manifest SHA-256은
+`e9728489b228f448680cc8a63dbe73f835b438f58a64ae359ba260f123b6672b`다.

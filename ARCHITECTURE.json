@@ -159,7 +159,7 @@
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1 단서 결합 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 진폭·위상·폭 32 실험은 조직 archive의 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1 무효·최종 결과와 체크포인트 12개는 `synergy1-split-cue` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 새 학습 런타임은 aiden·summer를 전제로 하지 않는다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1·WORKSPACE-1 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 계열은 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1은 `synergy1-split-cue`에, WORKSPACE-1 무효·최종 결과와 체크포인트 32개는 `workspace1-recurrent` revision에 manifest SHA-256과 함께 보존했다. STATE-1은 48셀 정보 흐름 검사라 로컬 Apple Silicon CPU에서 실행했다. 현재 대여 GPU는 0대다."
     }
   ],
   "convergence": {
