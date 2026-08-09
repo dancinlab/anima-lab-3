@@ -36,11 +36,12 @@ case "$ACTION" in
     cd "$ROOT"
     "$PYTHON_BIN" -m pytest -q tests/test_graft_behavior_gate.py tests/test_quantum_phase_readout.py \
       tests/test_consciousness_intervention.py tests/test_state_survival.py \
-      tests/test_bridge_capacity.py
+      tests/test_bridge_capacity.py tests/test_metacognition_gate.py
     "$PYTHON_BIN" -m py_compile graft_behavior.py state_survival.py measurement/graft_behavior_gate.py \
-      measurement/state_survival_gate.py measurement/bridge_capacity_gate.py pure.py trinity.py
+      measurement/state_survival_gate.py measurement/bridge_capacity_gate.py metacognition.py \
+      measurement/metacognition_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map)
+  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -88,11 +89,14 @@ case "$ACTION" in
       exec "$PYTHON_BIN" measurement/state_survival_gate.py \
         measurement/state_survival_results.json measurement/state_survival_verdict.json
     fi
+    if [ "$ACTION" = meta1 ]; then
+      exec "$PYTHON_BIN" metacognition.py
+    fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -103,7 +107,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac
