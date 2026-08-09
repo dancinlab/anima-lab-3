@@ -46,6 +46,8 @@ import torch.nn.functional as F
 import numpy as np
 from typing import Optional, Tuple, Dict, Any
 
+from measurement.bridge_config import THALAMIC_BRIDGE_HUB_DIM
+
 try:
     import phi_rs
     HAS_RUST_PHI = True
@@ -446,7 +448,8 @@ class ThalamicBridge(nn.Module):
     Output is clamped around PSI_BALANCE (0.5) with range ±PSI_COUPLING.
     """
 
-    def __init__(self, c_dim=128, d_model=384, n_hubs=16, hub_dim=8,
+    def __init__(self, c_dim=128, d_model=384, n_hubs=16,
+                 hub_dim=THALAMIC_BRIDGE_HUB_DIM,
                  alpha=PSI_COUPLING):
         super().__init__()
         self.c_dim = c_dim
@@ -474,6 +477,17 @@ class ThalamicBridge(nn.Module):
             nn.Linear(d_model, d_model),
             nn.Sigmoid(),
         )
+
+    @staticmethod
+    def hub_dim_from_state_dict(state_dict: dict[str, torch.Tensor]) -> int:
+        """Read checkpoint width before construction so old bridges remain loadable."""
+        try:
+            weight = state_dict["compress.weight"]
+        except (KeyError, TypeError) as exc:
+            raise ValueError("bridge checkpoint has no compress.weight") from exc
+        if weight.ndim != 2 or weight.shape[0] < 1:
+            raise ValueError("bridge checkpoint compress.weight has an invalid shape")
+        return int(weight.shape[0])
 
     def trace(self, c_states: torch.Tensor, seq_len: int = 1) -> Dict[str, torch.Tensor]:
         """Return the canonical bridge stages used by ``forward``.

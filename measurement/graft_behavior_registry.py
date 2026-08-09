@@ -5,6 +5,11 @@ import hashlib
 import json
 from copy import deepcopy
 
+try:
+    from measurement.bridge_config import THALAMIC_BRIDGE_HUB_DIM
+except ModuleNotFoundError:
+    from bridge_config import THALAMIC_BRIDGE_HUB_DIM
+
 
 BEHAVIOR_SPEC = {
     "experiment": "graft_behavior_causality",
@@ -73,11 +78,18 @@ PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC.update({
     "memory_state_dim": BEHAVIOR_SPEC["state_dim"],
 })
 
+PHASE_STATE_BRIDGE32_SPEC = deepcopy(PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC)
+PHASE_STATE_BRIDGE32_SPEC.update({
+    "experiment": "graft_behavior_causality_phase_state_bridge32",
+    "bridge_hub_dim": THALAMIC_BRIDGE_HUB_DIM,
+})
+
 REGISTERED_EXPERIMENTS = {
     BEHAVIOR_SPEC["experiment"]: BEHAVIOR_SPEC,
     LANGUAGE_PRESERVED_SPEC["experiment"]: LANGUAGE_PRESERVED_SPEC,
     PHASE_STATE_SPEC["experiment"]: PHASE_STATE_SPEC,
     PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["experiment"]: PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
+    PHASE_STATE_BRIDGE32_SPEC["experiment"]: PHASE_STATE_BRIDGE32_SPEC,
 }
 
 

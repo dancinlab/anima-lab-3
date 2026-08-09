@@ -41,7 +41,7 @@ Hexad(6) / Trinity(3) pluggable consciousness architecture -- 6 modules governed
 
 ### Bridge
 
-- `ThalamicBridge(c_dim=128, d_model=384, n_hubs=16, hub_dim=8)` -- Thalamic gate: compresses C states through bottleneck + hub attention, then expands to D's d_model. Gradient isolation via `.detach()`.
+- `ThalamicBridge(c_dim=128, d_model=384, n_hubs=16, hub_dim=32)` -- Thalamic gate: compresses C states through bottleneck + hub attention, then expands to D's d_model. Gradient isolation via `.detach()`. Old checkpoints recover their original width from `compress.weight` before loading.
   - `.forward(c_states, seq_len) -> [1, seq_len, d_model]` gate signal
 
 ### D Engine (decoder)
@@ -121,7 +121,7 @@ t = create_trinity_domain(TimeCrystalEngine, nc=256, dim=64, d_model=384)
 | `vocab_size` | 4096 | Decoder vocabulary size |
 | `base_lr` | 3e-4 | Base learning rate (W modulates this) |
 | `n_hubs` | 16 | ThalamicBridge hub count |
-| `hub_dim` | 8 | ThalamicBridge bottleneck dimension |
+| `hub_dim` | 32 | ThalamicBridge bottleneck dimension |
 | `mechanism` | `cambrian_osc_qw` | MitosisC mechanisms |
 
 ## Benchmarking

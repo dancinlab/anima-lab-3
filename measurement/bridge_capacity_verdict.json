@@ -1,0 +1,3147 @@
+{
+  "experiment": "thalamic_bridge_capacity",
+  "verdict": "C4_FULL_PATH_RECOVERY",
+  "reason": "a registered width preserved information through the complete bridge path",
+  "selected_hub_dim": 32,
+  "next_action": "upgrade the canonical bridge width and rerun the causal behavior test",
+  "spec_sha256": "7f079f87427ce63e54ec53dc5d4a6e031278c959bd45e0cd54bc99daa69e4f12",
+  "stage_pass": {
+    "8": {
+      "bridge_cells": false,
+      "bridge_pooled": false,
+      "bridge_gate": false
+    },
+    "16": {
+      "bridge_cells": false,
+      "bridge_pooled": false,
+      "bridge_gate": false
+    },
+    "32": {
+      "bridge_cells": true,
+      "bridge_pooled": true,
+      "bridge_gate": true
+    },
+    "48": {
+      "bridge_cells": true,
+      "bridge_pooled": true,
+      "bridge_gate": true
+    },
+    "96": {
+      "bridge_cells": true,
+      "bridge_pooled": true,
+      "bridge_gate": true
+    }
+  },
+  "widths": {
+    "8": {
+      "1337": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10185785591602325,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.1181882694363594,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.09949441999197006,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.0665210410952568,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2763671875,
+            "shuffled_label_accuracy_std": 0.11747604608535767,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.22998046875,
+            "shuffled_label_accuracy_std": 0.11146403104066849,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10125686228275299,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.15422268211841583,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1982421875,
+            "shuffled_label_accuracy_std": 0.11805909872055054,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.0961393415927887,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.232421875,
+            "shuffled_label_accuracy_std": 0.12239409983158112,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.27880859375,
+            "shuffled_label_accuracy_std": 0.1343039721250534,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.11940848082304001,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.15123797953128815,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.12871283292770386,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.2734375,
+            "shuffled_label_accuracy_std": 0.08423382043838501,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.2734375,
+            "shuffled_label_accuracy_std": 0.13037750124931335,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.27392578125,
+            "shuffled_label_accuracy_std": 0.13699661195278168,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.11347891390323639,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2431640625,
+            "shuffled_label_accuracy_std": 0.1045195609331131,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.212890625,
+            "shuffled_label_accuracy_std": 0.1421225666999817,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.08575975894927979,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.90625,
+            "shuffled_label_accuracy": 0.22607421875,
+            "shuffled_label_accuracy_std": 0.09009682387113571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.890625,
+            "shuffled_label_accuracy": 0.27001953125,
+            "shuffled_label_accuracy_std": 0.1156299039721489,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.09753410518169403,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.15047620236873627,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.12349172681570053,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.2734375,
+            "shuffled_label_accuracy_std": 0.09001342952251434,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.78125,
+            "shuffled_label_accuracy": 0.26025390625,
+            "shuffled_label_accuracy_std": 0.10153315216302872,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.796875,
+            "shuffled_label_accuracy": 0.25732421875,
+            "shuffled_label_accuracy_std": 0.0891604796051979,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.10046260803937912,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.13411211967468262,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.14898820221424103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.2333984375,
+            "shuffled_label_accuracy_std": 0.06932218372821808,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.71875,
+            "shuffled_label_accuracy": 0.26806640625,
+            "shuffled_label_accuracy_std": 0.09269502013921738,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.75,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.09597055613994598,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.09288644790649414,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.0856359601020813,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.12967337667942047,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": false,
+            "accuracy": 0.640625,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.058389946818351746,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.484375,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.06740227341651917,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.484375,
+            "shuffled_label_accuracy": 0.263671875,
+            "shuffled_label_accuracy_std": 0.07263419777154922,
+            "shuffled_label_permutations": 32
+          }
+        }
+      },
+      "7331": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.11656327545642853,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21728515625,
+            "shuffled_label_accuracy_std": 0.11397680640220642,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.12492368370294571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.24755859375,
+            "shuffled_label_accuracy_std": 0.08006472885608673,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.90625,
+            "shuffled_label_accuracy": 0.21533203125,
+            "shuffled_label_accuracy_std": 0.08366439491510391,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.890625,
+            "shuffled_label_accuracy": 0.23779296875,
+            "shuffled_label_accuracy_std": 0.11231636255979538,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10654381662607193,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29736328125,
+            "shuffled_label_accuracy_std": 0.13635466992855072,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2626953125,
+            "shuffled_label_accuracy_std": 0.13729996979236603,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.2490234375,
+            "shuffled_label_accuracy_std": 0.08071275800466537,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.90625,
+            "shuffled_label_accuracy": 0.26806640625,
+            "shuffled_label_accuracy_std": 0.09236521273851395,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.875,
+            "shuffled_label_accuracy": 0.25927734375,
+            "shuffled_label_accuracy_std": 0.11441107839345932,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.1247556209564209,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.20654296875,
+            "shuffled_label_accuracy_std": 0.09348386526107788,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.15229053795337677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.23583984375,
+            "shuffled_label_accuracy_std": 0.07024295628070831,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.8125,
+            "shuffled_label_accuracy": 0.27880859375,
+            "shuffled_label_accuracy_std": 0.09836534410715103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.84375,
+            "shuffled_label_accuracy": 0.23876953125,
+            "shuffled_label_accuracy_std": 0.08288565278053284,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22265625,
+            "shuffled_label_accuracy_std": 0.0833231583237648,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22021484375,
+            "shuffled_label_accuracy_std": 0.11357446759939194,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.14682252705097198,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.90625,
+            "shuffled_label_accuracy": 0.2783203125,
+            "shuffled_label_accuracy_std": 0.07025143504142761,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.71875,
+            "shuffled_label_accuracy": 0.2236328125,
+            "shuffled_label_accuracy_std": 0.08808030933141708,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.671875,
+            "shuffled_label_accuracy": 0.23828125,
+            "shuffled_label_accuracy_std": 0.09152636677026749,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.12121576070785522,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.275390625,
+            "shuffled_label_accuracy_std": 0.12000200897455215,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.16114169359207153,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.2412109375,
+            "shuffled_label_accuracy_std": 0.05196009948849678,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.859375,
+            "shuffled_label_accuracy": 0.27587890625,
+            "shuffled_label_accuracy_std": 0.08365299552679062,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.765625,
+            "shuffled_label_accuracy": 0.2265625,
+            "shuffled_label_accuracy_std": 0.09077304601669312,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.248046875,
+            "shuffled_label_accuracy_std": 0.10566749423742294,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.1188962310552597,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11130670458078384,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.859375,
+            "shuffled_label_accuracy": 0.26025390625,
+            "shuffled_label_accuracy_std": 0.06461383402347565,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.640625,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.058062370866537094,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.46875,
+            "shuffled_label_accuracy": 0.2587890625,
+            "shuffled_label_accuracy_std": 0.07543589919805527,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11427032947540283,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.09085705876350403,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.12357953935861588,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.75,
+            "shuffled_label_accuracy": 0.23876953125,
+            "shuffled_label_accuracy_std": 0.07205251604318619,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.59375,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.07899902015924454,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.5625,
+            "shuffled_label_accuracy": 0.25732421875,
+            "shuffled_label_accuracy_std": 0.06888573616743088,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    },
+    "16": {
+      "1337": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10185785591602325,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.1181882694363594,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.09949441999197006,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.251953125,
+            "shuffled_label_accuracy_std": 0.10624353587627411,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26025390625,
+            "shuffled_label_accuracy_std": 0.08938481658697128,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2490234375,
+            "shuffled_label_accuracy_std": 0.11841399222612381,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10125686228275299,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.15422268211841583,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1982421875,
+            "shuffled_label_accuracy_std": 0.11805909872055054,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.26318359375,
+            "shuffled_label_accuracy_std": 0.10496911406517029,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.10503382235765457,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27685546875,
+            "shuffled_label_accuracy_std": 0.12903842329978943,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.11940848082304001,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.15123797953128815,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.12871283292770386,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.0913960263133049,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.10347876697778702,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.11896038800477982,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.11347891390323639,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2431640625,
+            "shuffled_label_accuracy_std": 0.1045195609331131,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.212890625,
+            "shuffled_label_accuracy_std": 0.1421225666999817,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.1174313873052597,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.08404680341482162,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.27734375,
+            "shuffled_label_accuracy_std": 0.13458150625228882,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.09753410518169403,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.15047620236873627,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.12349172681570053,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.25537109375,
+            "shuffled_label_accuracy_std": 0.09099210053682327,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.25439453125,
+            "shuffled_label_accuracy_std": 0.0695745125412941,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10312333703041077,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.10046260803937912,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.13411211967468262,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.14898820221424103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21923828125,
+            "shuffled_label_accuracy_std": 0.07649514824151993,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.28955078125,
+            "shuffled_label_accuracy_std": 0.08184356987476349,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.21875,
+            "shuffled_label_accuracy_std": 0.10888562351465225,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.09288644790649414,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.0856359601020813,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.12967337667942047,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": false,
+            "accuracy": 0.734375,
+            "shuffled_label_accuracy": 0.26025390625,
+            "shuffled_label_accuracy_std": 0.062452297657728195,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": false,
+            "accuracy": 0.59375,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.07264568656682968,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.59375,
+            "shuffled_label_accuracy": 0.25341796875,
+            "shuffled_label_accuracy_std": 0.078196682035923,
+            "shuffled_label_permutations": 32
+          }
+        }
+      },
+      "7331": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.11656327545642853,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21728515625,
+            "shuffled_label_accuracy_std": 0.11397680640220642,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.12492368370294571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24267578125,
+            "shuffled_label_accuracy_std": 0.08212275058031082,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22119140625,
+            "shuffled_label_accuracy_std": 0.08925668895244598,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.109335757791996,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10654381662607193,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29736328125,
+            "shuffled_label_accuracy_std": 0.13635466992855072,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2626953125,
+            "shuffled_label_accuracy_std": 0.13729996979236603,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.07763518393039703,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.1043003499507904,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.25732421875,
+            "shuffled_label_accuracy_std": 0.1017114594578743,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.1247556209564209,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.20654296875,
+            "shuffled_label_accuracy_std": 0.09348386526107788,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.15229053795337677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.07568831741809845,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.28857421875,
+            "shuffled_label_accuracy_std": 0.10853362083435059,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.09771482646465302,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22265625,
+            "shuffled_label_accuracy_std": 0.0833231583237648,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22021484375,
+            "shuffled_label_accuracy_std": 0.11357446759939194,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.14682252705097198,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.08137760311365128,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.20947265625,
+            "shuffled_label_accuracy_std": 0.09025545418262482,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.23681640625,
+            "shuffled_label_accuracy_std": 0.09577161073684692,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.12121576070785522,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.275390625,
+            "shuffled_label_accuracy_std": 0.12000200897455215,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.16114169359207153,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22607421875,
+            "shuffled_label_accuracy_std": 0.08277051150798798,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29931640625,
+            "shuffled_label_accuracy_std": 0.11159230023622513,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.26171875,
+            "shuffled_label_accuracy_std": 0.10260879248380661,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.248046875,
+            "shuffled_label_accuracy_std": 0.10566749423742294,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.1188962310552597,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11130670458078384,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25537109375,
+            "shuffled_label_accuracy_std": 0.08483035117387772,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.23779296875,
+            "shuffled_label_accuracy_std": 0.0834818184375763,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.271484375,
+            "shuffled_label_accuracy_std": 0.11115666478872299,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11427032947540283,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.09085705876350403,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.12357953935861588,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.890625,
+            "shuffled_label_accuracy": 0.2255859375,
+            "shuffled_label_accuracy_std": 0.052398744970560074,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.75,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.07136259973049164,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": false,
+            "accuracy": 0.71875,
+            "shuffled_label_accuracy": 0.240234375,
+            "shuffled_label_accuracy_std": 0.06763003766536713,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    },
+    "32": {
+      "1337": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10185785591602325,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.1181882694363594,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.09949441999197006,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23291015625,
+            "shuffled_label_accuracy_std": 0.09892606735229492,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.08281227201223373,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.10118620097637177,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10125686228275299,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.15422268211841583,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1982421875,
+            "shuffled_label_accuracy_std": 0.11805909872055054,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.11854680627584457,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.10472466051578522,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2763671875,
+            "shuffled_label_accuracy_std": 0.10828400403261185,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.11940848082304001,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.15123797953128815,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.12871283292770386,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.279296875,
+            "shuffled_label_accuracy_std": 0.11197727173566818,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.09276829659938812,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27099609375,
+            "shuffled_label_accuracy_std": 0.10997390002012253,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.11347891390323639,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2431640625,
+            "shuffled_label_accuracy_std": 0.1045195609331131,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.212890625,
+            "shuffled_label_accuracy_std": 0.1421225666999817,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.255859375,
+            "shuffled_label_accuracy_std": 0.12553292512893677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21533203125,
+            "shuffled_label_accuracy_std": 0.08430030941963196,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.12355349212884903,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.09753410518169403,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.15047620236873627,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.12349172681570053,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25732421875,
+            "shuffled_label_accuracy_std": 0.11178868263959885,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25732421875,
+            "shuffled_label_accuracy_std": 0.07411427050828934,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2451171875,
+            "shuffled_label_accuracy_std": 0.10856546461582184,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.10046260803937912,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.13411211967468262,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.14898820221424103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2255859375,
+            "shuffled_label_accuracy_std": 0.08521872013807297,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.07493487000465393,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.2216796875,
+            "shuffled_label_accuracy_std": 0.10849516838788986,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.09288644790649414,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.0856359601020813,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.12967337667942047,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.90625,
+            "shuffled_label_accuracy": 0.27197265625,
+            "shuffled_label_accuracy_std": 0.07051396369934082,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.78125,
+            "shuffled_label_accuracy": 0.23291015625,
+            "shuffled_label_accuracy_std": 0.07446088641881943,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.75,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.0658220499753952,
+            "shuffled_label_permutations": 32
+          }
+        }
+      },
+      "7331": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.11656327545642853,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21728515625,
+            "shuffled_label_accuracy_std": 0.11397680640220642,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.12492368370294571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2548828125,
+            "shuffled_label_accuracy_std": 0.1113409772515297,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23583984375,
+            "shuffled_label_accuracy_std": 0.08525647968053818,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23876953125,
+            "shuffled_label_accuracy_std": 0.11483540385961533,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10654381662607193,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29736328125,
+            "shuffled_label_accuracy_std": 0.13635466992855072,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2626953125,
+            "shuffled_label_accuracy_std": 0.13729996979236603,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24755859375,
+            "shuffled_label_accuracy_std": 0.10081677883863449,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28125,
+            "shuffled_label_accuracy_std": 0.11341586709022522,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26171875,
+            "shuffled_label_accuracy_std": 0.0972648411989212,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.1247556209564209,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.20654296875,
+            "shuffled_label_accuracy_std": 0.09348386526107788,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.15229053795337677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24951171875,
+            "shuffled_label_accuracy_std": 0.08272441476583481,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28564453125,
+            "shuffled_label_accuracy_std": 0.11654998362064362,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26123046875,
+            "shuffled_label_accuracy_std": 0.0924580916762352,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22265625,
+            "shuffled_label_accuracy_std": 0.0833231583237648,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22021484375,
+            "shuffled_label_accuracy_std": 0.11357446759939194,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.14682252705097198,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2783203125,
+            "shuffled_label_accuracy_std": 0.09985321760177612,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2236328125,
+            "shuffled_label_accuracy_std": 0.08988089114427567,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22119140625,
+            "shuffled_label_accuracy_std": 0.07504773139953613,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.12121576070785522,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.275390625,
+            "shuffled_label_accuracy_std": 0.12000200897455215,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.16114169359207153,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22900390625,
+            "shuffled_label_accuracy_std": 0.09723419696092606,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29638671875,
+            "shuffled_label_accuracy_std": 0.08817093819379807,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.23828125,
+            "shuffled_label_accuracy_std": 0.09366858750581741,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.248046875,
+            "shuffled_label_accuracy_std": 0.10566749423742294,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.1188962310552597,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11130670458078384,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.255859375,
+            "shuffled_label_accuracy_std": 0.08191490918397903,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23486328125,
+            "shuffled_label_accuracy_std": 0.0735459178686142,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.26904296875,
+            "shuffled_label_accuracy_std": 0.10010480135679245,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11427032947540283,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.09085705876350403,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.12357953935861588,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.07221116870641708,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.765625,
+            "shuffled_label_accuracy": 0.2548828125,
+            "shuffled_label_accuracy_std": 0.08391053229570389,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.8125,
+            "shuffled_label_accuracy": 0.24462890625,
+            "shuffled_label_accuracy_std": 0.08105909824371338,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    },
+    "48": {
+      "1337": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10185785591602325,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.1181882694363594,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.09949441999197006,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22705078125,
+            "shuffled_label_accuracy_std": 0.11233334243297577,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27099609375,
+            "shuffled_label_accuracy_std": 0.0799216628074646,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23046875,
+            "shuffled_label_accuracy_std": 0.10811212658882141,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10125686228275299,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.15422268211841583,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1982421875,
+            "shuffled_label_accuracy_std": 0.11805909872055054,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26708984375,
+            "shuffled_label_accuracy_std": 0.12367210537195206,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.10334966331720352,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.287109375,
+            "shuffled_label_accuracy_std": 0.11473674327135086,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.11940848082304001,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.15123797953128815,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.12871283292770386,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26904296875,
+            "shuffled_label_accuracy_std": 0.10369856655597687,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2451171875,
+            "shuffled_label_accuracy_std": 0.07971406728029251,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.1058613583445549,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.11347891390323639,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2431640625,
+            "shuffled_label_accuracy_std": 0.1045195609331131,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.212890625,
+            "shuffled_label_accuracy_std": 0.1421225666999817,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25244140625,
+            "shuffled_label_accuracy_std": 0.13594138622283936,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2177734375,
+            "shuffled_label_accuracy_std": 0.07338527590036392,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.10825317353010178,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.09753410518169403,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.15047620236873627,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.12349172681570053,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26318359375,
+            "shuffled_label_accuracy_std": 0.11699915677309036,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.255859375,
+            "shuffled_label_accuracy_std": 0.072212815284729,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24462890625,
+            "shuffled_label_accuracy_std": 0.09785989671945572,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.10046260803937912,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.13411211967468262,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.14898820221424103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2314453125,
+            "shuffled_label_accuracy_std": 0.08535290509462357,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.271484375,
+            "shuffled_label_accuracy_std": 0.08210097253322601,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.232421875,
+            "shuffled_label_accuracy_std": 0.10333120077848434,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.09288644790649414,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.0856359601020813,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.12967337667942047,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.26513671875,
+            "shuffled_label_accuracy_std": 0.07619534432888031,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.921875,
+            "shuffled_label_accuracy": 0.23046875,
+            "shuffled_label_accuracy_std": 0.07452650368213654,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.765625,
+            "shuffled_label_accuracy": 0.25390625,
+            "shuffled_label_accuracy_std": 0.058983080089092255,
+            "shuffled_label_permutations": 32
+          }
+        }
+      },
+      "7331": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.11656327545642853,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21728515625,
+            "shuffled_label_accuracy_std": 0.11397680640220642,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.12492368370294571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27392578125,
+            "shuffled_label_accuracy_std": 0.10260763019323349,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2138671875,
+            "shuffled_label_accuracy_std": 0.09055741876363754,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2314453125,
+            "shuffled_label_accuracy_std": 0.11786506325006485,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10654381662607193,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29736328125,
+            "shuffled_label_accuracy_std": 0.13635466992855072,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2626953125,
+            "shuffled_label_accuracy_std": 0.13729996979236603,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25,
+            "shuffled_label_accuracy_std": 0.11442045867443085,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2861328125,
+            "shuffled_label_accuracy_std": 0.11337802559137344,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.271484375,
+            "shuffled_label_accuracy_std": 0.10774100571870804,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.1247556209564209,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.20654296875,
+            "shuffled_label_accuracy_std": 0.09348386526107788,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.15229053795337677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.251953125,
+            "shuffled_label_accuracy_std": 0.09716673940420151,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28662109375,
+            "shuffled_label_accuracy_std": 0.12250994890928268,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26806640625,
+            "shuffled_label_accuracy_std": 0.09432678669691086,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22265625,
+            "shuffled_label_accuracy_std": 0.0833231583237648,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22021484375,
+            "shuffled_label_accuracy_std": 0.11357446759939194,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.14682252705097198,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.11513502150774002,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21533203125,
+            "shuffled_label_accuracy_std": 0.08484158664941788,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23388671875,
+            "shuffled_label_accuracy_std": 0.08860252797603607,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.12121576070785522,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.275390625,
+            "shuffled_label_accuracy_std": 0.12000200897455215,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.16114169359207153,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23193359375,
+            "shuffled_label_accuracy_std": 0.09464976191520691,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.30078125,
+            "shuffled_label_accuracy_std": 0.10860498994588852,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24365234375,
+            "shuffled_label_accuracy_std": 0.10162703692913055,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.248046875,
+            "shuffled_label_accuracy_std": 0.10566749423742294,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.1188962310552597,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11130670458078384,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.0890762060880661,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23046875,
+            "shuffled_label_accuracy_std": 0.08629187941551208,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.09802664071321487,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11427032947540283,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.09085705876350403,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.12357953935861588,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.984375,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.0759194940328598,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.953125,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.07694420218467712,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.796875,
+            "shuffled_label_accuracy": 0.24951171875,
+            "shuffled_label_accuracy_std": 0.08799771219491959,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    },
+    "96": {
+      "1337": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2353515625,
+            "shuffled_label_accuracy_std": 0.10185785591602325,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.1181882694363594,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.09949441999197006,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2412109375,
+            "shuffled_label_accuracy_std": 0.12165554612874985,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.09495783597230911,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25146484375,
+            "shuffled_label_accuracy_std": 0.11411060392856598,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10125686228275299,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.244140625,
+            "shuffled_label_accuracy_std": 0.15422268211841583,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.1982421875,
+            "shuffled_label_accuracy_std": 0.11805909872055054,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27978515625,
+            "shuffled_label_accuracy_std": 0.13196879625320435,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25,
+            "shuffled_label_accuracy_std": 0.10481568425893784,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2822265625,
+            "shuffled_label_accuracy_std": 0.11666141450405121,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.11940848082304001,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.265625,
+            "shuffled_label_accuracy_std": 0.15123797953128815,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23095703125,
+            "shuffled_label_accuracy_std": 0.12871283292770386,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.11587398499250412,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.08635816723108292,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28466796875,
+            "shuffled_label_accuracy_std": 0.12289080023765564,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2666015625,
+            "shuffled_label_accuracy_std": 0.11347891390323639,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2431640625,
+            "shuffled_label_accuracy_std": 0.1045195609331131,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.212890625,
+            "shuffled_label_accuracy_std": 0.1421225666999817,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25048828125,
+            "shuffled_label_accuracy_std": 0.1374136507511139,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2119140625,
+            "shuffled_label_accuracy_std": 0.08663931488990784,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11428284645080566,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2685546875,
+            "shuffled_label_accuracy_std": 0.09753410518169403,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.15047620236873627,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2607421875,
+            "shuffled_label_accuracy_std": 0.12349172681570053,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25927734375,
+            "shuffled_label_accuracy_std": 0.12000896036624908,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25146484375,
+            "shuffled_label_accuracy_std": 0.07598227262496948,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24365234375,
+            "shuffled_label_accuracy_std": 0.08715923130512238,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2529296875,
+            "shuffled_label_accuracy_std": 0.10046260803937912,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26220703125,
+            "shuffled_label_accuracy_std": 0.13411211967468262,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24658203125,
+            "shuffled_label_accuracy_std": 0.14898820221424103,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22900390625,
+            "shuffled_label_accuracy_std": 0.08809519559144974,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.25830078125,
+            "shuffled_label_accuracy_std": 0.0647759884595871,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22900390625,
+            "shuffled_label_accuracy_std": 0.0986364409327507,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2470703125,
+            "shuffled_label_accuracy_std": 0.09288644790649414,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.0856359601020813,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.12967337667942047,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.2705078125,
+            "shuffled_label_accuracy_std": 0.09263970702886581,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.2265625,
+            "shuffled_label_accuracy_std": 0.07773339003324509,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.765625,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.06012802571058273,
+            "shuffled_label_permutations": 32
+          }
+        }
+      },
+      "7331": {
+        "0": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2392578125,
+            "shuffled_label_accuracy_std": 0.11656327545642853,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.21728515625,
+            "shuffled_label_accuracy_std": 0.11397680640220642,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.220703125,
+            "shuffled_label_accuracy_std": 0.12492368370294571,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.26611328125,
+            "shuffled_label_accuracy_std": 0.12219037115573883,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11285953223705292,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24169921875,
+            "shuffled_label_accuracy_std": 0.11969864368438721,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "1": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2646484375,
+            "shuffled_label_accuracy_std": 0.10654381662607193,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29736328125,
+            "shuffled_label_accuracy_std": 0.13635466992855072,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2626953125,
+            "shuffled_label_accuracy_std": 0.13729996979236603,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.11812370270490646,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28515625,
+            "shuffled_label_accuracy_std": 0.11488626152276993,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.27294921875,
+            "shuffled_label_accuracy_std": 0.10401078313589096,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "2": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2421875,
+            "shuffled_label_accuracy_std": 0.1247556209564209,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.20654296875,
+            "shuffled_label_accuracy_std": 0.09348386526107788,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2568359375,
+            "shuffled_label_accuracy_std": 0.15229053795337677,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.09740201383829117,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.28955078125,
+            "shuffled_label_accuracy_std": 0.11328019946813583,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24267578125,
+            "shuffled_label_accuracy_std": 0.09496160596609116,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "4": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22265625,
+            "shuffled_label_accuracy_std": 0.0833231583237648,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22021484375,
+            "shuffled_label_accuracy_std": 0.11357446759939194,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.259765625,
+            "shuffled_label_accuracy_std": 0.14682252705097198,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29248046875,
+            "shuffled_label_accuracy_std": 0.12136024236679077,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2255859375,
+            "shuffled_label_accuracy_std": 0.0948774591088295,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23046875,
+            "shuffled_label_accuracy_std": 0.09512340277433395,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "8": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2744140625,
+            "shuffled_label_accuracy_std": 0.12121576070785522,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.275390625,
+            "shuffled_label_accuracy_std": 0.12000200897455215,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.283203125,
+            "shuffled_label_accuracy_std": 0.16114169359207153,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23388671875,
+            "shuffled_label_accuracy_std": 0.09738120436668396,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.29296875,
+            "shuffled_label_accuracy_std": 0.11692679673433304,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.23974609375,
+            "shuffled_label_accuracy_std": 0.12613071501255035,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "16": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.248046875,
+            "shuffled_label_accuracy_std": 0.10566749423742294,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2373046875,
+            "shuffled_label_accuracy_std": 0.1188962310552597,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2724609375,
+            "shuffled_label_accuracy_std": 0.11130670458078384,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2578125,
+            "shuffled_label_accuracy_std": 0.09431794285774231,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.234375,
+            "shuffled_label_accuracy_std": 0.09169292449951172,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.2763671875,
+            "shuffled_label_accuracy_std": 0.11344529688358307,
+            "shuffled_label_permutations": 32
+          }
+        },
+        "32": {
+          "sense_input": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.11427032947540283,
+            "shuffled_label_permutations": 32
+          },
+          "phase": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.24609375,
+            "shuffled_label_accuracy_std": 0.09085705876350403,
+            "shuffled_label_permutations": 32
+          },
+          "full_state": {
+            "pass": true,
+            "accuracy": 1.0,
+            "shuffled_label_accuracy": 0.22802734375,
+            "shuffled_label_accuracy_std": 0.12357953935861588,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_cells": {
+            "pass": true,
+            "accuracy": 0.96875,
+            "shuffled_label_accuracy": 0.24365234375,
+            "shuffled_label_accuracy_std": 0.0787920132279396,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_pooled": {
+            "pass": true,
+            "accuracy": 0.9375,
+            "shuffled_label_accuracy": 0.236328125,
+            "shuffled_label_accuracy_std": 0.08311688899993896,
+            "shuffled_label_permutations": 32
+          },
+          "bridge_gate": {
+            "pass": true,
+            "accuracy": 0.8125,
+            "shuffled_label_accuracy": 0.25048828125,
+            "shuffled_label_accuracy_std": 0.06771283596754074,
+            "shuffled_label_permutations": 32
+          }
+        }
+      }
+    }
+  }
+}

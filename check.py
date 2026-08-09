@@ -83,7 +83,11 @@ def _build(ckpt_path):
     c = QuantumC(nc=256, dim=128)
     for _ in range(5):
         c.step()
-    bridge = ThalamicBridge(c_dim=c.state_dim, d_model=d.d_model).to(_DEV)
+    bridge = ThalamicBridge(
+        c_dim=c.state_dim,
+        d_model=d.d_model,
+        hub_dim=ThalamicBridge.hub_dim_from_state_dict(ck["bridge"]),
+    ).to(_DEV)
     bridge.load_state_dict(ck["bridge"])
     bridge.eval()
     return d, c, bridge, d.tokenizer, GATE_INFER, ck
@@ -187,8 +191,12 @@ def _build_graft(ckpt_path):
     c = QuantumC(nc=ga.get("cells", 256), dim=128)
     for _ in range(ga.get("p1_steps", 5)):
         c.step()
-    bridge = ThalamicBridge(c_dim=c.state_dim, d_model=d.d_model,
-                            alpha=ga.get("bridge_alpha", 0.5)).to(_DEV)
+    bridge = ThalamicBridge(
+        c_dim=c.state_dim,
+        d_model=d.d_model,
+        hub_dim=ThalamicBridge.hub_dim_from_state_dict(ck["bridge"]),
+        alpha=ga.get("bridge_alpha", 0.5),
+    ).to(_DEV)
     bridge.load_state_dict(ck["bridge"])
     bridge.eval()
     return d, c, bridge, d.tokenizer, ck

@@ -35,11 +35,12 @@ case "$ACTION" in
     "$PYTHON_BIN" -m pip install --quiet 'transformers>=4.51,<5' accelerate sentencepiece pytest
     cd "$ROOT"
     "$PYTHON_BIN" -m pytest -q tests/test_graft_behavior_gate.py tests/test_quantum_phase_readout.py \
-      tests/test_consciousness_intervention.py tests/test_state_survival.py
+      tests/test_consciousness_intervention.py tests/test_state_survival.py \
+      tests/test_bridge_capacity.py
     "$PYTHON_BIN" -m py_compile graft_behavior.py state_survival.py measurement/graft_behavior_gate.py \
-      measurement/state_survival_gate.py pure.py trinity.py
+      measurement/state_survival_gate.py measurement/bridge_capacity_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state|phase-state-repair|state-map)
+  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|state-map)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -70,6 +71,12 @@ case "$ACTION" in
         --output measurement/graft_behavior_phase_state_repair_results.json \
         --checkpoint-dir checkpoints/graft_behavior_phase_state_repair
     fi
+    if [ "$ACTION" = phase-state-bridge32 ]; then
+      exec "$PYTHON_BIN" graft_behavior.py \
+        --experiment graft_behavior_causality_phase_state_bridge32 \
+        --output measurement/graft_behavior_phase_state_bridge32_results.json \
+        --checkpoint-dir checkpoints/graft_behavior_phase_state_bridge32
+    fi
     if [ "$ACTION" = state-map ]; then
       "$PYTHON_BIN" state_survival.py
       exec "$PYTHON_BIN" measurement/state_survival_gate.py \
@@ -79,7 +86,7 @@ case "$ACTION" in
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-state-map)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-state-map)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -90,7 +97,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|state-map|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|state-map|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac

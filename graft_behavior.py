@@ -21,6 +21,7 @@ import torch.nn.functional as F
 
 from pure import PureMind
 from measurement.graft_behavior_registry import BEHAVIOR_SPEC, experiment, spec_sha256
+from measurement.bridge_config import THALAMIC_BRIDGE_LEGACY_HUB_DIM
 from trinity import HFDecoder, PSI_BALANCE, QuantumC, ThalamicBridge
 
 
@@ -42,9 +43,12 @@ def sha256_file(path: Path) -> str:
 class GraftActionChannel(nn.Module):
     """The existing GRAFT bridge plus an arm-local decoder projector."""
 
-    def __init__(self, state_dim: int, d_model: int, gate_rho: float):
+    def __init__(self, state_dim: int, d_model: int, gate_rho: float,
+                 hub_dim: int = THALAMIC_BRIDGE_LEGACY_HUB_DIM):
         super().__init__()
-        self.bridge = ThalamicBridge(c_dim=state_dim, d_model=d_model, alpha=0.5)
+        self.bridge = ThalamicBridge(
+            c_dim=state_dim, d_model=d_model, hub_dim=hub_dim, alpha=0.5
+        )
         self.projector = nn.Linear(d_model, d_model)
         nn.init.normal_(self.projector.weight, mean=0.0, std=2e-3)
         nn.init.zeros_(self.projector.bias)
@@ -267,8 +271,12 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path) -> dict:
         torch.manual_seed(seed + (0 if arm == "consciousness" else 100_000))
         input_dim = (BEHAVIOR_SPEC["state_dim"] if arm == "consciousness"
                      else BEHAVIOR_SPEC.get("memory_state_dim", BEHAVIOR_SPEC["state_dim"]))
-        channel = GraftActionChannel(input_dim, decoder.d_model,
-                                     BEHAVIOR_SPEC["gate_rho"]).to(decoder.device)
+        channel = GraftActionChannel(
+            input_dim,
+            decoder.d_model,
+            BEHAVIOR_SPEC["gate_rho"],
+            hub_dim=BEHAVIOR_SPEC.get("bridge_hub_dim", THALAMIC_BRIDGE_LEGACY_HUB_DIM),
+        ).to(decoder.device)
         losses = train_channel(decoder, channel, train, arm, seed, action_ids)
         arms[arm] = evaluate_channel(decoder, channel, evaluate, arm, seed, action_ids)
         arms[arm]["final_loss_mean_50"] = sum(losses[-50:]) / min(50, len(losses))

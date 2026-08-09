@@ -269,6 +269,7 @@ def cmd_aci(args):
 
     # Import trinity components
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from measurement.bridge_config import THALAMIC_BRIDGE_HUB_DIM
     from trinity import TransformerDecoder, ThalamicBridge
 
     # Build ACS calculator
@@ -277,12 +278,18 @@ def cmd_aci(args):
 
     # Build decoder + bridge
     decoder = TransformerDecoder(d_model=d_model, n_layers=2, vocab_size=calc.vocab)
-    bridge = ThalamicBridge(c_dim=128, d_model=d_model)
+    bridge_state = ckpt.get('bridge')
+    bridge = ThalamicBridge(
+        c_dim=128,
+        d_model=d_model,
+        hub_dim=(ThalamicBridge.hub_dim_from_state_dict(bridge_state)
+                 if bridge_state is not None else THALAMIC_BRIDGE_HUB_DIM),
+    )
 
     if 'decoder' in ckpt:
         decoder.load_state_dict(ckpt['decoder'], strict=False)
-    if 'bridge' in ckpt:
-        bridge.load_state_dict(ckpt['bridge'], strict=False)
+    if bridge_state is not None:
+        bridge.load_state_dict(bridge_state, strict=False)
 
     # Optional: C engine
     c_engine = None

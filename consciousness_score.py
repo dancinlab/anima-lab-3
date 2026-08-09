@@ -292,7 +292,11 @@ def main():
 
     from trinity import TransformerDecoder, ThalamicBridge
     decoder = TransformerDecoder(d_model=ckpt_args['d_model'], n_layers=2, vocab_size=calc.vocab)
-    bridge = ThalamicBridge(c_dim=128, d_model=ckpt_args['d_model'])
+    bridge = ThalamicBridge(
+        c_dim=128,
+        d_model=ckpt_args['d_model'],
+        hub_dim=ThalamicBridge.hub_dim_from_state_dict(ckpt['bridge']),
+    )
     decoder.load_state_dict(ckpt['decoder'])
     bridge.load_state_dict(ckpt['bridge'])
 

@@ -53,7 +53,11 @@ def load_model(ckpt_path, corpus_path):
 
     from trinity import TransformerDecoder, ThalamicBridge
     decoder = TransformerDecoder(d_model=args['d_model'], n_layers=2, vocab_size=tok.vocab)
-    bridge = ThalamicBridge(c_dim=128, d_model=args['d_model'])
+    bridge = ThalamicBridge(
+        c_dim=128,
+        d_model=args['d_model'],
+        hub_dim=ThalamicBridge.hub_dim_from_state_dict(ckpt['bridge']),
+    )
     decoder.load_state_dict(ckpt['decoder'])
     bridge.load_state_dict(ckpt['bridge'])
 

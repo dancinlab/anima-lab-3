@@ -1,4 +1,6 @@
 from copy import deepcopy
+import json
+from pathlib import Path
 
 from measurement.bridge_capacity_gate import adjudicate
 from measurement.bridge_capacity_registry import BRIDGE_CAPACITY_SPEC, spec_sha256
@@ -49,3 +51,13 @@ def test_capacity_gate_localizes_mean_pooling_and_fails_closed():
     invalid = deepcopy(payload)
     invalid["spec_sha256"] = "wrong"
     assert adjudicate(invalid)["verdict"] == "C0_INVALID"
+
+
+def test_committed_capacity_result_reproduces_the_registered_verdict():
+    root = Path(__file__).resolve().parents[1]
+    payload = json.loads((root / "measurement/bridge_capacity_results.json").read_text())
+    verdict = json.loads((root / "measurement/bridge_capacity_verdict.json").read_text())
+
+    assert adjudicate(payload) == verdict
+    assert verdict["verdict"] == "C4_FULL_PATH_RECOVERY"
+    assert verdict["selected_hub_dim"] == 32

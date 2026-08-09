@@ -8,6 +8,7 @@ from measurement.state_survival_gate import adjudicate
 from measurement.state_survival_registry import STATE_SURVIVAL_SPEC, spec_sha256
 from state_survival import probe_channel
 from trinity import QuantumC, ThalamicBridge
+from measurement.bridge_config import THALAMIC_BRIDGE_HUB_DIM
 
 
 def test_quantum_state_channels_are_read_only_and_complete():
@@ -35,6 +36,14 @@ def test_bridge_trace_is_the_exact_forward_path_and_read_only():
     assert trace["pooled"].shape == (1, 1, 4)
     assert torch.equal(trace["gate"], bridge(states, seq_len=3))
     assert torch.equal(states, before)
+
+
+def test_bridge_default_is_upgraded_and_legacy_checkpoint_width_is_inferred():
+    current = ThalamicBridge(c_dim=12, d_model=16)
+    legacy = ThalamicBridge(c_dim=12, d_model=16, hub_dim=8)
+
+    assert current.compress.out_features == THALAMIC_BRIDGE_HUB_DIM
+    assert ThalamicBridge.hub_dim_from_state_dict(legacy.state_dict()) == 8
 
 
 def _metrics(passed=True):
