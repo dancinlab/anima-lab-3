@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 
 
 BEHAVIOR_SPEC = {
@@ -49,10 +50,28 @@ BEHAVIOR_SPEC = {
     },
 }
 
+LANGUAGE_PRESERVED_SPEC = deepcopy(BEHAVIOR_SPEC)
+LANGUAGE_PRESERVED_SPEC.update({
+    "experiment": "graft_behavior_causality_language_preserved",
+    "language_kl_weight": 1.0,
+})
 
-def canonical_spec() -> str:
-    return json.dumps(BEHAVIOR_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+REGISTERED_EXPERIMENTS = {
+    BEHAVIOR_SPEC["experiment"]: BEHAVIOR_SPEC,
+    LANGUAGE_PRESERVED_SPEC["experiment"]: LANGUAGE_PRESERVED_SPEC,
+}
 
 
-def spec_sha256() -> str:
-    return hashlib.sha256(canonical_spec().encode()).hexdigest()
+def experiment(name: str) -> dict:
+    try:
+        return REGISTERED_EXPERIMENTS[name]
+    except KeyError as exc:
+        raise ValueError(f"unknown GRAFT behavior experiment: {name}") from exc
+
+
+def canonical_spec(spec: dict | None = None) -> str:
+    return json.dumps(spec or BEHAVIOR_SPEC, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def spec_sha256(spec: dict | None = None) -> str:
+    return hashlib.sha256(canonical_spec(spec).encode()).hexdigest()

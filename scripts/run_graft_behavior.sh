@@ -19,7 +19,7 @@ case "$ACTION" in
     python -m pytest -q tests/test_graft_behavior_gate.py tests/test_consciousness_intervention.py
     python -m py_compile graft_behavior.py measurement/graft_behavior_gate.py pure.py trinity.py
     ;;
-  smoke|full)
+  smoke|full|language-preserved)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -32,11 +32,17 @@ case "$ACTION" in
         --output measurement/graft_behavior_smoke.json \
         --checkpoint-dir checkpoints/graft_behavior_smoke
     fi
+    if [ "$ACTION" = language-preserved ]; then
+      exec python graft_behavior.py \
+        --experiment graft_behavior_causality_language_preserved \
+        --output measurement/graft_behavior_language_preserved_results.json \
+        --checkpoint-dir checkpoints/graft_behavior_language_preserved
+    fi
     exec python graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full)
+  launch-smoke|launch-full|launch-language-preserved)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -47,7 +53,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|launch-smoke|launch-full [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac

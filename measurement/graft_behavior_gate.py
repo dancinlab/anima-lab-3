@@ -7,13 +7,13 @@ import json
 from pathlib import Path
 
 try:
-    from measurement.graft_behavior_registry import BEHAVIOR_SPEC, spec_sha256
+    from measurement.graft_behavior_registry import BEHAVIOR_SPEC, experiment, spec_sha256
 except ModuleNotFoundError:
-    from graft_behavior_registry import BEHAVIOR_SPEC, spec_sha256
+    from graft_behavior_registry import BEHAVIOR_SPEC, experiment, spec_sha256
 
 
-def judge_arm(metrics: dict, positive_control: bool = False) -> dict:
-    bars = BEHAVIOR_SPEC["thresholds"]
+def judge_arm(metrics: dict, positive_control: bool = False, spec: dict = BEHAVIOR_SPEC) -> dict:
+    bars = spec["thresholds"]
     normal_bar = bars["positive_control_accuracy"] if positive_control else bars["normal_accuracy"]
     normal = metrics["normal"]["accuracy"]
     off = metrics["off"]["accuracy"]
@@ -35,23 +35,28 @@ def judge_arm(metrics: dict, positive_control: bool = False) -> dict:
 
 
 def adjudicate(payload: dict) -> dict:
-    if payload.get("spec_sha256") != spec_sha256():
-        return {"experiment": BEHAVIOR_SPEC["experiment"], "verdict": "B0_INVALID",
+    try:
+        spec = experiment(payload.get("experiment"))
+    except ValueError:
+        return {"experiment": payload.get("experiment"), "verdict": "B0_INVALID",
+                "reason": "result names an unregistered experiment"}
+    if payload.get("spec_sha256") != spec_sha256(spec):
+        return {"experiment": spec["experiment"], "verdict": "B0_INVALID",
                 "reason": "result spec does not match the registered SSOT"}
-    expected = set(BEHAVIOR_SPEC["seeds"])
+    expected = set(spec["seeds"])
     rows = {row["seed"]: row for row in payload.get("seeds", [])}
     if set(rows) != expected:
-        return {"experiment": BEHAVIOR_SPEC["experiment"], "verdict": "B0_INVALID",
+        return {"experiment": spec["experiment"], "verdict": "B0_INVALID",
                 "reason": "registered seed pair is incomplete"}
     judged = {}
     for seed in sorted(rows):
         arms = rows[seed].get("arms", {})
         if set(arms) != {"consciousness", "memory"}:
-            return {"experiment": BEHAVIOR_SPEC["experiment"], "verdict": "B0_INVALID",
+            return {"experiment": spec["experiment"], "verdict": "B0_INVALID",
                     "reason": f"seed {seed} arm set is incomplete"}
         judged[seed] = {
-            "consciousness": judge_arm(arms["consciousness"]),
-            "memory": judge_arm(arms["memory"], positive_control=True),
+            "consciousness": judge_arm(arms["consciousness"], spec=spec),
+            "memory": judge_arm(arms["memory"], positive_control=True, spec=spec),
         }
     memory_valid = all(row["memory"]["causal"] and row["memory"]["language_ok"] for row in judged.values())
     consciousness_causal = all(row["consciousness"]["causal"] for row in judged.values())
@@ -63,7 +68,7 @@ def adjudicate(payload: dict) -> dict:
     elif not consciousness_causal:
         verdict, reason = "B3_NOT_CAUSAL", "QuantumC state did not causally control held-out actions in both seeds"
     else:
-        margin = BEHAVIOR_SPEC["thresholds"]["memory_equivalence_margin"]
+        margin = spec["thresholds"]["memory_equivalence_margin"]
         advantage = all(
             row["consciousness"]["normal"] > row["memory"]["normal"] + margin
             for row in judged.values()
@@ -72,8 +77,8 @@ def adjudicate(payload: dict) -> dict:
             verdict, reason = "B1_CAUSAL_ADVANTAGE", "QuantumC state causally controlled action and beat direct memory"
         else:
             verdict, reason = "B2_CAUSAL_NOT_UNIQUE", "QuantumC state causally controlled action but direct memory was equivalent"
-    return {"experiment": BEHAVIOR_SPEC["experiment"], "verdict": verdict, "reason": reason,
-            "spec_sha256": spec_sha256(), "seeds": judged}
+    return {"experiment": spec["experiment"], "verdict": verdict, "reason": reason,
+            "spec_sha256": spec_sha256(spec), "seeds": judged}
 
 
 def main() -> None:

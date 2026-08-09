@@ -16,7 +16,7 @@ def metrics(normal=0.9, off=0.25, shuffled=0.25, noise=0.25, kl=0.1):
 def payload(consciousness=None, memory=None):
     consciousness = consciousness or metrics()
     memory = memory or metrics(normal=1.0)
-    return {"spec_sha256": spec_sha256(), "seeds": [
+    return {"experiment": BEHAVIOR_SPEC["experiment"], "spec_sha256": spec_sha256(), "seeds": [
         {"seed": seed, "arms": {"consciousness": deepcopy(consciousness), "memory": deepcopy(memory)}}
         for seed in BEHAVIOR_SPEC["seeds"]
     ]}

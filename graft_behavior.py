@@ -20,7 +20,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from pure import PureMind
-from measurement.graft_behavior_registry import BEHAVIOR_SPEC, spec_sha256
+from measurement.graft_behavior_registry import BEHAVIOR_SPEC, experiment, spec_sha256
 from trinity import HFDecoder, PSI_BALANCE, QuantumC, ThalamicBridge
 
 
@@ -130,6 +130,14 @@ def train_channel(decoder: HFDecoder, channel: GraftActionChannel, examples: lis
     actions = torch.tensor(action_ids, device=decoder.device)
     rng = random.Random(seed + (0 if arm == "consciousness" else 100_000))
     losses = []
+    neutral_weight = spec.get("language_kl_weight", 0.0)
+    neutral = []
+    if neutral_weight:
+        with torch.no_grad():
+            for text in spec["neutral_prompts"]:
+                tokens = decoder.tokenizer(text, return_tensors="pt").input_ids.to(decoder.device)
+                base = F.log_softmax(decoder(tokens, None)[:, -1, :].float(), -1)
+                neutral.append((tokens, base))
     for step in range(1, spec["train_steps"] + 1):
         batch = [examples[rng.randrange(len(examples))] for _ in range(spec["batch_size"])]
         states = [getattr(row, "state" if arm == "consciousness" else "memory").to(decoder.device) for row in batch]
@@ -138,14 +146,26 @@ def train_channel(decoder: HFDecoder, channel: GraftActionChannel, examples: lis
         tokens = prompt.expand(len(batch), -1)
         logits = decoder(tokens, gate, gate_projector=channel.projector)[:, -1, :].float()
         targets = torch.tensor([row.target for row in batch], device=decoder.device)
-        loss = F.cross_entropy(logits.index_select(-1, actions), targets)
+        action_loss = F.cross_entropy(logits.index_select(-1, actions), targets)
+        language_kl = torch.zeros((), device=decoder.device)
+        if neutral:
+            neutral_tokens, base_lp = neutral[(step - 1) % len(neutral)]
+            neutral_gate = codes.unsqueeze(1).expand(-1, neutral_tokens.shape[1], -1)
+            neutral_batch = neutral_tokens.expand(len(batch), -1)
+            gated_lp = F.log_softmax(
+                decoder(neutral_batch, neutral_gate, gate_projector=channel.projector)[:, -1, :].float(), -1
+            )
+            language_kl = (gated_lp.exp() * (gated_lp - base_lp)).sum(-1).mean()
+        loss = action_loss + neutral_weight * language_kl
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(channel.parameters(), 1.0)
         optimizer.step()
         losses.append(float(loss.detach()))
         if step % 50 == 0:
-            print(f"[{seed}:{arm}] step={step} loss={sum(losses[-50:]) / 50:.4f}", flush=True)
+            print(f"[{seed}:{arm}] step={step} loss={sum(losses[-50:]) / 50:.4f} "
+                  f"action={float(action_loss.detach()):.4f} neutralKL={float(language_kl.detach()):.4f}",
+                  flush=True)
     return losses
 
 
@@ -228,7 +248,7 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path) -> dict:
         arms[arm] = evaluate_channel(decoder, channel, evaluate, arm, seed, action_ids)
         arms[arm]["final_loss_mean_50"] = sum(losses[-50:]) / min(50, len(losses))
         path = output_dir / f"seed_{seed}_{arm}.pt"
-        torch.save({"seed": seed, "arm": arm, "spec_sha256": spec_sha256(),
+        torch.save({"seed": seed, "arm": arm, "spec_sha256": spec_sha256(BEHAVIOR_SPEC),
                     "channel": channel.state_dict()}, path)
         checkpoints[arm] = {"path": str(path), "sha256": sha256_file(path)}
         del channel
@@ -238,13 +258,16 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path) -> dict:
 
 
 def main() -> None:
+    global BEHAVIOR_SPEC
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="measurement/graft_behavior_results.json")
     parser.add_argument("--checkpoint-dir", default="checkpoints/graft_behavior")
     parser.add_argument("--model", default=BEHAVIOR_SPEC["model"])
+    parser.add_argument("--experiment", default=BEHAVIOR_SPEC["experiment"])
     parser.add_argument("--seeds", default=",".join(map(str, BEHAVIOR_SPEC["seeds"])))
     parser.add_argument("--train-steps", type=int)
     args = parser.parse_args()
+    BEHAVIOR_SPEC = experiment(args.experiment)
     if args.train_steps is not None:
         BEHAVIOR_SPEC["train_steps"] = args.train_steps
     seeds = [int(item) for item in args.seeds.split(",") if item]
@@ -261,7 +284,7 @@ def main() -> None:
     payload = {
         "experiment": BEHAVIOR_SPEC["experiment"],
         "spec": BEHAVIOR_SPEC,
-        "spec_sha256": spec_sha256(),
+        "spec_sha256": spec_sha256(BEHAVIOR_SPEC),
         "model": args.model,
         "seeds": [run_seed(decoder, seed, checkpoint_dir) for seed in seeds],
     }
