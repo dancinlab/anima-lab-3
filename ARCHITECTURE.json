@@ -179,7 +179,7 @@
     {
       "name": "실행 호스트",
       "id": "hosts",
-      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1·WORKSPACE-1·RELATION-1·VALIDITY-1 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 계열은 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1은 `synergy1-split-cue`에, WORKSPACE-1은 `workspace1-recurrent`에 보존했다. RELATION-1은 `relation1-role-binding`, VALIDITY-1은 `validity1-action-path`에 보존했다. STATE-1과 CONTROL-1~3, EPISODE-1은 로컬 Apple Silicon CPU에서 실행했다. CONTROL-1~3은 각각 `episode-control1-dynamic-relation`·`episode-control2-online-dynamic-relation`·`episode-control3-keyed-attention`, EPISODE-1은 `episode1-one-shot-relation` revision에 결과·판정·체크포인트를 보존하고 재다운로드 검증했다. 이번 작업은 GPU를 대여하거나 상시 런타임을 바꾸지 않았다."
+      "detail": "aiden·summer의 학습은 모두 중단됐고 두 호스트의 연구 산출물은 비공개 Hugging Face 조직 archive로 이전했다. LAMBDA-4·5와 GRAFT 행동 인과·META-1 자기 판단·SYNERGY-1·WORKSPACE-1·RELATION-1·VALIDITY-1 실험은 임시 Vast.ai RTX 5090에서 등록 실행기로 수행했다. GRAFT 계열은 `graft-behavior`·`graft-phase-behavior`·`graft-bridge32-behavior` revision에, META-1은 `meta1-self-monitoring`에, SYNERGY-1은 `synergy1-split-cue`에, WORKSPACE-1은 `workspace1-recurrent`에 보존했다. RELATION-1은 `relation1-role-binding`, VALIDITY-1은 `validity1-action-path`에 보존했다. STATE-1과 CONTROL-1~3, EPISODE-1은 로컬 Apple Silicon CPU에서 실행했다. CONTROL-1~3은 각각 `episode-control1-dynamic-relation`·`episode-control2-online-dynamic-relation`·`episode-control3-keyed-attention`, EPISODE-1은 `episode1-one-shot-relation` revision에 결과·판정·체크포인트를 보존하고 재다운로드 검증했다. 이번 작업은 GPU를 대여하거나 상시 런타임을 바꾸지 않았다. 계정의 별개 Vast.ai RTX 3090 instance 47297500은 실행 중이며 이 실험 범위 밖이라 건드리지 않았다."
     }
   ],
   "convergence": {
