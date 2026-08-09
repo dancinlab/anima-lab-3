@@ -16,8 +16,8 @@ case "$ACTION" in
     git -C "$ROOT" checkout --detach "$REVISION"
     python -m pip install --quiet 'transformers>=4.51,<5' accelerate sentencepiece pytest
     cd "$ROOT"
-    python -m pytest -q tests/test_graft_behavior_gate.py tests/test_trinity.py \
-      tests/test_consciousness_intervention.py
+    python -m pytest -q tests/test_graft_behavior_gate.py tests/test_consciousness_intervention.py
+    python -m py_compile graft_behavior.py measurement/graft_behavior_gate.py pure.py trinity.py
     ;;
   smoke|full)
     cd "$ROOT"
@@ -36,8 +36,18 @@ case "$ACTION" in
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
+  launch-smoke|launch-full)
+    JOB=${ACTION#launch-}
+    SESSION=graft-behavior-$JOB
+    LOG="$ROOT/logs/graft_behavior_${JOB}.log"
+    mkdir -p "$ROOT/logs"
+    tmux kill-session -t "$SESSION" 2>/dev/null || true
+    tmux new-session -d -s "$SESSION" \
+      "bash '$0' '$JOB' '$REVISION' > '$LOG' 2>&1"
+    echo "launched $SESSION -> $LOG"
+    ;;
   *)
-    echo "usage: $0 setup|smoke|full [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|launch-smoke|launch-full [git-revision]" >&2
     exit 2
     ;;
 esac
