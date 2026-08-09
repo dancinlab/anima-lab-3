@@ -543,7 +543,7 @@ class TransformerDecoder(DEngine):
     def d_model(self):
         return self._d_model
 
-    def forward(self, tokens, gate_signal, gate_projector=None):
+    def forward(self, tokens, gate_signal):
         B, T = tokens.shape
         pos = torch.arange(T, device=tokens.device).unsqueeze(0)
         x = self.embed(tokens) + self.pos_embed(pos)
@@ -693,7 +693,7 @@ class HFDecoder(DEngine):
     def d_model(self):
         return self._d_model
 
-    def forward(self, tokens, gate_signal):
+    def forward(self, tokens, gate_signal, gate_projector=None):
         """Forward with consciousness gating.
 
         tokens: [B, T] token ids (from HF tokenizer)
