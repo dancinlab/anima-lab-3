@@ -314,6 +314,10 @@ class QuantumC(CEngine):
             return torch.zeros(self.n_cells, 2 * self._dim)
         return torch.cat((torch.cos(phase), torch.sin(phase)), dim=-1).detach()
 
+    def get_state_channels(self) -> Dict[str, torch.Tensor]:
+        """Read all canonical QuantumC state channels without advancing the engine."""
+        return self.engine.state_channels()
+
     @property
     def state_dim(self):
         return self._dim
@@ -471,10 +475,11 @@ class ThalamicBridge(nn.Module):
             nn.Sigmoid(),
         )
 
-    def forward(self, c_states: torch.Tensor, seq_len: int = 1) -> torch.Tensor:
-        """C states [n_cells, c_dim] → gate signal [1, seq_len, d_model].
+    def trace(self, c_states: torch.Tensor, seq_len: int = 1) -> Dict[str, torch.Tensor]:
+        """Return the canonical bridge stages used by ``forward``.
 
-        c_states MUST be .detach()'d before calling this.
+        The method is observational: it shares the exact forward operations and does not
+        cache or mutate state. ``cells`` is before cell averaging and ``pooled`` is after.
         """
         # Compress
         compressed = self.compress(c_states)  # [n_cells, hub_dim]
@@ -507,7 +512,15 @@ class ThalamicBridge(nn.Module):
         raw_gate = self.gate(expanded)  # [1, seq_len, d_model]
         centered = raw_gate - PSI_BALANCE
         clamped = centered.clamp(-self.alpha, self.alpha)
-        return PSI_BALANCE + clamped
+        gate = PSI_BALANCE + clamped
+        return {"cells": x, "pooled": pooled, "expanded": expanded, "gate": gate}
+
+    def forward(self, c_states: torch.Tensor, seq_len: int = 1) -> torch.Tensor:
+        """C states [n_cells, c_dim] → gate signal [1, seq_len, d_model].
+
+        c_states MUST be .detach()'d before calling this.
+        """
+        return self.trace(c_states, seq_len=seq_len)["gate"]
 
 
 # ═══════════════════════════════════════════════════════════

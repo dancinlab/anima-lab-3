@@ -541,6 +541,29 @@ class QuantumConsciousnessEngineFast:
     # ─── observe() ───
 
     @torch.no_grad()
+    def state_channels(self) -> Dict[str, torch.Tensor]:
+        """Return the canonical runtime state channels without modifying dynamics.
+
+        Phase is exposed as cos/sin coordinates so equivalent angles around 2π remain
+        equivalent.  The combined channel is the exact concatenation used by STATE-1;
+        it is an observation API, never an input to the engine.
+        """
+        phase = torch.cat((torch.cos(self._phases), torch.sin(self._phases)), dim=-1)
+        tension = self._amplitudes.var(dim=1, keepdim=True)
+        frustration = self._frustrations.unsqueeze(-1)
+        channels = {
+            "amplitude": self._amplitudes.clone(),
+            "phase": phase,
+            "phase_velocity": self._phase_velocities.clone(),
+            "tension_frustration": torch.cat((tension, frustration), dim=-1),
+        }
+        channels["full_state"] = torch.cat((
+            channels["amplitude"], channels["phase"], channels["phase_velocity"],
+            channels["tension_frustration"],
+        ), dim=-1)
+        return channels
+
+    @torch.no_grad()
     def observe(self) -> Dict:
         """Read cell states without modification."""
         n = self.n_cells
