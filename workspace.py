@@ -24,8 +24,7 @@ def _atomic_json(path: Path, payload: dict) -> None:
     os.replace(temporary, path)
 
 
-def _source_map() -> dict:
-    spec = WORKSPACE_SPEC
+def _source_map(spec: dict) -> dict:
     results_path = Path(spec["source_map_results"])
     verdict_path = Path(spec["source_map_verdict"])
     results = json.loads(results_path.read_text())
@@ -46,7 +45,10 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="measurement/workspace_results.json")
     parser.add_argument("--verdict", default="measurement/workspace_verdict.json")
-    parser.add_argument("--checkpoint-dir", default="checkpoints/workspace1")
+    parser.add_argument(
+        "--checkpoint-dir",
+        default="checkpoints/workspace1_control_seed_repair",
+    )
     parser.add_argument(
         "--experiment",
         default=WORKSPACE_CONTROL_SEED_REPAIR_SPEC["experiment"],
@@ -83,7 +85,7 @@ def main() -> None:
         "spec_sha256": spec_sha256(spec),
         "model": model,
         "dataset_audit": audits[0],
-        "source_map": _source_map(),
+        "source_map": _source_map(spec),
         "seeds": seed_rows,
     }
     _atomic_json(output, payload)

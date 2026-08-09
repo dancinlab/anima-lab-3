@@ -52,3 +52,5 @@ def test_repaired_arm_seeds_are_independent_of_roster_order():
         for arm in spec["arms"]
     } == expected
     assert expected["gru"] == 201_337
+    assert expected["quantum_workspace_2"] == 201_337
+    assert expected["memory_workspace_4"] == 601_337

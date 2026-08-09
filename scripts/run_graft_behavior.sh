@@ -45,7 +45,7 @@ case "$ACTION" in
       workspace_information.py measurement/workspace_information_gate.py workspace.py \
       measurement/workspace_gate.py pure.py trinity.py
     ;;
-  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1)
+  smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair)
     cd "$ROOT"
     mkdir -p logs checkpoints/graft_behavior measurement
     exec 9>logs/gpu.lock
@@ -111,13 +111,24 @@ case "$ACTION" in
       exec "$PYTHON_BIN" workspace_information.py
     fi
     if [ "$ACTION" = workspace1 ]; then
-      exec "$PYTHON_BIN" workspace.py
+      exec "$PYTHON_BIN" workspace.py \
+        --experiment workspace1_recurrent_split_cue_integration \
+        --output measurement/workspace_invalid_results.json \
+        --verdict measurement/workspace_invalid_verdict.json \
+        --checkpoint-dir checkpoints/workspace1
+    fi
+    if [ "$ACTION" = workspace1-repair ]; then
+      exec "$PYTHON_BIN" workspace.py \
+        --experiment workspace1_recurrent_split_cue_integration_control_seed_repair \
+        --output measurement/workspace_results.json \
+        --verdict measurement/workspace_verdict.json \
+        --checkpoint-dir checkpoints/workspace1_control_seed_repair
     fi
     exec "$PYTHON_BIN" graft_behavior.py \
       --output measurement/graft_behavior_results.json \
       --checkpoint-dir checkpoints/graft_behavior
     ;;
-  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1|launch-synergy1-repair|launch-workspace-map|launch-workspace1)
+  launch-smoke|launch-full|launch-language-preserved|launch-phase-state|launch-phase-state-repair|launch-phase-state-bridge32|launch-phase-state-bridge32-repair|launch-state-map|launch-meta1|launch-synergy1|launch-synergy1-repair|launch-workspace-map|launch-workspace1|launch-workspace1-repair)
     JOB=${ACTION#launch-}
     SESSION=graft-behavior-$JOB
     LOG="$ROOT/logs/graft_behavior_${JOB}.log"
@@ -128,7 +139,7 @@ case "$ACTION" in
     echo "launched $SESSION -> $LOG"
     ;;
   *)
-    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|launch-* [git-revision]" >&2
+    echo "usage: $0 setup|smoke|full|language-preserved|phase-state|phase-state-repair|phase-state-bridge32|phase-state-bridge32-repair|state-map|meta1|synergy1|synergy1-repair|workspace-map|workspace1|workspace1-repair|launch-* [git-revision]" >&2
     exit 2
     ;;
 esac
