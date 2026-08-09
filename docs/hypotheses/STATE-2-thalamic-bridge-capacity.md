@@ -49,3 +49,22 @@ STATE-1에서 감각 정보는 `QuantumC` 위상과 전체 상태에 32단계까
 이하와 일반 기억 장치 80% 이상을 그대로 사용한다. 조건의 정본은
 `graft_behavior_causality_phase_state_bridge32` 등록 항목이다. 결과가 나오기 전에는 이 기준을
 바꾸지 않는다.
+
+### 행동 재검증 1차 — B0_INVALID
+
+폭 32의 `QuantumC` 경로는 두 seed 모두 정상 100%, 차단 25%, 뒤섞기 0%, 가짜
+20.3%/26.6%, 복구 100%였고 중립 문장 변화도 0.0011/0.0013 nat으로 모든 인과 기준을
+처음 통과했다. 그러나 직접 기억 비교군은 seed 1337에서 정상 75%, 중립 문장 변화 1.89 nat으로
+양성 비교군 기준을 통과하지 못했다. 사전 규칙에 따라 판정은 `B0_INVALID`이며 이 결과만으로
+행동 인과성을 확정하지 않는다.
+
+원인은 폭 비교의 `bridge_hub_dim=32`가 개입 대상인 `QuantumC`뿐 아니라, 이전 실험에서 8차원으로
+검증해 고정한 직접 기억 비교군에도 함께 적용된 것이다. 무효 결과는
+`measurement/graft_behavior_phase_state_bridge32_{results,verdict}.json`에 보존한다.
+
+### 행동 양성 비교군 수리 — 사전등록
+
+새 정본 이름은 `graft_behavior_causality_phase_state_bridge32_memory_control_repair`다. `QuantumC`
+위상 경로는 폭 32를 유지하고 직접 기억 비교군만 이미 검증된 폭 8로 되돌린다. 자료, 두 seed,
+학습량, 개입 다섯 가지와 B0~B4 판정 기준은 1차와 모두 같다. 결과를 보기 전에 이 조건과 실행
+코드를 커밋한다.

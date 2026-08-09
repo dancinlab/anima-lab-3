@@ -1,0 +1,214 @@
+{
+  "experiment": "graft_behavior_causality_phase_state_bridge32",
+  "spec": {
+    "experiment": "graft_behavior_causality_phase_state_bridge32",
+    "model": "mistralai/Mistral-7B-Instruct-v0.2",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "situations": [
+      {
+        "id": "danger",
+        "words": [
+          "폭풍",
+          "위험"
+        ],
+        "action": "A"
+      },
+      {
+        "id": "thirst",
+        "words": [
+          "갈증",
+          "메마름"
+        ],
+        "action": "B"
+      },
+      {
+        "id": "fatigue",
+        "words": [
+          "피로",
+          "졸림"
+        ],
+        "action": "C"
+      },
+      {
+        "id": "safe",
+        "words": [
+          "평온",
+          "안전"
+        ],
+        "action": "D"
+      }
+    ],
+    "nuisance_words": [
+      "아침",
+      "저녁",
+      "실내",
+      "실외",
+      "가까이",
+      "멀리",
+      "조용히",
+      "빠르게"
+    ],
+    "question": "A hidden situation was sensed. Choose exactly one action: A seek shelter; B drink water; C rest; D continue safely. Answer:",
+    "neutral_prompts": [
+      "The capital of France is",
+      "Two plus two equals",
+      "Water freezes at",
+      "A short greeting is"
+    ],
+    "interventions": [
+      "normal",
+      "off",
+      "shuffle",
+      "noise",
+      "recovered"
+    ],
+    "cells": 48,
+    "state_dim": 96,
+    "warm_steps": 5,
+    "sense_steps": 3,
+    "delay_steps": [
+      1,
+      4
+    ],
+    "train_examples_per_situation": 24,
+    "eval_examples_per_situation": 16,
+    "train_steps": 400,
+    "batch_size": 8,
+    "learning_rate": 0.0001,
+    "gate_strength": 0.1,
+    "gate_rms_max": 4.0,
+    "gate_rho": 1.0,
+    "thresholds": {
+      "normal_accuracy": 0.75,
+      "positive_control_accuracy": 0.8,
+      "minimum_off_drop": 0.25,
+      "content_control_max_accuracy": 0.4,
+      "recovery_accuracy_tolerance": 0.0,
+      "neutral_kl_nats": 0.5,
+      "memory_equivalence_margin": 0.05
+    },
+    "language_kl_weight": 1.0,
+    "readout": "phase",
+    "engine_dim": 48,
+    "memory_readout": "amplitude",
+    "memory_state_dim": 48,
+    "bridge_hub_dim": 32
+  },
+  "spec_sha256": "f475d27a6d44ea389fc373c95b4f9fd48b1b7ad4aa88f77313c290fac707828b",
+  "model": "mistralai/Mistral-7B-Instruct-v0.2",
+  "seeds": [
+    {
+      "seed": 1337,
+      "arms": {
+        "consciousness": {
+          "normal": {
+            "accuracy": 1.0
+          },
+          "off": {
+            "accuracy": 0.25
+          },
+          "shuffle": {
+            "accuracy": 0.0
+          },
+          "noise": {
+            "accuracy": 0.203125
+          },
+          "recovered": {
+            "accuracy": 1.0,
+            "logits_identical": true
+          },
+          "neutral_kl_nats": 0.0010635494836606085,
+          "final_loss_mean_50": 0.048827136904001235
+        },
+        "memory": {
+          "normal": {
+            "accuracy": 0.75
+          },
+          "off": {
+            "accuracy": 0.25
+          },
+          "shuffle": {
+            "accuracy": 0.09375
+          },
+          "noise": {
+            "accuracy": 0.25
+          },
+          "recovered": {
+            "accuracy": 0.75,
+            "logits_identical": true
+          },
+          "neutral_kl_nats": 1.8869116022833623,
+          "final_loss_mean_50": 2.010583282709122
+        }
+      },
+      "checkpoints": {
+        "consciousness": {
+          "path": "checkpoints/graft_behavior_phase_state_bridge32/seed_1337_consciousness.pt",
+          "sha256": "f10a4f6c5d532f5d1c67dc5cc15904575f57979e10a775a3080d824fac81c367"
+        },
+        "memory": {
+          "path": "checkpoints/graft_behavior_phase_state_bridge32/seed_1337_memory.pt",
+          "sha256": "9e3b574cf2cf972cec16c2378de898beff74754d1fb7e85b783b25a83cc4b393"
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "arms": {
+        "consciousness": {
+          "normal": {
+            "accuracy": 1.0
+          },
+          "off": {
+            "accuracy": 0.25
+          },
+          "shuffle": {
+            "accuracy": 0.0
+          },
+          "noise": {
+            "accuracy": 0.265625
+          },
+          "recovered": {
+            "accuracy": 1.0,
+            "logits_identical": true
+          },
+          "neutral_kl_nats": 0.0013067273539490998,
+          "final_loss_mean_50": 0.01784967924002558
+        },
+        "memory": {
+          "normal": {
+            "accuracy": 1.0
+          },
+          "off": {
+            "accuracy": 0.25
+          },
+          "shuffle": {
+            "accuracy": 0.0
+          },
+          "noise": {
+            "accuracy": 0.265625
+          },
+          "recovered": {
+            "accuracy": 1.0,
+            "logits_identical": true
+          },
+          "neutral_kl_nats": 0.003297423478215933,
+          "final_loss_mean_50": 0.18902580484282225
+        }
+      },
+      "checkpoints": {
+        "consciousness": {
+          "path": "checkpoints/graft_behavior_phase_state_bridge32/seed_7331_consciousness.pt",
+          "sha256": "cf85ac69ad934f57f8cd9be2f6fbeb0e9433b058766cc4392d9eb737f6fd20e4"
+        },
+        "memory": {
+          "path": "checkpoints/graft_behavior_phase_state_bridge32/seed_7331_memory.pt",
+          "sha256": "e218ef1e90705fd36021ed9b25581fb26c41d056c0f93c187b5f26e7129c7bd5"
+        }
+      }
+    }
+  ]
+}

@@ -40,6 +40,16 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def bridge_hub_dim_for_arm(spec: dict, arm: str) -> int:
+    """Resolve the registered bridge width without changing validated controls."""
+    if arm == "memory":
+        return spec.get(
+            "memory_bridge_hub_dim",
+            spec.get("bridge_hub_dim", THALAMIC_BRIDGE_LEGACY_HUB_DIM),
+        )
+    return spec.get("bridge_hub_dim", THALAMIC_BRIDGE_LEGACY_HUB_DIM)
+
+
 class GraftActionChannel(nn.Module):
     """The existing GRAFT bridge plus an arm-local decoder projector."""
 
@@ -275,7 +285,7 @@ def run_seed(decoder: HFDecoder, seed: int, output_dir: Path) -> dict:
             input_dim,
             decoder.d_model,
             BEHAVIOR_SPEC["gate_rho"],
-            hub_dim=BEHAVIOR_SPEC.get("bridge_hub_dim", THALAMIC_BRIDGE_LEGACY_HUB_DIM),
+            hub_dim=bridge_hub_dim_for_arm(BEHAVIOR_SPEC, arm),
         ).to(decoder.device)
         losses = train_channel(decoder, channel, train, arm, seed, action_ids)
         arms[arm] = evaluate_channel(decoder, channel, evaluate, arm, seed, action_ids)

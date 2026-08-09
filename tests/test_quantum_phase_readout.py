@@ -3,6 +3,7 @@ import torch
 import graft_behavior
 from measurement.graft_behavior_registry import (
     BEHAVIOR_SPEC,
+    PHASE_STATE_BRIDGE32_MEMORY_CONTROL_REPAIR_SPEC,
     PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
     PHASE_STATE_SPEC,
     experiment,
@@ -52,3 +53,10 @@ def test_phase_repair_keeps_the_validated_memory_control_shape(monkeypatch):
 
     assert row.state.shape == (spec["cells"], 2 * BEHAVIOR_SPEC["state_dim"])
     assert row.memory.shape == (spec["cells"], BEHAVIOR_SPEC["state_dim"])
+
+
+def test_bridge32_repair_changes_only_the_quantumc_arm_width():
+    spec = experiment(PHASE_STATE_BRIDGE32_MEMORY_CONTROL_REPAIR_SPEC["experiment"])
+
+    assert graft_behavior.bridge_hub_dim_for_arm(spec, "consciousness") == 32
+    assert graft_behavior.bridge_hub_dim_for_arm(spec, "memory") == 8

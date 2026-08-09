@@ -123,3 +123,20 @@ QuantumC 위상 상태의 정상 정확도는 35.9%/67.2%로 두 seed 모두 75%
 체크포인트·로그·판정 16개 파일은 비공개 Hugging Face 조직 보관소
 `dancinlab/anima-lab-research-archive`의 `graft-phase-behavior` revision에 보존했다. manifest
 SHA-256은 `a54b81643d5e8854972d49bc1f02a7fe28bb86fce378d2d92c309734e6a85e94`다.
+
+### 폭 32 행동 재검증 1차 — B0_INVALID
+
+STATE-2에서 선정한 폭 32로 다시 학습하자 `QuantumC` 위상 경로는 두 seed 모두 정상 100%,
+차단 25%, 뒤섞기 0%, 가짜 20.3%/26.6%, 복구 100%로 모든 행동 인과 기준을 처음 통과했다.
+중립 문장 변화도 0.0011/0.0013 nat으로 허용 범위 안이었다.
+
+하지만 폭 32가 직접 기억 비교군에도 적용되면서 seed 1337의 비교군이 정상 75%, 중립 문장 변화
+1.89 nat으로 무너졌다. 양성 비교군 80%와 0.50 nat 기준을 통과하지 못했으므로 사전 판정은
+`B0_INVALID`다. 무효 결과를 성공으로 해석하지 않는다.
+
+### 폭 32 양성 비교군 수리 — 사전등록
+
+새 정본 이름은 `graft_behavior_causality_phase_state_bridge32_memory_control_repair`다. 폭 개입 대상인
+`QuantumC`는 32를 유지하고, 과제 유효성만 확인하는 직접 기억 비교군은 이미 두 seed에서 검증된
+폭 8로 되돌린다. 이외의 모델, 자료, seed, 학습량, 개입과 판정 기준은 바꾸지 않는다. 결과를 보기
+전에 등록·커밋한다.

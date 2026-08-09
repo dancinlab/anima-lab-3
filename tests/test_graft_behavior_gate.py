@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from measurement.graft_behavior_registry import (
     BEHAVIOR_SPEC,
+    PHASE_STATE_BRIDGE32_MEMORY_CONTROL_REPAIR_SPEC,
     PHASE_STATE_BRIDGE32_SPEC,
     PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC,
     PHASE_STATE_SPEC,
@@ -78,6 +79,16 @@ def test_bridge32_behavior_control_changes_only_the_registered_bridge_width():
     assert upgraded["bridge_hub_dim"] == 32
     assert upgraded["readout"] == PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["readout"]
     assert upgraded["thresholds"] == PHASE_STATE_MEMORY_CONTROL_REPAIR_SPEC["thresholds"]
+
+
+def test_bridge32_memory_control_repair_restores_only_the_validated_control_width():
+    invalid = experiment(PHASE_STATE_BRIDGE32_SPEC["experiment"])
+    repair = experiment(PHASE_STATE_BRIDGE32_MEMORY_CONTROL_REPAIR_SPEC["experiment"])
+
+    assert repair["bridge_hub_dim"] == 32
+    assert repair["memory_bridge_hub_dim"] == 8
+    assert repair["thresholds"] == invalid["thresholds"]
+    assert repair["readout"] == invalid["readout"]
 
 
 def test_phase_payload_uses_its_own_frozen_spec():
