@@ -54,9 +54,10 @@ class GraftActionChannel(nn.Module):
     """The existing GRAFT bridge plus an arm-local decoder projector."""
 
     def __init__(self, state_dim: int, d_model: int, gate_rho: float,
-                 hub_dim: int = THALAMIC_BRIDGE_LEGACY_HUB_DIM):
+                 hub_dim: int = THALAMIC_BRIDGE_LEGACY_HUB_DIM,
+                 bridge: nn.Module | None = None):
         super().__init__()
-        self.bridge = ThalamicBridge(
+        self.bridge = bridge or ThalamicBridge(
             c_dim=state_dim, d_model=d_model, hub_dim=hub_dim, alpha=0.5
         )
         self.projector = nn.Linear(d_model, d_model)

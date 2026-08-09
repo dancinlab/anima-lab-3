@@ -16,7 +16,7 @@ import torch.nn.functional as F
 from graft_behavior import GraftActionChannel, _memory_state, sha256_file
 from measurement.synergy_registry import SYNERGY_SPEC, experiment, spec_sha256
 from pure import PureMind
-from trinity import HFDecoder, QuantumC
+from trinity import HFDecoder, QuantumC, RecurrentWorkspaceBridge
 
 
 @dataclass
@@ -35,11 +35,26 @@ class SynergyActionChannel(nn.Module):
         super().__init__()
         self.arm = arm
         self.cells = spec["cells_per_module"]
+        workspace_rounds = None
+        if "_workspace_" in arm:
+            workspace_rounds = int(arm.rsplit("_", 1)[-1])
+        bridge = None
+        if workspace_rounds is not None:
+            if workspace_rounds not in spec["workspace_rounds"]:
+                raise ValueError("workspace arm names an unregistered round count")
+            bridge = RecurrentWorkspaceBridge(
+                c_dim=state_dim,
+                d_model=d_model,
+                hub_dim=spec["bridge_hub_dim"],
+                alpha=0.5,
+                rounds=workspace_rounds,
+            )
         self.action = GraftActionChannel(
             state_dim=state_dim,
             d_model=d_model,
             gate_rho=spec["gate_rho"],
             hub_dim=spec["bridge_hub_dim"],
+            bridge=bridge,
         )
         self.recurrent = None
         if arm == "gru":
@@ -53,7 +68,9 @@ class SynergyActionChannel(nn.Module):
 
     def _bridge_states(
         self, pairs: list[tuple[torch.Tensor, torch.Tensor]]
-    ) -> list[torch.Tensor]:
+    ) -> list:
+        if "_workspace_" in self.arm:
+            return pairs
         if self.recurrent is None:
             return [torch.cat(pair, dim=0) for pair in pairs]
         sequence = torch.stack([
@@ -152,7 +169,7 @@ def audit_examples(examples: list[SplitCueExample]) -> dict:
 
 
 def _pairs(examples: list[SplitCueExample], arm: str) -> list[tuple[torch.Tensor, torch.Tensor]]:
-    source = "quantum" if arm == "quantum_pair" else "memory"
+    source = "quantum" if arm == "quantum_pair" or arm.startswith("quantum_") else "memory"
     return [getattr(row, source) for row in examples]
 
 

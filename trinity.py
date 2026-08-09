@@ -489,12 +489,8 @@ class ThalamicBridge(nn.Module):
             raise ValueError("bridge checkpoint compress.weight has an invalid shape")
         return int(weight.shape[0])
 
-    def trace(self, c_states: torch.Tensor, seq_len: int = 1) -> Dict[str, torch.Tensor]:
-        """Return the canonical bridge stages used by ``forward``.
-
-        The method is observational: it shares the exact forward operations and does not
-        cache or mutate state. ``cells`` is before cell averaging and ``pooled`` is after.
-        """
+    def transform_cells(self, c_states: torch.Tensor) -> torch.Tensor:
+        """Apply the canonical shared local transform without pooling cells."""
         # Compress
         compressed = self.compress(c_states)  # [n_cells, hub_dim]
 
@@ -502,6 +498,33 @@ class ThalamicBridge(nn.Module):
         x = compressed.unsqueeze(0)  # [1, n_cells, hub_dim]
         attn_out, _ = self.hub_attn(x, x, x)
         x = self.hub_norm(x + attn_out)
+        return x
+
+    def gate_from_pooled(self, pooled: torch.Tensor, seq_len: int = 1) -> Dict[str, torch.Tensor]:
+        """Apply the canonical final language-gate transform to a pooled hub code."""
+        if pooled.ndim != 3 or pooled.shape[0] != 1 or pooled.shape[1] != 1:
+            raise ValueError("pooled bridge code must have shape [1, 1, hub_dim]")
+
+        # Expand to d_model
+        expanded = self.expand(pooled)  # [1, 1, d_model]
+
+        # Broadcast to seq_len
+        expanded = expanded.expand(1, seq_len, self.d_model)
+
+        # Gate + Ψ-coupling clamp (Law 70)
+        raw_gate = self.gate(expanded)  # [1, seq_len, d_model]
+        centered = raw_gate - PSI_BALANCE
+        clamped = centered.clamp(-self.alpha, self.alpha)
+        gate = PSI_BALANCE + clamped
+        return {"expanded": expanded, "gate": gate}
+
+    def trace(self, c_states: torch.Tensor, seq_len: int = 1) -> Dict[str, torch.Tensor]:
+        """Return the canonical bridge stages used by ``forward``.
+
+        The method is observational: it shares the exact forward operations and does not
+        cache or mutate state. ``cells`` is before cell averaging and ``pooled`` is after.
+        """
+        x = self.transform_cells(c_states)
 
         # Pool: mean over cells → [1, hub_dim]
         # NOTE (lab-reviewed contingency, DEFERRED): cross-attention / per-token gate
@@ -515,19 +538,8 @@ class ThalamicBridge(nn.Module):
         #   here:      w = torch.softmax(x @ self.pool_q, dim=1).unsqueeze(-1)
         #              pooled = (x * w).sum(dim=1, keepdim=True)
         pooled = x.mean(dim=1, keepdim=True)  # [1, 1, hub_dim]
-
-        # Expand to d_model
-        expanded = self.expand(pooled)  # [1, 1, d_model]
-
-        # Broadcast to seq_len
-        expanded = expanded.expand(1, seq_len, self.d_model)
-
-        # Gate + Ψ-coupling clamp (Law 70)
-        raw_gate = self.gate(expanded)  # [1, seq_len, d_model]
-        centered = raw_gate - PSI_BALANCE
-        clamped = centered.clamp(-self.alpha, self.alpha)
-        gate = PSI_BALANCE + clamped
-        return {"cells": x, "pooled": pooled, "expanded": expanded, "gate": gate}
+        final = self.gate_from_pooled(pooled, seq_len=seq_len)
+        return {"cells": x, "pooled": pooled, **final}
 
     def forward(self, c_states: torch.Tensor, seq_len: int = 1) -> torch.Tensor:
         """C states [n_cells, c_dim] → gate signal [1, seq_len, d_model].
@@ -535,6 +547,57 @@ class ThalamicBridge(nn.Module):
         c_states MUST be .detach()'d before calling this.
         """
         return self.trace(c_states, seq_len=seq_len)["gate"]
+
+
+class RecurrentWorkspaceBridge(ThalamicBridge):
+    """ThalamicBridge with a bounded recurrent workspace across modules.
+
+    Each module keeps the canonical shared per-cell transform. A single hub-width
+    workspace repeatedly receives the mean module summary and broadcasts its updated
+    code back to every module. The final code uses the same expand/gate path as
+    ThalamicBridge, so only the missing cross-module recurrence is added.
+    """
+
+    def __init__(self, c_dim=128, d_model=384, n_hubs=16,
+                 hub_dim=THALAMIC_BRIDGE_HUB_DIM, alpha=PSI_COUPLING,
+                 rounds: int = 1):
+        super().__init__(c_dim=c_dim, d_model=d_model, n_hubs=n_hubs,
+                         hub_dim=hub_dim, alpha=alpha)
+        if rounds < 1:
+            raise ValueError("workspace rounds must be at least one")
+        self.rounds = int(rounds)
+        self.workspace_cell = nn.GRUCell(hub_dim, hub_dim)
+        self.broadcast = nn.Linear(hub_dim, hub_dim, bias=False)
+        self.workspace_norm = nn.LayerNorm(hub_dim)
+
+    def trace_modules(self, module_states, seq_len: int = 1) -> Dict[str, torch.Tensor]:
+        """Trace a fixed module set through local transform, recurrence, and gate."""
+        if not isinstance(module_states, (tuple, list)) or len(module_states) < 2:
+            raise ValueError("recurrent workspace requires at least two module states")
+        local_cells = [self.transform_cells(states) for states in module_states]
+        summaries = torch.cat([cells.mean(dim=1) for cells in local_cells], dim=0)
+        workspace = torch.zeros(
+            1, summaries.shape[-1], device=summaries.device, dtype=summaries.dtype
+        )
+        timeline = []
+        for _ in range(self.rounds):
+            context = summaries.mean(dim=0, keepdim=True)
+            workspace = self.workspace_cell(context, workspace)
+            timeline.append(workspace)
+            shared = self.broadcast(workspace).expand_as(summaries)
+            summaries = self.workspace_norm(summaries + shared)
+        pooled = workspace.unsqueeze(1)
+        final = self.gate_from_pooled(pooled, seq_len=seq_len)
+        return {
+            "module_cells": torch.stack([cells.squeeze(0) for cells in local_cells]),
+            "module_summaries": summaries,
+            "workspace_timeline": torch.stack(timeline, dim=1),
+            "pooled": pooled,
+            **final,
+        }
+
+    def forward(self, module_states, seq_len: int = 1) -> torch.Tensor:
+        return self.trace_modules(module_states, seq_len=seq_len)["gate"]
 
 
 # ═══════════════════════════════════════════════════════════
