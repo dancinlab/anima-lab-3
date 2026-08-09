@@ -1,0 +1,100 @@
+{
+  "experiment": "relation1_hippocampal_role_content_binding_role_training_repair",
+  "verdict": "R0_INVALID",
+  "reason": "GRU task-validation arm did not validate the task",
+  "spec_sha256": "38d0b6816b6d57b17528eb88e9b92743020b769a47e010c0fc2aa5eea9ef37d3",
+  "seeds": {
+    "1337": {
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.18000000715255737,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.2199999988079071,
+        "recovered": 0.18000000715255737,
+        "neutral_kl_nats": 0.004813741892576218,
+        "role_swap": 0.18000000715255737
+      },
+      "quantum_relation": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.1899999976158142,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.2199999988079071,
+        "recovered": 0.1899999976158142,
+        "neutral_kl_nats": 2.7259335697744973,
+        "role_swap": 0.25
+      },
+      "memory_relation": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.44999998807907104,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.25999999046325684,
+        "recovered": 0.44999998807907104,
+        "neutral_kl_nats": 0.0018447617767378688,
+        "role_swap": 0.23000000417232513
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.3499999940395355,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.15000000596046448,
+        "recovered": 0.3499999940395355,
+        "neutral_kl_nats": 0.002196892281062901,
+        "role_swap": 0.25
+      }
+    },
+    "7331": {
+      "quantum_workspace_2": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.20000000298023224,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20999999344348907,
+        "partner_shuffle": 0.17000000178813934,
+        "recovered": 0.20000000298023224,
+        "neutral_kl_nats": 0.0017802180082071573,
+        "role_swap": 0.20000000298023224
+      },
+      "quantum_relation": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.1899999976158142,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.20999999344348907,
+        "recovered": 0.1899999976158142,
+        "neutral_kl_nats": 2.025461547775194,
+        "role_swap": 0.20999999344348907
+      },
+      "memory_relation": {
+        "integrated": false,
+        "language_ok": true,
+        "normal": 0.20000000298023224,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.1899999976158142,
+        "partner_shuffle": 0.25,
+        "recovered": 0.20000000298023224,
+        "neutral_kl_nats": 0.0024017809773795307,
+        "role_swap": 0.1599999964237213
+      },
+      "gru": {
+        "integrated": false,
+        "language_ok": false,
+        "normal": 0.1899999976158142,
+        "module_a_only": 0.20000000298023224,
+        "module_b_only": 0.20000000298023224,
+        "partner_shuffle": 0.2199999988079071,
+        "recovered": 0.1899999976158142,
+        "neutral_kl_nats": 0.6222162152407691,
+        "role_swap": 0.23000000417232513
+      }
+    }
+  }
+}
