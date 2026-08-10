@@ -228,6 +228,18 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
             EPISODE_SPEC["distractor_sense_steps"], spec,
         )
         cell_counts.append(state.shape[0])
+    pre_query_updates = spec.get("pre_query_updates", 0)
+    if not isinstance(pre_query_updates, int) or pre_query_updates < 0:
+        raise ValueError("pre-query update count must be a non-negative integer")
+    query_rng = torch.get_rng_state().clone()
+    state_before = c.get_phase_states().clone()
+    before_digest = hashlib.sha256(state_before.contiguous().numpy().tobytes()).hexdigest()
+    for _ in range(pre_query_updates):
+        c.step(dynamics_ablation=spec.get("pre_query_dynamics_ablation", ()))
+        cell_counts.append(c.n_cells)
+    state_after = c.get_phase_states().clone()
+    after_digest = hashlib.sha256(state_after.contiguous().numpy().tobytes()).hexdigest()
+    torch.set_rng_state(query_rng)
     state = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
         EPISODE_SPEC["sense_steps"], spec,
@@ -239,7 +251,20 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
         EPISODE_SPEC["sense_steps"], spec,
     )
     cell_counts.append(query.shape[0])
-    return {"keys": keys, "values": values, "query": query, "cell_counts": cell_counts}
+    return {
+        "keys": keys,
+        "values": values,
+        "query": query,
+        "cell_counts": cell_counts,
+        "update_audit": {
+            "requested_updates": pre_query_updates,
+            "performed_updates": pre_query_updates,
+            "disabled": list(spec.get("pre_query_dynamics_ablation", ())),
+            "state_before_sha256": before_digest,
+            "state_after_sha256": after_digest,
+            "query_rng_sha256": hashlib.sha256(query_rng.numpy().tobytes()).hexdigest(),
+        },
+    }
 
 
 def _exact_addresses(episode: SimilarEpisode, *, remove_context: bool = False):
