@@ -30,6 +30,7 @@
 | `seedmap1-capacity-factorial` | 로컬 CPU SEEDMAP-1 주소 변환·값 원형·엔진 시작값 전체 교차 결과와 판정 | 3 | 117,954 | `c90ba94171477489856e4f5bfda6f2ecd76ac1cee82078f11a14877fd241d8af` |
 | `projector1-address-training-factorial` | 로컬 CPU PROJECTOR-1 보정 상태·학습 난수 교차 결과, 판정, 주소 변환 4개 | 8 | 330,288 | `1430804fd5ebde87ccf9fee8755365481e0ca1ade2fad5db0f29281825a2b0d9` |
 | `training1-address-randomness` | 로컬 CPU TRAINING-1 주소 초기값·학습 순서 교차 결과, 판정, 주소 변환 4개 | 7 | 329,991 | `cd58cf0be32c7fba9985fc3c3309f9506beb2cff29f1501475a3cc650027fa66` |
+| `canonical1-deterministic-address` | 로컬 CPU CANONICAL-1 결정형 주소 세 개의 결과·판정·체크포인트 | 6 | 249,265 | `3f827cbe6e2b52fed0ef67ef1c3e30b7542e68ca0ec91cec3dde3a276b3700ed` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -144,4 +145,8 @@ manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확
 
 TRAINING-1 보관은 Hugging Face 커밋 `d6aa48a87650717cc58f28a88c1b6f962f3189d7`에 올렸다. 원격
 `training1-address-randomness` revision의 결과·판정·주소 변환 네 개와 manifest를 새 임시
+디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
+
+CANONICAL-1 보관은 Hugging Face 커밋 `683ddde2c745d18f66795631e6dea4a73bb63e67`에 올렸다. 원격
+`canonical1-deterministic-address` revision의 결과·판정·결정형 주소 세 개와 manifest를 새 임시
 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
