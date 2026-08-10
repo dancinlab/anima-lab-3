@@ -98,3 +98,17 @@
 결과를 본 뒤 시간점·자료 묶음 수·회차 수·문턱·seed·주소 가중치를 조정하지 않는다. 구현의
 단일 기준 파일은 `measurement/recovery_registry.py`이며, 그 파일의 `preregistration_commit`은
 README와 이 문서를 먼저 고정한 Git 커밋을 가리켜야 한다.
+
+## 실행 후 판정기 정밀도 수리
+
+구현 고정 커밋 `1357f59c1`로 전체 계산을 끝낸 뒤, 판정기가 seed 1337의 방해 입력 1개 조건을
+`pooled result does not match replicates`로 차단했다. 원인은 합친 정확도를 `torch.float32` 평균으로
+계산한 `0.8645833135`와 같은 정답 수에서 나온 세 자료 묶음의 Python 평균 `0.8645833333`을
+절대 허용오차 `1e-9`로 비교한 것이다. 차이는 약 `1.99e-8`이며 정답 수·혼동표·실험 자료의
+불일치가 아니다.
+
+최초 산출물은 `measurement/recovery_invalid_precision_results.json`과
+`measurement/recovery_invalid_precision_verdict.json`에 원형 보존한다. 수리는 합친 값과 묶음별
+값의 동일성 검사 허용오차만 `1e-7`로 바꾼다. 등록된 자료·시간점·seed·주소 가중치·과학 판정
+문턱은 바꾸지 않고, 계산된 결과 JSON도 다시 만들지 않는다. 이 수리 등록 커밋 뒤 판정기 자동
+검사와 기존 결과 재판정을 먼저 통과해야 연구 결과를 해석한다.

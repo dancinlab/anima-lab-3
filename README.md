@@ -1081,7 +1081,11 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    정확도와 주소 선택이 각각 5%p 이상 개선되고 통과 뒤 다시 실패하지 않을 때만 순서 있는 회복
    재현으로 센다. 세 독립 자료 묶음이 모두 같은 개선 방향이어야 가장 강한 판정을 허용한다.
    결과를 본 뒤 시간점·회차 수·문턱·주소 가중치를 바꾸지 않는다. 상세 사양과 판정은
-   `docs/hypotheses/RECOVERY-1-dense-memory-recovery-curve.md`가 정본이다.
+   `docs/hypotheses/RECOVERY-1-dense-memory-recovery-curve.md`가 정본이다. 최초 전체 계산은 합친
+   정확도를 `float32`로 계산한 값과 세 묶음 정확도의 Python 평균을 `1e-9`로 비교해 약
+   `2e-8` 반올림 차이를 데이터 불일치로 잘못 차단했다. 최초 결과·판정은 원형 보존하고, 과학
+   문턱이나 결과값은 바꾸지 않은 채 합산 동일성 허용오차만 `1e-7`로 고친 뒤 같은 결과를 다시
+   판정한다.
 13. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
