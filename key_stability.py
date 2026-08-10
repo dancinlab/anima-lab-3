@@ -107,7 +107,8 @@ def collect_calibration_states(episodes, seed: int, spec: dict = KEY_SPEC):
 
 
 def train_projector(states: torch.Tensor, key_labels: torch.Tensor, seed: int,
-                    shuffled: bool = False, spec: dict = KEY_SPEC):
+                    shuffled: bool = False, spec: dict = KEY_SPEC, *,
+                    batch_seed: int | None = None):
     torch.manual_seed(seed)
     model = StableKeyProjector(
         spec["input_dim"], spec["address_dim"], spec["keys"], spec["temperature"],
@@ -120,7 +121,9 @@ def train_projector(states: torch.Tensor, key_labels: torch.Tensor, seed: int,
     optimizer = torch.optim.AdamW(
         model.parameters(), lr=spec["learning_rate"], weight_decay=spec["weight_decay"]
     )
-    generator = torch.Generator().manual_seed(spec["calibration_seed_base"] + seed)
+    generator = torch.Generator().manual_seed(
+        spec["calibration_seed_base"] + (seed if batch_seed is None else batch_seed)
+    )
     losses = []
     for _ in range(spec["train_steps"]):
         indices = torch.randint(
