@@ -42,7 +42,14 @@ def _atomic_json(path: Path, payload: dict) -> None:
 
 def build_reset_episodes(replicate: int, spec: dict = RESET_SPEC):
     """Reuse RECOVERY-1 relations but preregister eight distinct neutral inputs."""
-    rows = build_recovery_episodes(replicate, RECOVERY_SPEC)
+    recovery_spec = dict(RECOVERY_SPEC)
+    for name in (
+        "replicates", "episodes_per_replicate", "data_seed_base",
+        "replicate_seed_stride", "distractor_steps",
+    ):
+        if name in spec:
+            recovery_spec[name] = spec[name]
+    rows = build_recovery_episodes(replicate, recovery_spec)
     rng = random.Random(spec["distractor_seed_base"] + replicate * spec["replicate_seed_stride"])
     result = []
     for row in rows:
@@ -61,7 +68,8 @@ def reset_dataset_audit(episode_sets: dict[int, list], spec: dict = RESET_SPEC) 
     ]
     value["varied_input_distinct_count_minimum"] = min(distinct)
     value["varied_input_distinct_count_maximum"] = max(distinct)
-    value["repeated_neutral_word"] = spec["repeated_neutral_word"]
+    if "repeated_neutral_word" in spec:
+        value["repeated_neutral_word"] = spec["repeated_neutral_word"]
     return value
 
 
@@ -135,10 +143,21 @@ def trace_reset_episode(episode, trial_seed: int, updates: int, mode: str,
             elif word == EPISODE_SPEC["value_words"][value]:
                 values.append(state)
 
+    preserve_query_rng = bool(spec.get("preserve_query_rng", False))
+    query_rng = torch.get_rng_state().clone() if preserve_query_rng else None
+    state_before = _phase_state(c, spec)
+    state_before_digest = hashlib.sha256(
+        state_before.contiguous().numpy().tobytes()
+    ).hexdigest()
     applied_inputs = []
+    performed_updates = 0
     for index in range(updates):
         if mode == "autonomous":
             c.step()
+            state = _phase_state(c, spec)
+            applied_inputs.append(None)
+            performed_updates += 1
+        elif mode == "frozen":
             state = _phase_state(c, spec)
             applied_inputs.append(None)
         else:
@@ -150,7 +169,15 @@ def trace_reset_episode(episode, trial_seed: int, updates: int, mode: str,
             word = EPISODE_SPEC["distractor_words"][context]
             state = _sense_separation_token(c, encoder, word, 1, spec)
             applied_inputs.append(word)
+            performed_updates += 1
         cell_counts.append(state.shape[0])
+
+    state_after = _phase_state(c, spec)
+    state_after_digest = hashlib.sha256(
+        state_after.contiguous().numpy().tobytes()
+    ).hexdigest()
+    if query_rng is not None:
+        torch.set_rng_state(query_rng)
 
     context_state = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
@@ -164,7 +191,11 @@ def trace_reset_episode(episode, trial_seed: int, updates: int, mode: str,
     return {
         "keys": keys, "values": values, "query": query,
         "cell_counts": cell_counts, "applied_inputs": applied_inputs,
-        "performed_updates": updates,
+        "performed_updates": performed_updates,
+        "state_before_digest": state_before_digest,
+        "state_after_digest": state_after_digest,
+        "query_rng_digest": hashlib.sha256(query_rng.numpy().tobytes()).hexdigest()
+        if query_rng is not None else None,
     }
 
 
@@ -175,6 +206,7 @@ def _run_replicate(seed: int, replicate: int, mode: str, updates: int, episodes,
     call_rows = {name: [] for name in spec["stable_arms"]}
     widths, cell_counts, episode_seeds = [], [], []
     input_counts, distinct_input_counts, performed_updates = [], [], []
+    before_digests, after_digests, query_rng_digests = [], [], []
     base = spec["episode_seed_base"] + seed * spec["seed_stride"] + replicate * spec["replicate_seed_stride"]
     for index, episode in enumerate(episodes):
         trial_seed = base + index
@@ -185,6 +217,10 @@ def _run_replicate(seed: int, replicate: int, mode: str, updates: int, episodes,
         input_counts.append(len(input_values))
         distinct_input_counts.append(len(set(input_values)))
         performed_updates.append(trace["performed_updates"])
+        before_digests.append(trace["state_before_digest"])
+        after_digests.append(trace["state_after_digest"])
+        if trace["query_rng_digest"] is not None:
+            query_rng_digests.append(trace["query_rng_digest"])
         exact, exact_query = _exact_addresses(episode, spec)
         stable_three = _integrated_memory_prediction(
             trace["keys"], trace["values"], trace["query"], prototypes, projector
@@ -267,6 +303,18 @@ def _run_replicate(seed: int, replicate: int, mode: str, updates: int, episodes,
             "sensory_inputs_maximum": max(input_counts),
             "distinct_sensory_inputs_minimum": min(distinct_input_counts),
             "distinct_sensory_inputs_maximum": max(distinct_input_counts),
+            "unchanged_state_count": sum(
+                before == after for before, after in zip(before_digests, after_digests)
+            ),
+            "state_before_sha256": hashlib.sha256(
+                "\n".join(before_digests).encode()
+            ).hexdigest(),
+            "state_after_sha256": hashlib.sha256(
+                "\n".join(after_digests).encode()
+            ).hexdigest(),
+            "query_rng_sha256": hashlib.sha256(
+                "\n".join(query_rng_digests).encode()
+            ).hexdigest() if query_rng_digests else None,
         },
     }, records, geometry_rows
 
