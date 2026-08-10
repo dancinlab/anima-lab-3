@@ -1,0 +1,6 @@
+{
+  "experiment": "conjunction1_context_key_conjunction",
+  "verdict": "CJ0_INVALID",
+  "reason": "evaluation v1337_e1337 exact_context_only_control metrics changed",
+  "spec_sha256": "15d5886f7f888327888bc16a206e73f16948e0c56f1158422e0a93393e031199"
+}
