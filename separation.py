@@ -267,18 +267,19 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
     }
 
 
-def _exact_addresses(episode: SimilarEpisode, *, remove_context: bool = False):
+def _exact_addresses(episode: SimilarEpisode, *, remove_context: bool = False,
+                     spec: dict = SEPARATION_SPEC):
     rows = []
     for context in episode.contexts:
-        context_code = torch.zeros(SEPARATION_SPEC["contexts"]) if remove_context else F.one_hot(
-            torch.tensor(context), SEPARATION_SPEC["contexts"]
+        context_code = torch.zeros(spec["contexts"]) if remove_context else F.one_hot(
+            torch.tensor(context), spec["contexts"]
         ).float()
-        key_code = F.one_hot(torch.tensor(episode.shared_key), SEPARATION_SPEC["keys"]).float()
+        key_code = F.one_hot(torch.tensor(episode.shared_key), spec["keys"]).float()
         rows.append(torch.cat((context_code, key_code)))
-    query_context = torch.zeros(SEPARATION_SPEC["contexts"]) if remove_context else F.one_hot(
-        torch.tensor(episode.query_context), SEPARATION_SPEC["contexts"]
+    query_context = torch.zeros(spec["contexts"]) if remove_context else F.one_hot(
+        torch.tensor(episode.query_context), spec["contexts"]
     ).float()
-    query_key = F.one_hot(torch.tensor(episode.shared_key), SEPARATION_SPEC["keys"]).float()
+    query_key = F.one_hot(torch.tensor(episode.shared_key), spec["keys"]).float()
     return rows, torch.cat((query_context, query_key))
 
 
