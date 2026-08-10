@@ -36,6 +36,8 @@ CONTEXT2_SPEC = {
     "model_class": CONTEXT_SPEC["model_class"],
     "memory_class": CONTEXT_SPEC["memory_class"],
     "fit_method": CONTEXT_SPEC["fit_method"],
+    "temperature": CONTEXT_SPEC["temperature"],
+    "bias": CONTEXT_SPEC["bias"],
     "data_seed": CONTEXT_SPEC["data_seed"],
     "episode_seed_base": CONTEXT_SPEC["episode_seed_base"],
     "seed_stride": CONTEXT_SPEC["seed_stride"],

@@ -11,6 +11,7 @@ from context2 import CompositeStateTransform
 from key_stability import StableKeyProjector
 from measurement.context2_gate import adjudicate
 from measurement.context2_registry import CONTEXT2_SPEC, spec_sha256
+from measurement.context_registry import CONTEXT_SPEC
 from trinity import VectorMemory
 
 
@@ -28,6 +29,8 @@ def test_context2_registry_matches_preregistration():
     assert CONTEXT2_SPEC["retrievals_per_episode"] == 1
     assert CONTEXT2_SPEC["transform_calls_per_episode"] == 5
     assert CONTEXT2_SPEC["composite_address_dim"] == 64
+    assert CONTEXT2_SPEC["temperature"] == CONTEXT_SPEC["temperature"]
+    assert CONTEXT2_SPEC["bias"] == CONTEXT_SPEC["bias"]
     assert len(CONTEXT2_SPEC["evaluation_combinations"]) == 4
     assert len(spec_sha256()) == 64
 
