@@ -27,6 +27,7 @@
 | `settle1-autonomous-memory` | 로컬 CPU SETTLE-1 자체 갱신·완전 정지 짝비교 결과와 판정 | 3 | 2,228,034 | `57254cd3f4b4d8cfd978c1b4ad6004643520bfe75b0c242e2a62bc36f6dc5971` |
 | `mechanism1-settling-components` | 로컬 CPU MECHANISM-1 계산 차단 결과·최종 및 최초 무효 판정 | 5 | 3,976,973 | `cad78274e8521a645e4c0ef724ce4ceec00394d5903f5596ff083bae49b70beb` |
 | `capacity2-settled-boundary` | 로컬 CPU CAPACITY-2 기존·안정화·조절 차단 용량 결과와 판정 | 3 | 314,213 | `687c7e234a7d229d09ac5f5fe37681ad74005a49efc13b9fae1999e2cc353a44` |
+| `seedmap1-capacity-factorial` | 로컬 CPU SEEDMAP-1 주소 변환·값 원형·엔진 시작값 전체 교차 결과와 판정 | 3 | 117,954 | `c90ba94171477489856e4f5bfda6f2ecd76ac1cee82078f11a14877fd241d8af` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -129,4 +130,8 @@ MECHANISM-1 보관은 Hugging Face 커밋 `242ee033f47f3147090502f596587b4d56100
 
 CAPACITY-2 보관은 Hugging Face 커밋 `e9c4ef4d6d33945ab0a52b3a13f23f74f201b909`에 올렸다. 원격
 `capacity2-settled-boundary` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
+내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
+
+SEEDMAP-1 보관은 Hugging Face 커밋 `0b453b36a32868c9ae1d1afd4abc341afa3df1e4`에 올렸다. 원격
+`seedmap1-capacity-factorial` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
 내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.

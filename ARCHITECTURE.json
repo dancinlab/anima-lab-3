@@ -198,6 +198,11 @@
           "detail": "CAPACITY-2는 CAPACITY-1의 같은 사건 2·3·4개에 질문 직전 정상 자체 갱신 8회와 좌절도 조절 차단 8회를 적용했다. 사건 3개는 정상 최종 행동 95.25%/95.05%로 두 seed 모두 통과해 전체 경계가 2개에서 3개로 늘었다. 사건 4개는 주소 선택이 92.12%/97.07%로 둘 다 통과했지만 최종 행동이 88.09%/92.77%로 갈려 CP4_SEED_CONDITIONAL_CAPACITY다. 조절을 끄면 사건 4개 최종 행동 78.71%/85.16%, 선택 81.84%/89.39%로 두 seed 모두 실패해 용량 회복의 좌절도 조절 의존성은 재현됐다. 다음은 주소 변환·값 원형·엔진 시작 seed를 교차하는 SEEDMAP-1이다."
         },
         {
+          "name": "seedmap.py · seedmap_gate.py — 사건 4개 seed 분기 위치",
+          "id": "tool-seedmap-capacity",
+          "detail": "SEEDMAP-1은 CAPACITY-2 사건 4개의 주소 변환·값 원형·엔진 시작 seed를 2×2×2로 모두 교차했다. 주소 변환만 양방향 단일 원인 기준을 충족했다. 7331 주소 변환은 실패 기준의 선택·최종 행동을 92.12%→97.07%, 88.09%→93.03%로 올렸고, 1337 주소 변환은 성공 기준을 97.07%→91.54%, 92.77%→87.24%로 내려 양쪽 판정을 뒤집었다. 차이는 4.95~5.53%p, 짝검정은 모두 p<1.6e-16이었다. 값 원형과 엔진 시작값은 등록 기준에 못 미쳤다. 판정은 SM1_SINGLE_FACTOR_CAUSAL이며 다음은 KEY-1 주소 변환 안의 보정 상태 seed와 학습 난수 seed를 분리한다."
+        },
+        {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
           "id": "tool-corpus",
           "detail": "regime이 Λ REGIME 신호를 재고, 위키 빌더와 범용 JSONL register 빌더가 산문을 추출한다. register 빌더는 문서 해시 분리·전역 줄 중복 제거·출처 revision/SHA 영수증으로 train/fresh를 만든다."
