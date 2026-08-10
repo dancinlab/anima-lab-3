@@ -28,6 +28,7 @@
 | `mechanism1-settling-components` | 로컬 CPU MECHANISM-1 계산 차단 결과·최종 및 최초 무효 판정 | 5 | 3,976,973 | `cad78274e8521a645e4c0ef724ce4ceec00394d5903f5596ff083bae49b70beb` |
 | `capacity2-settled-boundary` | 로컬 CPU CAPACITY-2 기존·안정화·조절 차단 용량 결과와 판정 | 3 | 314,213 | `687c7e234a7d229d09ac5f5fe37681ad74005a49efc13b9fae1999e2cc353a44` |
 | `seedmap1-capacity-factorial` | 로컬 CPU SEEDMAP-1 주소 변환·값 원형·엔진 시작값 전체 교차 결과와 판정 | 3 | 117,954 | `c90ba94171477489856e4f5bfda6f2ecd76ac1cee82078f11a14877fd241d8af` |
+| `projector1-address-training-factorial` | 로컬 CPU PROJECTOR-1 보정 상태·학습 난수 교차 결과, 판정, 주소 변환 4개 | 8 | 330,288 | `1430804fd5ebde87ccf9fee8755365481e0ca1ade2fad5db0f29281825a2b0d9` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -135,3 +136,7 @@ CAPACITY-2 보관은 Hugging Face 커밋 `e9c4ef4d6d33945ab0a52b3a13f23f74f201b9
 SEEDMAP-1 보관은 Hugging Face 커밋 `0b453b36a32868c9ae1d1afd4abc341afa3df1e4`에 올렸다. 원격
 `seedmap1-capacity-factorial` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
 내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
+
+PROJECTOR-1 보관은 Hugging Face 커밋 `bfc8d3a26a0e3e31ce8fab99c26b3d7c6bb5525b`에 올렸다. 원격
+`projector1-address-training-factorial` revision의 결과·최종 판정·최초 무효 판정·주소 변환 네 개와
+manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.

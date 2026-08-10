@@ -203,6 +203,11 @@
           "detail": "SEEDMAP-1은 CAPACITY-2 사건 4개의 주소 변환·값 원형·엔진 시작 seed를 2×2×2로 모두 교차했다. 주소 변환만 양방향 단일 원인 기준을 충족했다. 7331 주소 변환은 실패 기준의 선택·최종 행동을 92.12%→97.07%, 88.09%→93.03%로 올렸고, 1337 주소 변환은 성공 기준을 97.07%→91.54%, 92.77%→87.24%로 내려 양쪽 판정을 뒤집었다. 차이는 4.95~5.53%p, 짝검정은 모두 p<1.6e-16이었다. 값 원형과 엔진 시작값은 등록 기준에 못 미쳤다. 판정은 SM1_SINGLE_FACTOR_CAUSAL이며 다음은 KEY-1 주소 변환 안의 보정 상태 seed와 학습 난수 seed를 분리한다."
         },
         {
+          "name": "projector_experiment.py · projector_gate.py — 주소 학습 seed 분해",
+          "id": "tool-projector-training",
+          "detail": "PROJECTOR-1은 KEY-1 주소 학습의 보정 상태 seed와 가중치 초기화·학습 묶음 순서 seed를 2×2로 교차했다. 원래 두 학습은 보관 가중치와 텐서 단위로 같았다. 학습 난수 7331 주소는 보정 상태와 무관하게 네 사건 4개 평가 모두 통과해 선택 97.07~97.40%, 최종 행동 92.38~93.82%였고, 학습 난수 1337 주소는 모두 실패해 선택 91.41~92.12%, 최종 행동 87.24~88.09%였다. 판정은 PD2_TRAINING_RANDOMNESS_CAUSAL이다. 다음은 train_projector가 함께 쓰는 초기값과 학습 묶음 순서를 분리한다."
+        },
+        {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
           "id": "tool-corpus",
           "detail": "regime이 Λ REGIME 신호를 재고, 위키 빌더와 범용 JSONL register 빌더가 산문을 추출한다. register 빌더는 문서 해시 분리·전역 줄 중복 제거·출처 revision/SHA 영수증으로 train/fresh를 만든다."
