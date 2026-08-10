@@ -9,7 +9,7 @@ import torch
 
 from measurement.reset_gate import _classify, adjudicate
 from measurement.reset_registry import RESET_SPEC, canonical_spec, spec_sha256
-from reset import build_reset_episodes, reset_dataset_audit, trace_reset_episode
+from reset_experiment import build_reset_episodes, reset_dataset_audit, trace_reset_episode
 
 
 def test_reset_registry_is_canonical_and_preregistered():
