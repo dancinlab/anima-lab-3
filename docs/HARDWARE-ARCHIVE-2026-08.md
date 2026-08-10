@@ -33,6 +33,7 @@
 | `canonical1-deterministic-address` | 로컬 CPU CANONICAL-1 결정형 주소 세 개의 결과·판정·체크포인트 | 6 | 249,265 | `3f827cbe6e2b52fed0ef67ef1c3e30b7542e68ca0ec91cec3dde3a276b3700ed` |
 | `canonical2-integrated-default` | 로컬 CPU CANONICAL-2 사건 2·3·4개 통합 결과·판정·공용 기본 주소 | 4 | 212,162 | `19fda7aff91e631d6cfab24b53454e88ef377217bb3f1930eb26b12a4a00b285` |
 | `separation2-canonical-similar-episode` | 로컬 CPU SEPARATION-2 같은 열쇠·다른 상황 결과·판정·공용 결정형 주소 | 4 | 89,615 | `dfc94dc794dd2fca72e1483d369516bf8cc2260c641681e17f800387c4950914` |
+| `context1-composite-memory-address` | 로컬 CPU CONTEXT-1 상황·열쇠 합성 주소 결과·판정·두 결정형 주소 | 5 | 113,763 | `5409623e1d667437af90898eff039f436b57dbc3a6e1545b91f320005d49c235` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -160,3 +161,7 @@ CANONICAL-2 보관은 Hugging Face 커밋 `30910ef82da5421ce3ed6749decd81a231fca
 SEPARATION-2 보관은 Hugging Face 커밋 `37751a79e08be0e2e03827dc41f2093a033486cf`에 올렸다. 원격
 `separation2-canonical-similar-episode` revision의 결과·판정·공용 결정형 주소와 manifest를 새
 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
+
+CONTEXT-1 보관은 Hugging Face 커밋 `602a6947aa59600a39d53de43200de24b020f4ae`에 올렸다. 원격
+`context1-composite-memory-address` revision의 결과·판정·상황 주소·기존 열쇠 주소와 manifest를
+새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
