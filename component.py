@@ -45,9 +45,16 @@ def _source_receipt(spec: dict = COMPONENT_SPEC) -> dict:
     }
 
 
-def run_engine(engine_seed, episodes, source, spec=COMPONENT_SPEC):
-    context_projector = _load_context_projector(source["context_checkpoint"], spec)
-    key_projector = _load_key_projector(source["canonical_checkpoint"], spec)
+def run_engine(engine_seed, episodes, source, spec=COMPONENT_SPEC, *,
+               context_projector_override=None, key_projector_override=None):
+    context_projector = (
+        _load_context_projector(source["context_checkpoint"], spec)
+        if context_projector_override is None else context_projector_override
+    )
+    key_projector = (
+        _load_key_projector(source["canonical_checkpoint"], spec)
+        if key_projector_override is None else key_projector_override
+    )
     before_context = {name: value.clone() for name, value in context_projector.state_dict().items()}
     before_key = {name: value.clone() for name, value in key_projector.state_dict().items()}
     context_states = [[] for _ in spec["positions"]]

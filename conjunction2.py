@@ -158,9 +158,16 @@ def _exact_stable(addresses, query, values, prototypes, value_projector, *, stor
     return _memory_outcome(memory, query, payloads, prototypes)
 
 
-def run_evaluation(prototype_seed, engine_seed, episodes, source, spec=CONJUNCTION2_SPEC):
-    context_projector = _load_context_projector(source["context_checkpoint"], spec)
-    key_projector = _load_key_projector(source["canonical_checkpoint"], spec)
+def run_evaluation(prototype_seed, engine_seed, episodes, source, spec=CONJUNCTION2_SPEC,
+                   *, context_projector_override=None, key_projector_override=None):
+    context_projector = (
+        _load_context_projector(source["context_checkpoint"], spec)
+        if context_projector_override is None else context_projector_override
+    )
+    key_projector = (
+        _load_key_projector(source["canonical_checkpoint"], spec)
+        if key_projector_override is None else key_projector_override
+    )
     value_projector = _load_value_projector(source["value_checkpoint"], spec)
     before = {
         "context": {name: value.clone() for name, value in context_projector.state_dict().items()},
