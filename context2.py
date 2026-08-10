@@ -102,11 +102,12 @@ class CompositeStateTransform:
     """Validated experiment adapter for the registered context+key projectors."""
 
     def __init__(self, context_projector, key_projector, spec: dict = CONTEXT2_SPEC,
-                 *, mask_context: bool = False):
+                 *, mask_context: bool = False, mask_key: bool = False):
         self.context_projector = context_projector
         self.key_projector = key_projector
         self.spec = spec
         self.mask_context = mask_context
+        self.mask_key = mask_key
         self.calls = 0
         self.component_counts: list[int] = []
         self.address_widths: list[int] = []
@@ -129,7 +130,7 @@ class CompositeStateTransform:
                 raise ValueError("composite address component changed shape or became non-finite")
         address = _composite(
             self.context_projector, self.key_projector, components[0], components[1],
-            self.spec, mask_context=self.mask_context,
+            self.spec, mask_context=self.mask_context, mask_key=self.mask_key,
         )
         self.calls += 1
         self.component_counts.append(len(components))
