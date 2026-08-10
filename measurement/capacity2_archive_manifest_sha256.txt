@@ -1,0 +1,2 @@
+3f93553c979d3a6d9ff7241472d5165e0c657a7cec340e25a523f9a1edd6a77a  measurement/capacity2_results.json
+8d005d3577753019ffddbd8f8080cc9d4af6f430e8d733863fd8171fb2d07e49  measurement/capacity2_verdict.json

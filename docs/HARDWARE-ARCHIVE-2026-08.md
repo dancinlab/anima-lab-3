@@ -25,6 +25,8 @@
 | `recovery1-dense-curve` | 로컬 CPU RECOVERY-1 최초 정밀도 무효본·수리 판정·독립 회복 곡선 | 5 | 2,340,685 | `fa9bd692b42d387795dd88041ccc46accbdae5696287393fe678ad6fa982a6fa` |
 | `reset1-recovery-mechanism` | 로컬 CPU RESET-1 감각 변화·같은 감각·자체 갱신 비교 결과와 판정 | 3 | 1,829,632 | `8badfd1b91e4bda72b72c584fa523e0290ca98426f42ac7359c459d2e0beb750` |
 | `settle1-autonomous-memory` | 로컬 CPU SETTLE-1 자체 갱신·완전 정지 짝비교 결과와 판정 | 3 | 2,228,034 | `57254cd3f4b4d8cfd978c1b4ad6004643520bfe75b0c242e2a62bc36f6dc5971` |
+| `mechanism1-settling-components` | 로컬 CPU MECHANISM-1 계산 차단 결과·최종 및 최초 무효 판정 | 5 | 3,976,973 | `cad78274e8521a645e4c0ef724ce4ceec00394d5903f5596ff083bae49b70beb` |
+| `capacity2-settled-boundary` | 로컬 CPU CAPACITY-2 기존·안정화·조절 차단 용량 결과와 판정 | 3 | 314,213 | `687c7e234a7d229d09ac5f5fe37681ad74005a49efc13b9fae1999e2cc353a44` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -119,4 +121,12 @@ RESET-1 보관은 Hugging Face 커밋 `91ee5c87f740571505a2f68e8da8d415f1027131`
 
 SETTLE-1 보관은 Hugging Face 커밋 `919c475208d0c3abbc83b81b8d3d9523015fea79`에 올렸다. 원격
 `settle1-autonomous-memory` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
+내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
+
+MECHANISM-1 보관은 Hugging Face 커밋 `242ee033f47f3147090502f596587b4d5610094b`에 올렸다. 원격
+`mechanism1-settling-components` revision의 결과·최종 판정·최초 무효 판정·manifest 다섯 파일을
+새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
+
+CAPACITY-2 보관은 Hugging Face 커밋 `e9c4ef4d6d33945ab0a52b3a13f23f74f201b909`에 올렸다. 원격
+`capacity2-settled-boundary` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
 내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
