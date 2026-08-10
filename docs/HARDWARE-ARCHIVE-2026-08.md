@@ -74,3 +74,9 @@ EPISODE-1 보관은 Hugging Face 커밋 `a41546afdf5bbab9ed414c7d963f74678792881
 revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 값 원형 체크포인트의 SHA-256을 전수
 확인했고, 다운로드한 manifest 자체의 SHA-256도 위 표와 일치한다. GPU를 빌리지 않은 로컬 CPU
 실행이다.
+
+KEY-1 보관은 Hugging Face 커밋 `cb828c2157c01476027542266a651add1357c48e`에 올렸다. 원격
+`key1-temporal-key-stabilization` revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·두 주소
+변환 체크포인트의 SHA-256을 전수 확인했다. manifest SHA-256은
+`53a3d64ad0fa92870613a2a26e084e47975723f3a82aaf8bba5ae43aeea1c154`다. GPU를 빌리지 않은 로컬
+CPU 실행이다.
