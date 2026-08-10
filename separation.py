@@ -71,7 +71,15 @@ def _ordered_distinct(first: int, categories: int, count: int,
 
 def build_episodes(spec: dict = SEPARATION_SPEC) -> list[SimilarEpisode]:
     cycle = spec["values"] * spec["events_per_episode"] * spec["keys"] * spec["contexts"]
-    if spec["eval_episodes"] % cycle:
+    exact_marginals = spec.get("exact_marginal_balance", False)
+    marginal_categories = (
+        spec["values"], spec["events_per_episode"], spec["keys"], spec["contexts"]
+    )
+    if exact_marginals and any(
+        spec["eval_episodes"] % categories for categories in marginal_categories
+    ):
+        raise ValueError("registered episode count must preserve every marginal balance")
+    if not exact_marginals and spec["eval_episodes"] % cycle:
         raise ValueError("registered episode count must preserve exact balance")
     rng = random.Random(spec["data_seed"])
     episodes: list[SimilarEpisode] = []
@@ -82,9 +90,12 @@ def build_episodes(spec: dict = SEPARATION_SPEC) -> list[SimilarEpisode]:
         shared_key = (
             index // (spec["values"] * spec["events_per_episode"])
         ) % spec["keys"]
-        query_context = (
-            index // (spec["values"] * spec["events_per_episode"] * spec["keys"])
-        ) % spec["contexts"]
+        if exact_marginals:
+            query_context = (index // spec["events_per_episode"]) % spec["contexts"]
+        else:
+            query_context = (
+                index // (spec["values"] * spec["events_per_episode"] * spec["keys"])
+            ) % spec["contexts"]
         while True:
             values = list(_ordered_distinct(
                 target, spec["values"], spec["events_per_episode"], rng
