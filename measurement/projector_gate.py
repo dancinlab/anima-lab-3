@@ -112,7 +112,7 @@ def adjudicate(payload: dict, spec: dict = PROJECTOR_SPEC) -> dict:
         ):
             return invalid("inherited checkpoint roster changed")
         for seed in spec["factor_seeds"]:
-            if not _verify_prototypes(source["prototype_checkpoints"][str(seed)], spec):
+            if not _verify_prototypes(source["prototype_checkpoints"][str(seed)], SEEDMAP_SPEC):
                 return invalid(f"prototype seed {seed} changed")
 
         expected_projectors = {projector_name(row): row for row in spec["training_combinations"]}
