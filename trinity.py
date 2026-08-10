@@ -44,7 +44,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Tuple, Dict, Any, Callable
 
 from measurement.bridge_config import THALAMIC_BRIDGE_HUB_DIM
 
@@ -1073,14 +1073,39 @@ class VectorMemory(MEngine):
     Stores (key, value) pairs, retrieves by cosine similarity.
     """
 
-    def __init__(self, capacity=10000, dim=128):
+    def __init__(self, capacity=10000, dim=128,
+                 key_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None):
         self.capacity = capacity
         self.dim = dim
+        self.key_transform = key_transform
         self.keys = []
         self.values = []
 
+    def _prepare_key(self, key: torch.Tensor, *, for_query: bool = False) -> torch.Tensor:
+        if not isinstance(key, torch.Tensor):
+            raise TypeError("memory key must be a torch.Tensor")
+        if key.dim() > 1:
+            vector = key.detach().clone().float().mean(dim=0)
+        elif for_query:
+            vector = key.detach().float()
+        else:
+            vector = key.detach().clone()
+        if self.key_transform is None:
+            return vector
+        transformed = self.key_transform(vector.detach().float())
+        if not isinstance(transformed, torch.Tensor):
+            raise TypeError("memory key_transform must return a torch.Tensor")
+        transformed = transformed.detach().clone().float()
+        if transformed.dim() != 1 or transformed.numel() == 0:
+            raise ValueError("memory key_transform must return a non-empty 1D tensor")
+        if not torch.isfinite(transformed).all():
+            raise ValueError("memory key_transform returned a non-finite address")
+        if self.keys and transformed.numel() != self.keys[0].numel():
+            raise ValueError("memory key_transform changed the address width")
+        return transformed
+
     def store(self, key, value):
-        self.keys.append(key.detach().clone().float().mean(dim=0) if key.dim() > 1 else key.detach().clone())
+        self.keys.append(self._prepare_key(key))
         self.values.append(value.detach().clone().float().mean(dim=0) if value.dim() > 1 else value.detach().clone())
         if len(self.keys) > self.capacity:
             self.keys.pop(0)
@@ -1089,7 +1114,9 @@ class VectorMemory(MEngine):
     def retrieve(self, query, top_k=5):
         if not self.keys:
             return torch.zeros(1, self.dim)
-        q = query.detach().float().mean(dim=0) if query.dim() > 1 else query.detach().float()
+        q = self._prepare_key(query, for_query=True)
+        if q.numel() != self.keys[0].numel():
+            raise ValueError("memory query address width does not match stored keys")
         keys_t = torch.stack(self.keys)
         sims = F.cosine_similarity(q.unsqueeze(0), keys_t, dim=1)
         k = min(top_k, len(self.keys))
