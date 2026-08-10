@@ -20,6 +20,7 @@
 | `key1-temporal-key-stabilization` | 로컬 CPU KEY-1 결과·판정·두 seed 안정 주소 체크포인트 | 5 | 105,112 | `53a3d64ad0fa92870613a2a26e084e47975723f3a82aaf8bba5ae43aeea1c154` |
 | `episode2-integrated-stable-memory` | 로컬 CPU EPISODE-2 결과·판정·재사용한 두 seed 안정 주소 체크포인트 | 5 | 102,198 | `4971dc8c21323278a3bbc4673cb8544b667e35de88e8d0287b16802bfa848c23` |
 | `separation1-similar-episode` | 로컬 CPU SEPARATION-1 무효 결과·판정·재사용한 두 seed 안정 주소 체크포인트 | 5 | 97,980 | `d43396cf6a15d9786351faeb55a370136ac82f6b8db6ba099d733383e3186e97` |
+| `capacity1-stable-address-boundary` | 로컬 CPU CAPACITY-1 결과·판정·재사용한 두 seed 안정 주소 체크포인트 | 5 | 154,683 | `039b0ddc2e501822b398f07ec5a1e565dc9da59c59320114e3d087527bf97d43` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -91,5 +92,10 @@ EPISODE-2 보관은 Hugging Face 커밋 `691eadfdde0200967efd27f185b0ed23b7261fd
 
 SEPARATION-1 보관은 Hugging Face 커밋 `2e78fe240745d1974f57f1883bfa39de45a56ab4`에 올렸다. 원격
 `separation1-similar-episode` revision을 새 임시 디렉토리로 다시 내려받아 무효 결과·판정·재사용한
+두 주소 변환 체크포인트의 SHA-256을 전수 확인했고, manifest 자체의 SHA-256도 위 표와 일치한다.
+새 학습 없이 로컬 CPU에서 실행했다.
+
+CAPACITY-1 보관은 Hugging Face 커밋 `a696d6891b15956a327e71b3c0125e8c1bb1d3c5`에 올렸다. 원격
+`capacity1-stable-address-boundary` revision을 새 임시 디렉토리로 다시 내려받아 결과·판정·재사용한
 두 주소 변환 체크포인트의 SHA-256을 전수 확인했고, manifest 자체의 SHA-256도 위 표와 일치한다.
 새 학습 없이 로컬 CPU에서 실행했다.
