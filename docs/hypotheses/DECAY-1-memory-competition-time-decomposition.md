@@ -1,6 +1,6 @@
 # DECAY-1 — 기억 경쟁과 시간 경과 분해
 
-상태: 사전등록  
+상태: 실행 규약 수리 등록
 등록일: 2026-08-10  
 선행 결과: `CAPACITY-1=C3_CAPACITY_BOUNDARY_2`
 
@@ -107,3 +107,17 @@ cosine 선택의 일치율, 주소 여유를 기록한다. 안정 주소 변환�
 추가하지 않고 더 큰 독립 회차로 경계를 다시 확인한다.
 
 결과를 본 뒤 방해 입력 수, 회차 수, 문턱, seed나 가중치를 조정하지 않는다.
+
+## 실행 전 규약 수리
+
+실행기 고정 커밋 `d86651093`의 최초 전체 실행 뒤, 시간 조건마다 `delay_seed_stride`를 더해 서로
+다른 `QuantumC` 초기 상태를 사용한 사실을 발견했다. 이는 같은 회차에서 방해 입력 수만 바꾼다는
+위 중첩 흐름을 위반하므로 최초 결과와 판정은 연구 결론으로 사용하지 않는다. 해당 산출물은
+`measurement/decay_invalid_rng_results.json`과
+`measurement/decay_invalid_rng_verdict.json`에 원형 보존한다.
+
+수리는 결과값·회차·방해 입력 수·팔·문턱·주소 가중치를 바꾸지 않는다. 모든 방해 입력 조건의
+`trial_seed`를 `episode_seed_base + seed × seed_stride + 회차 번호` 하나로 통일하고, 판정기가
+각 seed의 네 조건에서 `episode_seed_sha256` 완전 일치를 요구하게 한다. 첫 두 사건 상태의 완전
+일치 검사는 그대로 유지한다. 이 수리를 README와 원장에 먼저 고정한 커밋을 구현 사양의
+`protocol_repair_commit`으로 기록한 뒤 전체 실험을 처음부터 다시 실행한다.
