@@ -145,6 +145,54 @@ def train_projector(states: torch.Tensor, key_labels: torch.Tensor, seed: int,
     }
 
 
+def fit_canonical_projector(states: torch.Tensor, key_labels: torch.Tensor,
+                            spec: dict = KEY_SPEC):
+    """Fit the unique ridge address map to fixed orthogonal key targets."""
+    if states.dim() != 2 or states.shape[1] != spec["input_dim"]:
+        raise ValueError("canonical projector states have the wrong shape")
+    if key_labels.shape != (len(states),) or key_labels.dtype != torch.long:
+        raise ValueError("canonical projector labels have the wrong shape or dtype")
+    if not torch.isfinite(states).all():
+        raise ValueError("canonical projector states must be finite")
+    if len(states) == 0 or int(key_labels.min()) < 0 or int(key_labels.max()) >= spec["keys"]:
+        raise ValueError("canonical projector labels are out of range")
+    if spec["address_dim"] < spec["keys"]:
+        raise ValueError("canonical address width must cover every key")
+
+    targets = torch.zeros(spec["keys"], spec["address_dim"], dtype=torch.float64)
+    targets[:, :spec["keys"]] = torch.eye(spec["keys"], dtype=torch.float64)
+    inputs = states.detach().to(dtype=torch.float64)
+    design = torch.cat([inputs, torch.ones(len(inputs), 1, dtype=torch.float64)], dim=1)
+    desired = targets[key_labels]
+    penalty = torch.eye(design.shape[1], dtype=torch.float64)
+    penalty[-1, -1] = 0.0
+    system = design.T @ design + float(spec["weight_decay"]) * penalty
+    solution = torch.linalg.solve(system, design.T @ desired)
+
+    with torch.random.fork_rng():
+        torch.manual_seed(0)
+        model = StableKeyProjector(
+            spec["input_dim"], spec["address_dim"], spec["keys"], spec["temperature"],
+            spec["bias"],
+        )
+    with torch.no_grad():
+        model.projection.weight.copy_(solution[:-1].T.to(dtype=torch.float32))
+        model.projection.bias.copy_(solution[-1].to(dtype=torch.float32))
+        model.prototypes.copy_(targets.to(dtype=torch.float32))
+    model.eval()
+    return model, {
+        "method": "ridge_fixed_orthogonal_targets",
+        "examples": len(states),
+        "input_dim": spec["input_dim"],
+        "address_dim": spec["address_dim"],
+        "keys": spec["keys"],
+        "weight_regularization": spec["weight_decay"],
+        "bias_regularized": False,
+        "design_rank": int(torch.linalg.matrix_rank(design)),
+        "label_sha256": hashlib.sha256(key_labels.numpy().tobytes()).hexdigest(),
+    }
+
+
 @torch.no_grad()
 def key_classification_metrics(model: StableKeyProjector, states: torch.Tensor,
                                key_labels: torch.Tensor, keys: int) -> dict:
