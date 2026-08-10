@@ -44,7 +44,7 @@ def _passes(metrics: dict, thresholds: dict) -> bool:
     )
 
 
-def _close(left: float, right: float, tolerance: float = 1e-9) -> bool:
+def _close(left: float, right: float, tolerance: float = 1e-7) -> bool:
     return math.isclose(left, right, rel_tol=0.0, abs_tol=tolerance)
 
 

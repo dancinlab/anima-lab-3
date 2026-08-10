@@ -11,7 +11,7 @@ from episode_control import _metrics
 from key_stability import StableKeyProjector
 from measurement.decay_registry import DECAY_SPEC, spec_sha256 as decay_spec_sha256
 from measurement.key_registry import KEY_SPEC, spec_sha256 as key_spec_sha256
-from measurement.recovery_gate import adjudicate
+from measurement.recovery_gate import _close, adjudicate
 from measurement.recovery_registry import RECOVERY_SPEC, spec_sha256
 from recovery import build_recovery_episodes, recovery_dataset_audit
 
@@ -210,6 +210,11 @@ def test_recovery_datasets_are_balanced_deterministic_and_disjoint():
         RECOVERY_SPEC["episodes_per_replicate"] * len(RECOVERY_SPEC["replicates"])
     )
     assert not any(audit["cross_replicate_overlap"].values())
+
+
+def test_pooled_float32_rounding_tolerance_is_narrow():
+    assert _close(0.8645833134651184, 0.8645833333333334)
+    assert not _close(0.8645833, 0.8645843)
 
 
 def test_recovery_gate_verdicts_and_fail_closed(tmp_path):

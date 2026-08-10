@@ -1,0 +1,6 @@
+{
+  "experiment": "recovery1_dense_memory_recovery_curve",
+  "verdict": "RC0_INVALID",
+  "reason": "seed 1337 delay 1 pooled result does not match replicates",
+  "spec_sha256": "1297417d01c09eacba94e00c5a1d700b5affa8ac292c8cfba88f72458c39727b"
+}
