@@ -16,6 +16,16 @@ Target: 256 cells at < 0.1s/step (vs 14s/step in v9)
 
 import torch
 import torch.nn.functional as F
+
+
+CANONICAL_DYNAMICS_COMPONENTS = (
+    "phase_rotation",
+    "amplitude_interference",
+    "neighbor_phase_morphism",
+    "frustration_regulation",
+    "amplitude_normalization",
+    "structural_adaptation",
+)
 import numpy as np
 import math
 import time
@@ -271,13 +281,18 @@ class QuantumConsciousnessEngineFast:
     # ─── Core: vectorized step ───
 
     @torch.no_grad()
-    def step(self, x_input=None) -> Dict:
+    def step(self, x_input=None, *, dynamics_ablation=()) -> Dict:
         """One evolution step — fully vectorized. x_input=None → identical AUTONOMOUS dynamics.
 
         x_input (sense, S pathway) is a dict {'local': [(theta[dim], cells)], 'global': (theta[dim], r[dim])}.
         It enters as a state-dependent Kuramoto TORQUE toward the stimulus phase pattern (NOT an
         additive kick — additive is state-independent noise that lowers Φ). frustration/Φ are still
         only MEASURED from the resulting cell state, never written (Law 2)."""
+        disabled = frozenset(dynamics_ablation)
+        unknown = disabled.difference(CANONICAL_DYNAMICS_COMPONENTS)
+        if unknown:
+            raise ValueError(f"unknown dynamics components: {sorted(unknown)}")
+
         self._step += 1
         n = self.n_cells
         if n == 0:
@@ -286,7 +301,8 @@ class QuantumConsciousnessEngineFast:
         self._ensure_adjacency()
 
         # 1. Phase rotation — all cells at once
-        self._phases = self._phases + self._phase_velocities * 0.1
+        if "phase_rotation" not in disabled:
+            self._phases = self._phases + self._phase_velocities * 0.1
 
         # 1b. Sense forcing (S pathway). Two scales: local field differentiates, global broadcast
         #     integrates — exactly what Φ measures, so coherent input raises Φ (Law 22), noise doesn't.
@@ -344,6 +360,8 @@ class QuantumConsciousnessEngineFast:
         # New amplitude: (1-coin)*amp + coin*interference
         coin = self.walk_coin_bias
         new_amp = (1 - coin) * self._amplitudes + coin * interference
+        if "amplitude_interference" in disabled:
+            new_amp = self._amplitudes.clone()
 
         # 2b. Similarity-gated amplitude anti-mixing (SENSE-5) — subtract, rather than add, the
         # neighbour-contrast for cells that have already collapsed onto their neighbourhood. The
@@ -384,6 +402,8 @@ class QuantumConsciousnessEngineFast:
         nb_phase = torch.atan2(nb_mean_sin, nb_mean_cos)  # [N, dim]
         # Blend phase toward neighbor
         morph_phase = self._phases + morph_weight.unsqueeze(1) * (nb_phase - self._phases)
+        if "neighbor_phase_morphism" in disabled:
+            morph_phase = self._phases
 
         self._amplitudes = new_amp
         self._phases = morph_phase
@@ -417,16 +437,19 @@ class QuantumConsciousnessEngineFast:
         cell_frustration = 1.0 - torch.sqrt(mean_cos ** 2 + mean_sin ** 2)  # [N]
 
         # EMA update
-        self._frustrations = 0.9 * self._frustrations + 0.1 * cell_frustration
+        next_frustrations = 0.9 * self._frustrations + 0.1 * cell_frustration
+        if "frustration_regulation" not in disabled:
+            self._frustrations = next_frustrations
 
         # Regulation
-        delta = self._frustrations - self.frustration_target  # [N]
+        delta = next_frustrations - self.frustration_target  # [N]
         # Too ordered (delta < -0.05): inject phase noise
         too_ordered = delta < -0.05
         if too_ordered.any():
             noise_scale = (-delta).clamp(0, 0.2)  # [N]
             noise = torch.randn_like(self._phases) * noise_scale.unsqueeze(1)
-            self._phases = self._phases + noise * too_ordered.unsqueeze(1).float()
+            if "frustration_regulation" not in disabled:
+                self._phases = self._phases + noise * too_ordered.unsqueeze(1).float()
 
         # Too frustrated (delta > 0.05): smooth phases
         too_frustrated = delta > 0.05
@@ -435,7 +458,8 @@ class QuantumConsciousnessEngineFast:
             mean_phase = self._phases.mean(dim=1, keepdim=True)  # [N, 1]
             smoothed = self._phases * (1 - blend.unsqueeze(1)) + mean_phase * blend.unsqueeze(1)
             mask = too_frustrated.unsqueeze(1).float()
-            self._phases = self._phases * (1 - mask) + smoothed * mask
+            if "frustration_regulation" not in disabled:
+                self._phases = self._phases * (1 - mask) + smoothed * mask
 
         # 5. Standing wave — per-(cell,dim) travelling mode (SENSE-6). The legacy wave was a per-cell
         # SCALAR ripple, EXACTLY cancelled by step 6's per-row max-norm AND invisible to phi_py (which
@@ -461,7 +485,8 @@ class QuantumConsciousnessEngineFast:
 
         # 6. Normalize amplitudes
         amp_max = self._amplitudes.max(dim=1, keepdim=True).values + 1e-8  # [N, 1]
-        self._amplitudes = self._amplitudes / amp_max
+        if "amplitude_normalization" not in disabled:
+            self._amplitudes = self._amplitudes / amp_max
 
         # Record tensions: variance of amplitude per cell
         tensions = self._amplitudes.var(dim=1)  # [N]
@@ -479,8 +504,9 @@ class QuantumConsciousnessEngineFast:
 
         # Check splits/merges
         events = []
-        events.extend(self._check_splits())
-        events.extend(self._check_merges())
+        if "structural_adaptation" not in disabled:
+            events.extend(self._check_splits())
+            events.extend(self._check_merges())
         self.event_log.extend(events)
 
         # Inter-cell tensions (vectorized)

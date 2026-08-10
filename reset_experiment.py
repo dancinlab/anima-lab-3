@@ -153,7 +153,7 @@ def trace_reset_episode(episode, trial_seed: int, updates: int, mode: str,
     performed_updates = 0
     for index in range(updates):
         if mode == "autonomous":
-            c.step()
+            c.step(dynamics_ablation=spec.get("dynamics_ablation", ()))
             state = _phase_state(c, spec)
             applied_inputs.append(None)
             performed_updates += 1

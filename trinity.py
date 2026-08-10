@@ -299,8 +299,8 @@ class QuantumC(CEngine):
         )
         self._dim = dim
 
-    def step(self, x_input=None):
-        self.engine.step(x_input=x_input)
+    def step(self, x_input=None, *, dynamics_ablation=()):
+        self.engine.step(x_input=x_input, dynamics_ablation=dynamics_ablation)
 
     def get_states(self) -> torch.Tensor:
         """Return _amplitudes [N, dim] as consciousness states."""
