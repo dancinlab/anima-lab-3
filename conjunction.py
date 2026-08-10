@@ -331,7 +331,7 @@ def _memory_outcome(memory: VectorMemory, query, stored_values,
     selected = int(similarities.topk(1).indices[0])
     return (
         _decode(retrieved, prototypes), selected,
-        bool(torch.equal(retrieved, stored_values[selected].mean(0))),
+        bool(torch.equal(retrieved, memory.values[selected])),
         float(similarities.max() - similarities.min()),
     )
 

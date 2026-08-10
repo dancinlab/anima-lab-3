@@ -1074,10 +1074,12 @@ class VectorMemory(MEngine):
     """
 
     def __init__(self, capacity=10000, dim=128,
-                 key_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None):
+                 key_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
+                 value_transform: Optional[Callable[[torch.Tensor], torch.Tensor]] = None):
         self.capacity = capacity
         self.dim = dim
         self.key_transform = key_transform
+        self.value_transform = value_transform
         self.keys = []
         self.values = []
 
@@ -1117,9 +1119,32 @@ class VectorMemory(MEngine):
             raise ValueError("memory key_transform changed the address width")
         return transformed
 
+    def _prepare_value(self, value: torch.Tensor) -> torch.Tensor:
+        if not isinstance(value, torch.Tensor):
+            raise TypeError("memory value must be a torch.Tensor")
+        prepared = (
+            value.detach().clone().float().mean(dim=0)
+            if value.dim() > 1 else value.detach().clone()
+        )
+        if self.value_transform is None:
+            return prepared
+        if prepared.numel() == 0 or not torch.isfinite(prepared.float()).all():
+            raise ValueError("memory value must be non-empty and finite before transformation")
+        transformed = self.value_transform(prepared.detach().clone().float())
+        if not isinstance(transformed, torch.Tensor):
+            raise TypeError("memory value_transform must return a torch.Tensor")
+        transformed = transformed.detach().clone().float()
+        if transformed.dim() != 1 or transformed.numel() == 0:
+            raise ValueError("memory value_transform must return a non-empty 1D tensor")
+        if not torch.isfinite(transformed).all():
+            raise ValueError("memory value_transform returned a non-finite value")
+        if self.values and transformed.numel() != self.values[0].numel():
+            raise ValueError("memory value_transform changed the value width")
+        return transformed
+
     def store(self, key, value):
         self.keys.append(self._prepare_key(key))
-        self.values.append(value.detach().clone().float().mean(dim=0) if value.dim() > 1 else value.detach().clone())
+        self.values.append(self._prepare_value(value))
         if len(self.keys) > self.capacity:
             self.keys.pop(0)
             self.values.pop(0)
