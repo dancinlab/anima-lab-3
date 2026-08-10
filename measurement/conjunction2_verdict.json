@@ -1,0 +1,76 @@
+{
+  "experiment": "conjunction2_stable_value_conjunction",
+  "verdict": "CJ2_2_COMPONENT_COLLISION",
+  "reason": "stable exact values worked, but a frozen address component collided",
+  "spec_sha256": "350473cc62f8d825c7e7f9fa523ac186cbcebecb541641d58a9ed6704f13f325",
+  "evaluations": {
+    "v1337_e1337": {
+      "prototype_seed": 1337,
+      "engine_seed": 1337,
+      "selection_accuracy": 0.275390625,
+      "final_accuracy": 0.296875,
+      "minimum_value_recall": 0.2421875,
+      "exact_final_accuracy": 0.9912109375,
+      "component_scores": {
+        "context_masked": 0.275390625,
+        "key_masked": 0.2490234375,
+        "exact_context_only": 0.2470703125,
+        "exact_key_only": 0.232421875
+      },
+      "components_passed": true,
+      "selection_passed": false,
+      "final_passed": false
+    },
+    "v1337_e7331": {
+      "prototype_seed": 1337,
+      "engine_seed": 7331,
+      "selection_accuracy": 0.27734375,
+      "final_accuracy": 0.2998046875,
+      "minimum_value_recall": 0.2421875,
+      "exact_final_accuracy": 0.986328125,
+      "component_scores": {
+        "context_masked": 0.2724609375,
+        "key_masked": 0.25390625,
+        "exact_context_only": 0.2451171875,
+        "exact_key_only": 0.2314453125
+      },
+      "components_passed": true,
+      "selection_passed": false,
+      "final_passed": false
+    },
+    "v7331_e1337": {
+      "prototype_seed": 7331,
+      "engine_seed": 1337,
+      "selection_accuracy": 0.275390625,
+      "final_accuracy": 0.296875,
+      "minimum_value_recall": 0.2421875,
+      "exact_final_accuracy": 0.9912109375,
+      "component_scores": {
+        "context_masked": 0.275390625,
+        "key_masked": 0.2490234375,
+        "exact_context_only": 0.2470703125,
+        "exact_key_only": 0.232421875
+      },
+      "components_passed": true,
+      "selection_passed": false,
+      "final_passed": false
+    },
+    "v7331_e7331": {
+      "prototype_seed": 7331,
+      "engine_seed": 7331,
+      "selection_accuracy": 0.27734375,
+      "final_accuracy": 0.2998046875,
+      "minimum_value_recall": 0.2421875,
+      "exact_final_accuracy": 0.986328125,
+      "component_scores": {
+        "context_masked": 0.2724609375,
+        "key_masked": 0.25390625,
+        "exact_context_only": 0.2451171875,
+        "exact_key_only": 0.2314453125
+      },
+      "components_passed": true,
+      "selection_passed": false,
+      "final_passed": false
+    }
+  }
+}

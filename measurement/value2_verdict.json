@@ -1,0 +1,240 @@
+{
+  "experiment": "value2_stable_value_memory_path",
+  "verdict": "VT1_STABLE_VALUE_PATH_VALID_NOT_UNIQUE",
+  "reason": "the common memory path read a deterministic value representation at every position",
+  "spec_sha256": "14217a00b086fc3b039f92bec64f750871f841907ba1c38644f66d5c442918a4",
+  "evaluations": {
+    "v1337_e1337": {
+      "prototype_seed": 1337,
+      "engine_seed": 1337,
+      "positions": {
+        "0": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9932861328125,
+          "classification_minimum_recall": 0.9883966445922852,
+          "final_accuracy": 1.0,
+          "minimum_value_recall": 1.0,
+          "raw_accuracy": 1.0,
+          "partner_swap_accuracy": 0.0
+        },
+        "4": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.991943359375,
+          "classification_minimum_recall": 0.9852320551872253,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.7109375,
+          "partner_swap_accuracy": 0.0
+        },
+        "8": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9937744140625,
+          "classification_minimum_recall": 0.9901185631752014,
+          "final_accuracy": 0.99609375,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.69140625,
+          "partner_swap_accuracy": 0.0
+        },
+        "12": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.994140625,
+          "classification_minimum_recall": 0.9888211488723755,
+          "final_accuracy": 0.98828125,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.705078125,
+          "partner_swap_accuracy": 0.0
+        },
+        "15": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9927978515625,
+          "classification_minimum_recall": 0.9861660003662109,
+          "final_accuracy": 0.986328125,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.75,
+          "partner_swap_accuracy": 0.0
+        }
+      },
+      "causal_control_passed": true
+    },
+    "v1337_e7331": {
+      "prototype_seed": 1337,
+      "engine_seed": 7331,
+      "positions": {
+        "0": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.99365234375,
+          "classification_minimum_recall": 0.989130437374115,
+          "final_accuracy": 1.0,
+          "minimum_value_recall": 1.0,
+          "raw_accuracy": 1.0,
+          "partner_swap_accuracy": 0.0
+        },
+        "4": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.991455078125,
+          "classification_minimum_recall": 0.9861660003662109,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.697265625,
+          "partner_swap_accuracy": 0.0
+        },
+        "8": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.99267578125,
+          "classification_minimum_recall": 0.9857723712921143,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.689453125,
+          "partner_swap_accuracy": 0.0
+        },
+        "12": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.993408203125,
+          "classification_minimum_recall": 0.9898374080657959,
+          "final_accuracy": 0.978515625,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.703125,
+          "partner_swap_accuracy": 0.0
+        },
+        "15": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9932861328125,
+          "classification_minimum_recall": 0.989130437374115,
+          "final_accuracy": 0.990234375,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.748046875,
+          "partner_swap_accuracy": 0.0
+        }
+      },
+      "causal_control_passed": true
+    },
+    "v7331_e1337": {
+      "prototype_seed": 7331,
+      "engine_seed": 1337,
+      "positions": {
+        "0": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9932861328125,
+          "classification_minimum_recall": 0.9883966445922852,
+          "final_accuracy": 1.0,
+          "minimum_value_recall": 1.0,
+          "raw_accuracy": 1.0,
+          "partner_swap_accuracy": 0.0
+        },
+        "4": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.991943359375,
+          "classification_minimum_recall": 0.9852320551872253,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.72265625,
+          "partner_swap_accuracy": 0.0
+        },
+        "8": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9937744140625,
+          "classification_minimum_recall": 0.9901185631752014,
+          "final_accuracy": 0.99609375,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.685546875,
+          "partner_swap_accuracy": 0.0
+        },
+        "12": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.994140625,
+          "classification_minimum_recall": 0.9888211488723755,
+          "final_accuracy": 0.98828125,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.6875,
+          "partner_swap_accuracy": 0.0
+        },
+        "15": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9927978515625,
+          "classification_minimum_recall": 0.9861660003662109,
+          "final_accuracy": 0.986328125,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.744140625,
+          "partner_swap_accuracy": 0.0
+        }
+      },
+      "causal_control_passed": true
+    },
+    "v7331_e7331": {
+      "prototype_seed": 7331,
+      "engine_seed": 7331,
+      "positions": {
+        "0": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.99365234375,
+          "classification_minimum_recall": 0.989130437374115,
+          "final_accuracy": 1.0,
+          "minimum_value_recall": 1.0,
+          "raw_accuracy": 1.0,
+          "partner_swap_accuracy": 0.0
+        },
+        "4": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.991455078125,
+          "classification_minimum_recall": 0.9861660003662109,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.705078125,
+          "partner_swap_accuracy": 0.0
+        },
+        "8": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.99267578125,
+          "classification_minimum_recall": 0.9857723712921143,
+          "final_accuracy": 0.998046875,
+          "minimum_value_recall": 0.984375,
+          "raw_accuracy": 0.68359375,
+          "partner_swap_accuracy": 0.0
+        },
+        "12": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.993408203125,
+          "classification_minimum_recall": 0.9898374080657959,
+          "final_accuracy": 0.978515625,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.69921875,
+          "partner_swap_accuracy": 0.0
+        },
+        "15": {
+          "classification_passed": true,
+          "integration_passed": true,
+          "classification_accuracy": 0.9932861328125,
+          "classification_minimum_recall": 0.989130437374115,
+          "final_accuracy": 0.990234375,
+          "minimum_value_recall": 0.96875,
+          "raw_accuracy": 0.75,
+          "partner_swap_accuracy": 0.0
+        }
+      },
+      "causal_control_passed": true
+    }
+  },
+  "checkpoint": {
+    "path": "checkpoints/value2/canonical_value_projector.pt",
+    "sha256": "28cee1a5805022e585500e983ca4ae9af3674da5e11f4d6db3dca743a6efa78a"
+  }
+}

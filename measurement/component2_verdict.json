@@ -1,0 +1,44 @@
+{
+  "experiment": "component2_stable_composite_path",
+  "verdict": "CS2_COMPONENT_FIT_INVALID",
+  "reason": "stable components failed held-out serial classification",
+  "spec_sha256": "44083fc0a994b042fab8bda1c5b7d8680591f88c19e54b9684b1320f923f24e1",
+  "evaluations": {
+    "v1337_e1337": {
+      "selection_accuracy": 0.5478515625,
+      "final_accuracy": 0.548828125,
+      "minimum_value_recall": 0.5078125,
+      "old_selection_accuracy": 0.275390625,
+      "passed": false,
+      "causal": true
+    },
+    "v1337_e7331": {
+      "selection_accuracy": 0.5537109375,
+      "final_accuracy": 0.5517578125,
+      "minimum_value_recall": 0.5,
+      "old_selection_accuracy": 0.27734375,
+      "passed": false,
+      "causal": true
+    },
+    "v7331_e1337": {
+      "selection_accuracy": 0.5478515625,
+      "final_accuracy": 0.548828125,
+      "minimum_value_recall": 0.5078125,
+      "old_selection_accuracy": 0.275390625,
+      "passed": false,
+      "causal": true
+    },
+    "v7331_e7331": {
+      "selection_accuracy": 0.5537109375,
+      "final_accuracy": 0.5517578125,
+      "minimum_value_recall": 0.5,
+      "old_selection_accuracy": 0.27734375,
+      "passed": false,
+      "causal": true
+    }
+  },
+  "checkpoint": {
+    "path": "checkpoints/component2/stable_components.pt",
+    "sha256": "d2ea57bd628f865bc69b2592d3d036433ab0fd31d14027c36c632b12aa4c3a36"
+  }
+}

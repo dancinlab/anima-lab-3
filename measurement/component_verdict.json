@@ -1,0 +1,268 @@
+{
+  "experiment": "component1_address_serial_stability",
+  "verdict": "AC3_BOTH_COMPONENTS_LOSS",
+  "reason": "both frozen address components lost serial-position stability",
+  "spec_sha256": "86955ea5b9c01f1b49a493bd0377c9559c8670676639bdeede37fd2274ff2a82",
+  "engines": {
+    "1337": {
+      "0": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "1": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "2": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "3": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.98828125,
+        "key_minimum_recall": 0.9117646813392639,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "4": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.92578125,
+        "key_minimum_recall": 0.47826087474823,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "5": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.876953125,
+        "key_minimum_recall": 0.3461538553237915,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "6": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.92578125,
+        "key_minimum_recall": 0.6166666746139526,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "7": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.876953125,
+        "key_minimum_recall": 0.6029411554336548,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "8": {
+        "context_accuracy": 0.5078125,
+        "context_minimum_recall": 0.2068965584039688,
+        "key_accuracy": 0.818359375,
+        "key_minimum_recall": 0.5492957830429077,
+        "context_passed": false,
+        "key_passed": false
+      },
+      "9": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.78515625,
+        "key_minimum_recall": 0.4126984179019928,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "10": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.8125,
+        "key_minimum_recall": 0.49152541160583496,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "11": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.771484375,
+        "key_minimum_recall": 0.3333333432674408,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "12": {
+        "context_accuracy": 0.251953125,
+        "context_minimum_recall": 0.03896103799343109,
+        "key_accuracy": 0.703125,
+        "key_minimum_recall": 0.23943662643432617,
+        "context_passed": false,
+        "key_passed": false
+      },
+      "13": {
+        "context_accuracy": 0.97265625,
+        "context_minimum_recall": 0.9220778942108154,
+        "key_accuracy": 0.763671875,
+        "key_minimum_recall": 0.35593220591545105,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "14": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.73046875,
+        "key_minimum_recall": 0.29411765933036804,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "15": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.744140625,
+        "key_minimum_recall": 0.18867924809455872,
+        "context_passed": true,
+        "key_passed": false
+      }
+    },
+    "7331": {
+      "0": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "1": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "2": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 1.0,
+        "key_minimum_recall": 1.0,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "3": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.984375,
+        "key_minimum_recall": 0.8823529481887817,
+        "context_passed": true,
+        "key_passed": true
+      },
+      "4": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.921875,
+        "key_minimum_recall": 0.4492753744125366,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "5": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.888671875,
+        "key_minimum_recall": 0.42307692766189575,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "6": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.916015625,
+        "key_minimum_recall": 0.6166666746139526,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "7": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.876953125,
+        "key_minimum_recall": 0.6376811861991882,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "8": {
+        "context_accuracy": 0.505859375,
+        "context_minimum_recall": 0.2068965584039688,
+        "key_accuracy": 0.83203125,
+        "key_minimum_recall": 0.577464759349823,
+        "context_passed": false,
+        "key_passed": false
+      },
+      "9": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.78515625,
+        "key_minimum_recall": 0.4126984179019928,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "10": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.802734375,
+        "key_minimum_recall": 0.47457626461982727,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "11": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.787109375,
+        "key_minimum_recall": 0.3188405930995941,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "12": {
+        "context_accuracy": 0.248046875,
+        "context_minimum_recall": 0.03896103799343109,
+        "key_accuracy": 0.7109375,
+        "key_minimum_recall": 0.26760563254356384,
+        "context_passed": false,
+        "key_passed": false
+      },
+      "13": {
+        "context_accuracy": 0.96484375,
+        "context_minimum_recall": 0.8961039185523987,
+        "key_accuracy": 0.76171875,
+        "key_minimum_recall": 0.35593220591545105,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "14": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.73046875,
+        "key_minimum_recall": 0.30882352590560913,
+        "context_passed": true,
+        "key_passed": false
+      },
+      "15": {
+        "context_accuracy": 1.0,
+        "context_minimum_recall": 1.0,
+        "key_accuracy": 0.759765625,
+        "key_minimum_recall": 0.30188679695129395,
+        "context_passed": true,
+        "key_passed": false
+      }
+    }
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "experiment": "value_mechanism1_serial_position",
+  "verdict": "VP2_LATE_POSITION_LOSS",
+  "reason": "value readout failed monotonically at later serial positions",
+  "spec_sha256": "686e66caed468c4005c4cd27212e2298a641f735db0bbb5eb6e0abaa1e1f87f6",
+  "positions": {
+    "0": {
+      "v1337_e1337": {
+        "passed": true,
+        "final_accuracy": 1.0,
+        "minimum_value_recall": 1.0,
+        "content_readout_accuracy": 1.0,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.00390625,
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      "v1337_e7331": {
+        "passed": true,
+        "final_accuracy": 1.0,
+        "minimum_value_recall": 1.0,
+        "content_readout_accuracy": 1.0,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.00390625,
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      "v7331_e1337": {
+        "passed": true,
+        "final_accuracy": 1.0,
+        "minimum_value_recall": 1.0,
+        "content_readout_accuracy": 1.0,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.00390625,
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      "v7331_e7331": {
+        "passed": true,
+        "final_accuracy": 1.0,
+        "minimum_value_recall": 1.0,
+        "content_readout_accuracy": 1.0,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.00390625,
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    },
+    "4": {
+      "v1337_e1337": {
+        "passed": false,
+        "final_accuracy": 0.7109375,
+        "minimum_value_recall": 0.046875,
+        "content_readout_accuracy": 0.7109375,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      "v1337_e7331": {
+        "passed": false,
+        "final_accuracy": 0.697265625,
+        "minimum_value_recall": 0.0625,
+        "content_readout_accuracy": 0.697265625,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      "v7331_e1337": {
+        "passed": false,
+        "final_accuracy": 0.72265625,
+        "minimum_value_recall": 0.078125,
+        "content_readout_accuracy": 0.72265625,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.009765625,
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      "v7331_e7331": {
+        "passed": false,
+        "final_accuracy": 0.705078125,
+        "minimum_value_recall": 0.078125,
+        "content_readout_accuracy": 0.705078125,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.009765625,
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    },
+    "8": {
+      "v1337_e1337": {
+        "passed": false,
+        "final_accuracy": 0.69140625,
+        "minimum_value_recall": 0.046875,
+        "content_readout_accuracy": 0.69140625,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.005859375,
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      "v1337_e7331": {
+        "passed": false,
+        "final_accuracy": 0.689453125,
+        "minimum_value_recall": 0.015625,
+        "content_readout_accuracy": 0.689453125,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.005859375,
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      "v7331_e1337": {
+        "passed": false,
+        "final_accuracy": 0.685546875,
+        "minimum_value_recall": 0.046875,
+        "content_readout_accuracy": 0.685546875,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      "v7331_e7331": {
+        "passed": false,
+        "final_accuracy": 0.68359375,
+        "minimum_value_recall": 0.015625,
+        "content_readout_accuracy": 0.68359375,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    },
+    "12": {
+      "v1337_e1337": {
+        "passed": false,
+        "final_accuracy": 0.705078125,
+        "minimum_value_recall": 0.078125,
+        "content_readout_accuracy": 0.705078125,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      "v1337_e7331": {
+        "passed": false,
+        "final_accuracy": 0.703125,
+        "minimum_value_recall": 0.0625,
+        "content_readout_accuracy": 0.703125,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      "v7331_e1337": {
+        "passed": false,
+        "final_accuracy": 0.6875,
+        "minimum_value_recall": 0.0625,
+        "content_readout_accuracy": 0.6875,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      "v7331_e7331": {
+        "passed": false,
+        "final_accuracy": 0.69921875,
+        "minimum_value_recall": 0.0625,
+        "content_readout_accuracy": 0.69921875,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0078125,
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    },
+    "15": {
+      "v1337_e1337": {
+        "passed": false,
+        "final_accuracy": 0.75,
+        "minimum_value_recall": 0.21875,
+        "content_readout_accuracy": 0.75,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0,
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      "v1337_e7331": {
+        "passed": false,
+        "final_accuracy": 0.748046875,
+        "minimum_value_recall": 0.21875,
+        "content_readout_accuracy": 0.748046875,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0,
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      "v7331_e1337": {
+        "passed": false,
+        "final_accuracy": 0.744140625,
+        "minimum_value_recall": 0.234375,
+        "content_readout_accuracy": 0.744140625,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0,
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      "v7331_e7331": {
+        "passed": false,
+        "final_accuracy": 0.75,
+        "minimum_value_recall": 0.203125,
+        "content_readout_accuracy": 0.75,
+        "selection_accuracy": 1.0,
+        "partner_swap_accuracy": 0.0,
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    }
+  }
+}
