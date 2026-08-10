@@ -218,6 +218,11 @@
           "detail": "CANONICAL-1은 열쇠 8개를 서로 직각인 고정 기준점에 놓고 보정 상태를 그 주소로 보내는 정규화 최소제곱 해를 반복 최적화 없이 계산했다. 보정 상태 1337, 7331, 둘을 합친 세 주소 모두 네 사건 4개 평가를 통과했다. 선택은 98.89~99.28%, 최종 행동은 93.95~95.25%, 값별 최저 재현율은 78.13~86.46%였다. 재계산 가중치는 텐서 단위로 같고 합친 자료 순서를 뒤집은 최대 차이도 0이었다. 판정은 CN1_CANONICAL_ADDRESS_VALID이며 다음은 합친 주소를 공용 기본 학습 흐름으로 연결한다."
         },
         {
+          "name": "canonical2.py · canonical2_gate.py — 결정형 주소의 공용 기본 연결",
+          "id": "tool-canonical-address-default",
+          "detail": "CANONICAL-2는 공개 fit_stable_key_projector()의 기본을 canonical_ridge로 연결하고 합친 보정 자료 주소가 CANONICAL-1 pooled 가중치와 같음을 확인했다. 사건 2·3·4개의 값 원형·엔진 시작값 12조합이 모두 통과했다. 최종 행동은 사건 2개 98.76~99.09%, 3개 96.35~97.33%, 4개 94.08~95.12%였다. 사건 4개에서 변환 차단 시 선택은 72.27%p, 최종 행동은 67.25~67.77%p 하락했다. 옛 체크포인트와 기존 학습 호출 호환을 유지한 CI1_CANONICAL_DEFAULT_INTEGRATED이며 이후 새 기억 주소의 단일 기본은 결정형 맞춤이다."
+        },
+        {
           "name": "corpus_regime.py · build_natural_corpus.py · build_register_corpus.py — 코퍼스",
           "id": "tool-corpus",
           "detail": "regime이 Λ REGIME 신호를 재고, 위키 빌더와 범용 JSONL register 빌더가 산문을 추출한다. register 빌더는 문서 해시 분리·전역 줄 중복 제거·출처 revision/SHA 영수증으로 train/fresh를 만든다."
