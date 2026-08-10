@@ -1059,10 +1059,10 @@ Decoder = TransformerDecoder
 class MEngine:
     """Base class for M (Memory) module."""
 
-    def store(self, key: torch.Tensor, value: torch.Tensor):
+    def store(self, key: Any, value: torch.Tensor):
         raise NotImplementedError
 
-    def retrieve(self, query: torch.Tensor, top_k: int = 5) -> torch.Tensor:
+    def retrieve(self, query: Any, top_k: int = 5) -> torch.Tensor:
         """Returns [top_k, dim] tensor of retrieved memories."""
         raise NotImplementedError
 
@@ -1081,18 +1081,31 @@ class VectorMemory(MEngine):
         self.keys = []
         self.values = []
 
-    def _prepare_key(self, key: torch.Tensor, *, for_query: bool = False) -> torch.Tensor:
-        if not isinstance(key, torch.Tensor):
-            raise TypeError("memory key must be a torch.Tensor")
-        if key.dim() > 1:
-            vector = key.detach().clone().float().mean(dim=0)
-        elif for_query:
-            vector = key.detach().float()
+    def _prepare_key(self, key: Any, *, for_query: bool = False) -> torch.Tensor:
+        if isinstance(key, torch.Tensor):
+            if key.dim() > 1:
+                prepared = key.detach().clone().float().mean(dim=0)
+            elif for_query:
+                prepared = key.detach().float()
+            else:
+                prepared = key.detach().clone()
+        elif isinstance(key, (tuple, list)):
+            if self.key_transform is None:
+                raise TypeError("composite memory keys require a key_transform")
+            if not key:
+                raise ValueError("composite memory key must not be empty")
+            if not all(isinstance(component, torch.Tensor) for component in key):
+                raise TypeError("composite memory key components must be torch.Tensor values")
+            prepared = tuple(component.detach().clone().float() for component in key)
+            if any(component.numel() == 0 for component in prepared):
+                raise ValueError("composite memory key components must not be empty")
+            if any(not torch.isfinite(component).all() for component in prepared):
+                raise ValueError("composite memory key contains a non-finite value")
         else:
-            vector = key.detach().clone()
+            raise TypeError("memory key must be a torch.Tensor or a transformed component sequence")
         if self.key_transform is None:
-            return vector
-        transformed = self.key_transform(vector.detach().float())
+            return prepared
+        transformed = self.key_transform(prepared)
         if not isinstance(transformed, torch.Tensor):
             raise TypeError("memory key_transform must return a torch.Tensor")
         transformed = transformed.detach().clone().float()
