@@ -1,0 +1,2 @@
+768957fbb4cf367c877d2e6e73ab50f167041d86135f2164f6d0717fe2a83286  measurement/settle_results.json
+9b9637de4e7562a9a29ac93a60a1459f1678f823f8c7414d288811e912a411c0  measurement/settle_verdict.json
