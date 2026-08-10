@@ -180,6 +180,9 @@ def adjudicate(payload: dict, spec: dict = SEPARATION_SPEC) -> dict:
                 state["episodes"] != spec["eval_episodes"]
                 or state["unique_episode_seeds"] != spec["eval_episodes"]
                 or len(state["episode_seed_sha256"]) != 64
+                or not spec["minimum_cells"] <= state["minimum_cells"]
+                or state["minimum_cells"] > state["maximum_cells"]
+                or state["maximum_cells"] > spec["maximum_cells"]
             ):
                 return invalid(f"seed {seed} state stream changed")
             integration = row["integration_audit"]

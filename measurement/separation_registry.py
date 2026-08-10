@@ -16,6 +16,7 @@ except ModuleNotFoundError:
 SEPARATION_SPEC = {
     "experiment": "separation1_similar_episode_collision",
     "preregistration_commit": "2dc5dc0fd",
+    "protocol_repair_commit": "f1350f8b1",
     "source_experiment": EPISODE2_SPEC["experiment"],
     "source_verdict": "E2I_PATH_RECOVERED_NOT_UNIQUE",
     "source_results": "measurement/episode2_results.json",
@@ -28,6 +29,9 @@ SEPARATION_SPEC = {
     "contexts": len(EPISODE_SPEC["distractor_words"]),
     "distractor_steps": 2,
     "state_dim": EPISODE2_SPEC["state_dim"],
+    "minimum_cells": 2,
+    "maximum_cells": EPISODE_SPEC["cells"],
+    "state_pooling": "cell_mean",
     "address_dim": EPISODE2_SPEC["address_dim"],
     "model_class": EPISODE2_SPEC["model_class"],
     "memory_class": EPISODE2_SPEC["memory_class"],

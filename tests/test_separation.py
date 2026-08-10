@@ -107,6 +107,8 @@ def _passing_payload(tmp_path: Path) -> dict:
                 "episodes": SEPARATION_SPEC["eval_episodes"],
                 "unique_episode_seeds": SEPARATION_SPEC["eval_episodes"],
                 "episode_seed_sha256": "a" * 64,
+                "minimum_cells": SEPARATION_SPEC["minimum_cells"],
+                "maximum_cells": SEPARATION_SPEC["maximum_cells"],
             },
             "source_checkpoint": projector_receipt,
             "prototype_checkpoint": prototype_receipt,

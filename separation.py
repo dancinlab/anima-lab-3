@@ -15,7 +15,7 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from episode import _decode, _new_engine, _sense_token, _with_diagnostics
+from episode import _decode, _new_engine, _with_diagnostics
 from episode2 import _integrated_memory_prediction, _load_frozen_projector
 from episode_control import _metrics
 from graft_behavior import sha256_file
@@ -173,41 +173,62 @@ def _source_receipt(spec: dict = SEPARATION_SPEC) -> tuple[dict, dict]:
     }
 
 
+def _sense_separation_token(c, encoder, word: str, steps: int,
+                            spec: dict = SEPARATION_SPEC) -> torch.Tensor:
+    payload = encoder.encode_sense([word])
+    for _ in range(steps):
+        c.step(x_input=payload)
+    state = c.get_phase_states().clone()
+    if (
+        state.dim() != 2
+        or state.shape[1] != spec["state_dim"]
+        or not spec["minimum_cells"] <= state.shape[0] <= spec["maximum_cells"]
+        or not torch.isfinite(state).all()
+    ):
+        raise RuntimeError("registered SEPARATION-1 state range changed")
+    return state
+
+
 def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct: bool,
                           spec: dict = SEPARATION_SPEC) -> dict:
     c, encoder = _new_engine(trial_seed, EPISODE_SPEC)
-    keys, values = [], []
+    keys, values, cell_counts = [], [], []
     episode_keys = episode.distinct_keys if distinct else (episode.shared_key,) * len(episode.values)
     for context, key, value in zip(episode.contexts, episode_keys, episode.values):
-        _sense_token(
+        state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["distractor_words"][context],
-            EPISODE_SPEC["sense_steps"], EPISODE_SPEC,
+            EPISODE_SPEC["sense_steps"], spec,
         )
-        key_state, _ = _sense_token(
+        cell_counts.append(state.shape[0])
+        key_state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["key_words"][key],
-            EPISODE_SPEC["sense_steps"], EPISODE_SPEC,
+            EPISODE_SPEC["sense_steps"], spec,
         )
-        value_state, _ = _sense_token(
+        value_state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["value_words"][value],
-            EPISODE_SPEC["sense_steps"], EPISODE_SPEC,
+            EPISODE_SPEC["sense_steps"], spec,
         )
+        cell_counts.extend((key_state.shape[0], value_state.shape[0]))
         keys.append(key_state)
         values.append(value_state)
     for distractor in episode.distractors:
-        _sense_token(
+        state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["distractor_words"][distractor],
-            EPISODE_SPEC["distractor_sense_steps"], EPISODE_SPEC,
+            EPISODE_SPEC["distractor_sense_steps"], spec,
         )
-    _sense_token(
+        cell_counts.append(state.shape[0])
+    state = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
-        EPISODE_SPEC["sense_steps"], EPISODE_SPEC,
+        EPISODE_SPEC["sense_steps"], spec,
     )
+    cell_counts.append(state.shape[0])
     query_key = episode.distinct_keys[episode.query_position] if distinct else episode.shared_key
-    query, _ = _sense_token(
+    query = _sense_separation_token(
         c, encoder, EPISODE_SPEC["key_words"][query_key],
-        EPISODE_SPEC["sense_steps"], EPISODE_SPEC,
+        EPISODE_SPEC["sense_steps"], spec,
     )
-    return {"keys": keys, "values": values, "query": query}
+    cell_counts.append(query.shape[0])
+    return {"keys": keys, "values": values, "query": query, "cell_counts": cell_counts}
 
 
 def _exact_addresses(episode: SimilarEpisode, *, remove_context: bool = False):
@@ -269,13 +290,15 @@ def run_seed(seed: int, episodes: list[SimilarEpisode], source: dict,
         name: {"predictions": [], "selections": [], "contents": [], "api": [], "margins": []}
         for name in names
     }
-    calls, address_widths, episode_seeds = [], [], []
+    calls, address_widths, episode_seeds, cell_counts = [], [], [], []
     base = spec["episode_seed_base"] + seed * spec["seed_stride"]
     for index, episode in enumerate(episodes):
         trial_seed = base + index
         episode_seeds.append(trial_seed)
         similar = trace_similar_episode(episode, trial_seed, distinct=False, spec=spec)
         distinct = trace_similar_episode(episode, trial_seed, distinct=True, spec=spec)
+        cell_counts.extend(similar["cell_counts"])
+        cell_counts.extend(distinct["cell_counts"])
         exact, exact_query = _exact_addresses(episode)
         removed, removed_query = _exact_addresses(episode, remove_context=True)
         outcomes = {
@@ -349,6 +372,8 @@ def run_seed(seed: int, episodes: list[SimilarEpisode], source: dict,
             "episode_seed_sha256": hashlib.sha256(
                 "\n".join(map(str, episode_seeds)).encode()
             ).hexdigest(),
+            "minimum_cells": min(cell_counts),
+            "maximum_cells": max(cell_counts),
         },
         "source_checkpoint": projector_receipt,
         "prototype_checkpoint": prototype_receipt,
