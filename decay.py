@@ -203,7 +203,7 @@ def _run_delay(seed: int, delay: int, episodes, projector, prototypes,
     positions = [episode.query_position for episode in episodes]
     call_rows = {name: [] for name in spec["stable_arms"]}
     widths, episode_seeds, cell_counts, prefix_matches = [], [], [], 0
-    base = spec["episode_seed_base"] + delay * spec["delay_seed_stride"] + seed * spec["seed_stride"]
+    base = spec["episode_seed_base"] + seed * spec["seed_stride"]
     for index, episode in enumerate(episodes):
         trial_seed = base + index
         episode_seeds.append(trial_seed)

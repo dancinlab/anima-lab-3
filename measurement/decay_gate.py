@@ -188,6 +188,11 @@ def adjudicate(payload: dict, spec: dict = DECAY_SPEC) -> dict:
             delay_rows = {item["distractor_steps"]: item for item in row["delays"]}
             if set(delay_rows) != set(spec["distractor_steps"]) or len(delay_rows) != len(row["delays"]):
                 return invalid(f"seed {seed} delay roster changed")
+            seed_stream_digests = {
+                item["state_audit"]["episode_seed_sha256"] for item in row["delays"]
+            }
+            if len(seed_stream_digests) != 1:
+                return invalid(f"seed {seed} delay conditions used different initial states")
             for delay in spec["distractor_steps"]:
                 item = delay_rows[delay]
                 if set(item["arms"]) != set(spec["arms"]):

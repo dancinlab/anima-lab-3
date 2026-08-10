@@ -16,6 +16,7 @@ except ModuleNotFoundError:
 DECAY_SPEC = {
     "experiment": "decay1_memory_competition_time_decomposition",
     "preregistration_commit": "1ea8ba092",
+    "protocol_repair_commit": "191296058",
     "source_experiment": CAPACITY_SPEC["experiment"],
     "source_verdict": "C3_CAPACITY_BOUNDARY_2",
     "source_results": "measurement/capacity_results.json",
@@ -39,7 +40,6 @@ DECAY_SPEC = {
     "memory_class": CAPACITY_SPEC["memory_class"],
     "data_seed": 7_500_000_000,
     "episode_seed_base": 7_600_000_000,
-    "delay_seed_stride": 10_000_000,
     "seed_stride": EPISODE_SPEC["seed_stride"],
     "device": "cpu",
     "stable_arms": [

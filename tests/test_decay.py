@@ -194,3 +194,7 @@ def test_decay_gate_verdicts_and_fail_closed(tmp_path):
     invalid = deepcopy(value)
     invalid["seeds"][0]["delays"][0]["state_audit"]["prefix_state_matches"] -= 1
     assert adjudicate(invalid)["verdict"] == "D0_INVALID"
+
+    invalid = deepcopy(value)
+    invalid["seeds"][0]["delays"][0]["state_audit"]["episode_seed_sha256"] = "b" * 64
+    assert adjudicate(invalid)["verdict"] == "D0_INVALID"
