@@ -203,7 +203,7 @@ def _sense_separation_token(c, encoder, word: str, steps: int,
 def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct: bool,
                           spec: dict = SEPARATION_SPEC) -> dict:
     c, encoder = _new_engine(trial_seed, EPISODE_SPEC)
-    keys, values, cell_counts = [], [], []
+    contexts, keys, values, cell_counts = [], [], [], []
     episode_keys = episode.distinct_keys if distinct else (episode.shared_key,) * len(episode.values)
     for context, key, value in zip(episode.contexts, episode_keys, episode.values):
         state = _sense_separation_token(
@@ -220,6 +220,7 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
             EPISODE_SPEC["sense_steps"], spec,
         )
         cell_counts.extend((key_state.shape[0], value_state.shape[0]))
+        contexts.append(state)
         keys.append(key_state)
         values.append(value_state)
     for distractor in episode.distractors:
@@ -240,11 +241,11 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
     state_after = c.get_phase_states().clone()
     after_digest = hashlib.sha256(state_after.contiguous().numpy().tobytes()).hexdigest()
     torch.set_rng_state(query_rng)
-    state = _sense_separation_token(
+    query_context = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
         EPISODE_SPEC["sense_steps"], spec,
     )
-    cell_counts.append(state.shape[0])
+    cell_counts.append(query_context.shape[0])
     query_key = episode.distinct_keys[episode.query_position] if distinct else episode.shared_key
     query = _sense_separation_token(
         c, encoder, EPISODE_SPEC["key_words"][query_key],
@@ -252,8 +253,10 @@ def trace_similar_episode(episode: SimilarEpisode, trial_seed: int, *, distinct:
     )
     cell_counts.append(query.shape[0])
     return {
+        "contexts": contexts,
         "keys": keys,
         "values": values,
+        "query_context": query_context,
         "query": query,
         "cell_counts": cell_counts,
         "update_audit": {
