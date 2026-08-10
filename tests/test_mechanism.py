@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from measurement.mechanism_gate import _classify, adjudicate
+from measurement.mechanism_gate import _classify, _controls_pass, adjudicate
 from measurement.mechanism_registry import MECHANISM_SPEC, canonical_spec, spec_sha256
 from quantum_engine_fast import CANONICAL_DYNAMICS_COMPONENTS, QuantumConsciousnessEngineFast
 from reset_experiment import build_reset_episodes, trace_reset_episode
@@ -70,6 +70,22 @@ def test_mechanism_verdict_shapes():
         "7331": ["phase_rotation", "frustration_regulation"],
     })[0] == "MC2_DISTRIBUTED_COMPONENTS_NECESSARY"
     assert _classify({"1337": ["phase_rotation"], "7331": []})[0] == "MC4_SEED_CONDITIONAL_COMPONENT"
+
+
+def test_partner_swap_threshold_is_applied_to_the_registered_pooled_sample():
+    thresholds = MECHANISM_SPEC["thresholds"]
+    arms = {
+        "exact_three_candidates": {
+            "selection_accuracy": 1.0,
+            "accuracy": 1.0,
+            "per_value_recall": [1.0] * MECHANISM_SPEC["values"],
+        },
+        "exact_three_partner_swap": {"accuracy": 0.05},
+        "exact_three_recovered": {"prediction_match": 1.0},
+    }
+    assert _controls_pass(arms, thresholds)
+    arms["exact_three_partner_swap"]["accuracy"] = 0.05001
+    assert not _controls_pass(arms, thresholds)
 
 
 def test_committed_mechanism_result_replays_and_fails_closed():

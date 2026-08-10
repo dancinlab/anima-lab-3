@@ -49,6 +49,19 @@ def _classify(necessary: dict[str, list[str]]) -> tuple[str, str]:
     )
 
 
+def _controls_pass(arms: dict, thresholds: dict) -> bool:
+    exact = arms["exact_three_candidates"]
+    return (
+        exact["selection_accuracy"] >= thresholds["exact_selection_accuracy"]
+        and exact["accuracy"] >= thresholds["exact_final_accuracy"]
+        and min(exact["per_value_recall"]) >= thresholds["exact_minimum_value_recall"]
+        and arms["exact_three_partner_swap"]["accuracy"]
+        <= thresholds["partner_swap_max_accuracy"]
+        and arms["exact_three_recovered"]["prediction_match"]
+        == thresholds["recovery_prediction_match"]
+    )
+
+
 def adjudicate(payload: dict, spec: dict = MECHANISM_SPEC) -> dict:
     def invalid(reason: str) -> dict:
         return {
@@ -196,17 +209,8 @@ def adjudicate(payload: dict, spec: dict = MECHANISM_SPEC) -> dict:
                             "maximum": expected_calls,
                         }:
                             return invalid(f"seed {seed} intervention {name} memory path changed")
-                    exact = value["arms"]["exact_three_candidates"]
-                    if (
-                        exact["selection_accuracy"] < thresholds["exact_selection_accuracy"]
-                        or exact["accuracy"] < thresholds["exact_final_accuracy"]
-                        or min(exact["per_value_recall"]) < thresholds["exact_minimum_value_recall"]
-                        or value["arms"]["exact_three_partner_swap"]["accuracy"]
-                        > thresholds["partner_swap_max_accuracy"]
-                        or value["arms"]["exact_three_recovered"]["prediction_match"]
-                        != thresholds["recovery_prediction_match"]
-                    ):
-                        return invalid(f"seed {seed} intervention {name} control failed")
+                if not _controls_pass(item["pooled"]["arms"], thresholds):
+                    return invalid(f"seed {seed} intervention {name} pooled control failed")
                 if not _passes(item["pooled"]["arms"]["stable_two_candidates"], thresholds):
                     return invalid(f"seed {seed} intervention {name} two-candidate path failed")
             if any(len(set(values)) != 1 for values in audit_signatures.values()):
