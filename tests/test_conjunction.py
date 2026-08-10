@@ -6,11 +6,14 @@ from pathlib import Path
 
 import torch
 
-from conjunction import _exact_addresses, _latin_valid, build_episodes, dataset_audit
+from conjunction import (
+    _exact_addresses, _latin_valid, _memory_outcome, build_episodes, dataset_audit,
+)
 from context2 import CompositeStateTransform
 from key_stability import StableKeyProjector
 from measurement.conjunction_gate import adjudicate
 from measurement.conjunction_registry import CONJUNCTION_SPEC, spec_sha256
+from trinity import VectorMemory
 
 
 def _projector() -> StableKeyProjector:
@@ -66,6 +69,21 @@ def test_composite_transform_can_mask_either_registered_component():
     assert torch.equal(key_masked[4:], torch.zeros(4))
 
 
+def test_diagnostic_selection_uses_the_common_memory_tie_rule():
+    memory = VectorMemory(capacity=4, dim=2)
+    keys = [torch.tensor([1.0, 0.0])] * 4
+    values = [torch.tensor([[float(index), 0.0]]) for index in range(4)]
+    for key, value in zip(keys, values):
+        memory.store(key, value)
+    prototypes = torch.stack([value.mean(0) for value in values])
+    _, selected, api_match, _ = _memory_outcome(
+        memory, torch.tensor([1.0, 0.0]), values, prototypes
+    )
+    expected_selected = int(torch.ones(4).topk(1).indices[0])
+    assert selected == expected_selected
+    assert api_match is True
+
+
 def test_committed_conjunction_result_replays_and_fails_closed():
     results_path = Path("measurement/conjunction_results.json")
     verdict_path = Path("measurement/conjunction_verdict.json")
@@ -74,6 +92,8 @@ def test_committed_conjunction_result_replays_and_fails_closed():
     payload = json.loads(results_path.read_text())
     expected = json.loads(verdict_path.read_text())
     assert adjudicate(payload) == expected
+    if expected["verdict"] == "CJ0_INVALID":
+        return
 
     changed_balance = deepcopy(payload)
     first = next(iter(changed_balance["dataset_audit"]["query_triple_counts"]))

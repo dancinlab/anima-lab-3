@@ -327,7 +327,8 @@ def _memory_outcome(memory: VectorMemory, query, stored_values,
     similarities = torch.stack([
         F.cosine_similarity(prepared_query, address, dim=0) for address in memory.keys
     ])
-    selected = int(similarities.argmax())
+    # Match VectorMemory.retrieve's canonical top-k rule, including exact ties.
+    selected = int(similarities.topk(1).indices[0])
     return (
         _decode(retrieved, prototypes), selected,
         bool(torch.equal(retrieved, stored_values[selected].mean(0))),
