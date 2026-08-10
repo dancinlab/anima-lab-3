@@ -1,0 +1,3125 @@
+{
+  "experiment": "context2_integrated_composite_memory_path",
+  "spec": {
+    "experiment": "context2_integrated_composite_memory_path",
+    "preregistration_commit": "eddc01a4d",
+    "source_experiment": "context1_composite_memory_address",
+    "source_verdict": "CX1_CONTEXT_KEY_VALID_NOT_UNIQUE",
+    "source_results": "measurement/context_results.json",
+    "source_verdict_path": "measurement/context_verdict.json",
+    "evaluation_combinations": [
+      {
+        "prototype_seed": 1337,
+        "engine_seed": 1337
+      },
+      {
+        "prototype_seed": 1337,
+        "engine_seed": 7331
+      },
+      {
+        "prototype_seed": 7331,
+        "engine_seed": 1337
+      },
+      {
+        "prototype_seed": 7331,
+        "engine_seed": 7331
+      }
+    ],
+    "evaluation_names": [
+      "v1337_e1337",
+      "v1337_e7331",
+      "v7331_e1337",
+      "v7331_e7331"
+    ],
+    "eval_episodes": 2048,
+    "events_per_episode": 4,
+    "keys": 8,
+    "values": 8,
+    "contexts": 8,
+    "distractor_steps": 2,
+    "settling_updates": 8,
+    "pre_query_updates": 8,
+    "pre_query_dynamics_ablation": [],
+    "state_dim": 96,
+    "minimum_cells": 2,
+    "maximum_cells": 48,
+    "state_pooling": "cell_mean",
+    "component_address_dim": 32,
+    "composite_address_dim": 64,
+    "component_weight": 1.0,
+    "model_class": "key_stability.StableKeyProjector",
+    "memory_class": "trinity.VectorMemory",
+    "fit_method": "canonical_ridge",
+    "temperature": 0.1,
+    "bias": true,
+    "data_seed": 8400000000,
+    "episode_seed_base": 8500000000,
+    "seed_stride": 10000000,
+    "device": "cpu",
+    "components_per_key": 2,
+    "stores_per_episode": 4,
+    "retrievals_per_episode": 1,
+    "transform_calls_per_episode": 5,
+    "arms": [
+      "integrated_composite_normal",
+      "external_composite_reference",
+      "integrated_context_masked",
+      "exact_context_key_control",
+      "exact_context_key_partner_swap",
+      "integrated_composite_recovered"
+    ],
+    "thresholds": {
+      "normal_selection_accuracy": 0.9,
+      "normal_final_accuracy": 0.9,
+      "normal_minimum_value_recall": 0.75,
+      "content_readout_accuracy": 0.9,
+      "reference_prediction_match": 1.0,
+      "reference_selection_match": 1.0,
+      "context_masked_max_accuracy": 0.35,
+      "exact_selection_accuracy": 0.99,
+      "exact_final_accuracy": 0.9,
+      "exact_minimum_value_recall": 0.75,
+      "partner_swap_max_accuracy": 0.05,
+      "recovery_prediction_match": 1.0,
+      "retrieval_api_match": 1.0
+    }
+  },
+  "spec_sha256": "c121a3d9a1f65efe67410af55ae7e5bbdb470be97d5c33496555d8ebdc956f6d",
+  "source_context1": {
+    "results": {
+      "path": "measurement/context_results.json",
+      "sha256": "f39f4dc40840a639121c524bdfe821662a35c7761f93b67357cdc58897a7a403"
+    },
+    "verdict": {
+      "path": "measurement/context_verdict.json",
+      "sha256": "a9e70a834f3c43f0254c19d0fe4a88510daade650bede23f4ffaaa39ee4acf28"
+    },
+    "source_spec_sha256": "0dc14623dea27847650734a0e385a771d31e6c33418c6ec92735bf6f16aeb39c",
+    "context_checkpoint": {
+      "path": "checkpoints/context1/context_projector.pt",
+      "sha256": "cb570476bf47bddf9c0f22cded56f79e94f3f215c97bb7b74055674def39d2e8"
+    },
+    "canonical_checkpoint": {
+      "path": "checkpoints/canonical2/default_pooled.pt",
+      "sha256": "46b4b68963047c2c066d21051b919c1348d3c7f4ff148f0f70d525dba741824a"
+    },
+    "prototype_checkpoints": {
+      "1337": {
+        "path": "checkpoints/episode1/seed_1337_prototypes.pt",
+        "sha256": "493485c2b67e0bc4bc1c603f62ac8a795bbab1c0305b7a176a2dd3228de8cc99"
+      },
+      "7331": {
+        "path": "checkpoints/episode1/seed_7331_prototypes.pt",
+        "sha256": "228290b5138408e3db2b991fae06c907257cfa1d6c9f09ff056895d6cdbac9d4"
+      }
+    }
+  },
+  "evaluation_dataset_audit": {
+    "episodes": 2048,
+    "unique_fingerprints": 2048,
+    "target_counts": {
+      "0": 256,
+      "1": 256,
+      "2": 256,
+      "3": 256,
+      "4": 256,
+      "5": 256,
+      "6": 256,
+      "7": 256
+    },
+    "query_position_counts": {
+      "0": 512,
+      "1": 512,
+      "2": 512,
+      "3": 512
+    },
+    "shared_key_counts": {
+      "0": 256,
+      "1": 256,
+      "2": 256,
+      "3": 256,
+      "4": 256,
+      "5": 256,
+      "6": 256,
+      "7": 256
+    },
+    "query_context_counts": {
+      "0": 256,
+      "1": 256,
+      "2": 256,
+      "3": 256,
+      "4": 256,
+      "5": 256,
+      "6": 256,
+      "7": 256
+    },
+    "fingerprint_set_sha256": "a074221535b73c495d44801f4b74db4e3e6d9809b91cc48fb5e2ad80630470bd"
+  },
+  "runtime": {
+    "python": "3.9.6",
+    "torch": "2.8.0",
+    "device": "cpu"
+  },
+  "evaluations": [
+    {
+      "name": "v1337_e1337",
+      "prototype_seed": 1337,
+      "engine_seed": 1337,
+      "arms": {
+        "integrated_composite_normal": {
+          "accuracy": 0.96337890625,
+          "confusion_matrix": [
+            [
+              247,
+              3,
+              1,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              3,
+              252,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              1,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              11,
+              2,
+              2,
+              9,
+              226,
+              5,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              2,
+              1,
+              12,
+              235
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.984375,
+            0.97265625,
+            0.98828125,
+            0.8828125,
+            1.0,
+            0.91796875
+          ],
+          "selection_counts": [
+            247,
+            278,
+            256,
+            252,
+            266,
+            228,
+            285,
+            236
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005,
+          "reference_prediction_match": 1.0,
+          "reference_selection_match": 1.0
+        },
+        "external_composite_reference": {
+          "accuracy": 0.96337890625,
+          "confusion_matrix": [
+            [
+              247,
+              3,
+              1,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              3,
+              252,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              1,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              11,
+              2,
+              2,
+              9,
+              226,
+              5,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              2,
+              1,
+              12,
+              235
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.984375,
+            0.97265625,
+            0.98828125,
+            0.8828125,
+            1.0,
+            0.91796875
+          ],
+          "selection_counts": [
+            247,
+            278,
+            256,
+            252,
+            266,
+            228,
+            285,
+            236
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005
+        },
+        "integrated_context_masked": {
+          "accuracy": 0.29150390625,
+          "confusion_matrix": [
+            [
+              61,
+              24,
+              38,
+              23,
+              21,
+              22,
+              42,
+              25
+            ],
+            [
+              25,
+              87,
+              30,
+              25,
+              27,
+              21,
+              26,
+              15
+            ],
+            [
+              31,
+              26,
+              83,
+              21,
+              23,
+              23,
+              27,
+              22
+            ],
+            [
+              24,
+              21,
+              32,
+              73,
+              16,
+              26,
+              44,
+              20
+            ],
+            [
+              30,
+              38,
+              22,
+              19,
+              80,
+              15,
+              30,
+              22
+            ],
+            [
+              27,
+              29,
+              29,
+              22,
+              30,
+              64,
+              31,
+              24
+            ],
+            [
+              27,
+              28,
+              23,
+              23,
+              25,
+              22,
+              88,
+              20
+            ],
+            [
+              18,
+              34,
+              28,
+              19,
+              30,
+              26,
+              40,
+              61
+            ]
+          ],
+          "per_value_recall": [
+            0.23828125,
+            0.33984375,
+            0.32421875,
+            0.28515625,
+            0.3125,
+            0.25,
+            0.34375,
+            0.23828125
+          ],
+          "selection_counts": [
+            243,
+            287,
+            285,
+            225,
+            252,
+            219,
+            328,
+            209
+          ],
+          "selection_accuracy": 0.2978515625,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.15049808080948424,
+          "key_margin_min": 0.0061206817626953125
+        },
+        "exact_context_key_control": {
+          "accuracy": 0.9638671875,
+          "confusion_matrix": [
+            [
+              247,
+              3,
+              1,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              3,
+              252,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              1,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              11,
+              2,
+              2,
+              9,
+              226,
+              5,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              1,
+              1,
+              12,
+              236
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.984375,
+            0.97265625,
+            0.98828125,
+            0.8828125,
+            1.0,
+            0.921875
+          ],
+          "selection_counts": [
+            247,
+            278,
+            256,
+            252,
+            265,
+            228,
+            285,
+            237
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "exact_context_key_partner_swap": {
+          "accuracy": 0.029296875,
+          "confusion_matrix": [
+            [
+              3,
+              39,
+              39,
+              33,
+              35,
+              31,
+              48,
+              28
+            ],
+            [
+              28,
+              18,
+              37,
+              36,
+              36,
+              31,
+              41,
+              29
+            ],
+            [
+              41,
+              33,
+              0,
+              30,
+              39,
+              36,
+              37,
+              40
+            ],
+            [
+              37,
+              35,
+              37,
+              1,
+              35,
+              33,
+              45,
+              33
+            ],
+            [
+              38,
+              38,
+              37,
+              34,
+              11,
+              25,
+              37,
+              36
+            ],
+            [
+              43,
+              48,
+              26,
+              40,
+              34,
+              0,
+              37,
+              28
+            ],
+            [
+              38,
+              34,
+              32,
+              33,
+              34,
+              38,
+              25,
+              22
+            ],
+            [
+              28,
+              45,
+              40,
+              35,
+              44,
+              32,
+              30,
+              2
+            ]
+          ],
+          "per_value_recall": [
+            0.01171875,
+            0.0703125,
+            0.0,
+            0.00390625,
+            0.04296875,
+            0.0,
+            0.09765625,
+            0.0078125
+          ],
+          "selection_counts": [
+            256,
+            290,
+            248,
+            242,
+            268,
+            226,
+            300,
+            218
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "integrated_composite_recovered": {
+          "accuracy": 0.96337890625,
+          "confusion_matrix": [
+            [
+              247,
+              3,
+              1,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              3,
+              252,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              1,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              11,
+              2,
+              2,
+              9,
+              226,
+              5,
+              1
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              2,
+              1,
+              12,
+              235
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.984375,
+            0.97265625,
+            0.98828125,
+            0.8828125,
+            1.0,
+            0.91796875
+          ],
+          "selection_counts": [
+            247,
+            278,
+            256,
+            252,
+            266,
+            228,
+            285,
+            236
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9638671875,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005,
+          "prediction_match": 1.0
+        }
+      },
+      "memory_path_audit": {
+        "integrated_composite_normal": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_context_masked": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_composite_recovered": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        }
+      },
+      "integration_audit": {
+        "component_weight": 1.0,
+        "component_address_dim": 32,
+        "composite_address_dim": 64,
+        "context_projector_frozen": true,
+        "context_projector_unchanged": true,
+        "key_projector_frozen": true,
+        "key_projector_unchanged": true,
+        "source_normal_metrics_match": true,
+        "source_state_audit_match": true,
+        "source_update_audit_match": true
+      },
+      "state_audit": {
+        "episodes": 2048,
+        "unique_episode_seeds": 2048,
+        "episode_seed_sha256": "e164ca25f047f744ff6e281ab4c21b18aa319c9289643ff3b6a0232eee4e757b",
+        "minimum_cells": 47,
+        "maximum_cells": 48
+      },
+      "update_audit": {
+        "requested_updates": 8,
+        "performed_updates_minimum": 8,
+        "performed_updates_maximum": 8,
+        "disabled": [],
+        "state_before_sha256": "c7aa96c14be386290660e134bbdcdf4d3de82858c1f25da5c78de502ca7f0da5",
+        "state_after_sha256": "f4c9b1e11d9c50ec3a4feca7fdcce8033ce4af81179776c4edece8d012abe0b1",
+        "query_rng_sha256": "15cb718f8846b81a1b4a590038eb89a10eff6847759b3961c434ea0771238c41"
+      },
+      "prototype_checkpoint": {
+        "path": "checkpoints/episode1/seed_1337_prototypes.pt",
+        "sha256": "493485c2b67e0bc4bc1c603f62ac8a795bbab1c0305b7a176a2dd3228de8cc99"
+      }
+    },
+    {
+      "name": "v1337_e7331",
+      "prototype_seed": 1337,
+      "engine_seed": 7331,
+      "arms": {
+        "integrated_composite_normal": {
+          "accuracy": 0.9609375,
+          "confusion_matrix": [
+            [
+              248,
+              3,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              1,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              10,
+              2,
+              2,
+              9,
+              224,
+              7,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              1,
+              2,
+              14,
+              233
+            ]
+          ],
+          "per_value_recall": [
+            0.96875,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.98828125,
+            0.875,
+            1.0,
+            0.91015625
+          ],
+          "selection_counts": [
+            248,
+            279,
+            254,
+            252,
+            266,
+            226,
+            288,
+            235
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301,
+          "reference_prediction_match": 1.0,
+          "reference_selection_match": 1.0
+        },
+        "external_composite_reference": {
+          "accuracy": 0.9609375,
+          "confusion_matrix": [
+            [
+              248,
+              3,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              1,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              10,
+              2,
+              2,
+              9,
+              224,
+              7,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              1,
+              2,
+              14,
+              233
+            ]
+          ],
+          "per_value_recall": [
+            0.96875,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.98828125,
+            0.875,
+            1.0,
+            0.91015625
+          ],
+          "selection_counts": [
+            248,
+            279,
+            254,
+            252,
+            266,
+            226,
+            288,
+            235
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301
+        },
+        "integrated_context_masked": {
+          "accuracy": 0.2939453125,
+          "confusion_matrix": [
+            [
+              66,
+              26,
+              24,
+              23,
+              24,
+              23,
+              46,
+              24
+            ],
+            [
+              20,
+              94,
+              28,
+              26,
+              27,
+              20,
+              27,
+              14
+            ],
+            [
+              29,
+              25,
+              75,
+              22,
+              28,
+              25,
+              34,
+              18
+            ],
+            [
+              26,
+              25,
+              34,
+              73,
+              15,
+              25,
+              40,
+              18
+            ],
+            [
+              28,
+              43,
+              18,
+              19,
+              80,
+              21,
+              24,
+              23
+            ],
+            [
+              23,
+              33,
+              28,
+              27,
+              27,
+              62,
+              31,
+              25
+            ],
+            [
+              28,
+              24,
+              23,
+              23,
+              25,
+              23,
+              94,
+              16
+            ],
+            [
+              16,
+              33,
+              26,
+              22,
+              35,
+              29,
+              37,
+              58
+            ]
+          ],
+          "per_value_recall": [
+            0.2578125,
+            0.3671875,
+            0.29296875,
+            0.28515625,
+            0.3125,
+            0.2421875,
+            0.3671875,
+            0.2265625
+          ],
+          "selection_counts": [
+            236,
+            303,
+            256,
+            235,
+            261,
+            228,
+            333,
+            196
+          ],
+          "selection_accuracy": 0.30078125,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.152215699388762,
+          "key_margin_min": 0.005174994468688965
+        },
+        "exact_context_key_control": {
+          "accuracy": 0.9609375,
+          "confusion_matrix": [
+            [
+              248,
+              3,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              1,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              10,
+              2,
+              2,
+              9,
+              224,
+              7,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              1,
+              2,
+              14,
+              233
+            ]
+          ],
+          "per_value_recall": [
+            0.96875,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.98828125,
+            0.875,
+            1.0,
+            0.91015625
+          ],
+          "selection_counts": [
+            248,
+            279,
+            254,
+            252,
+            266,
+            226,
+            288,
+            235
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "exact_context_key_partner_swap": {
+          "accuracy": 0.02978515625,
+          "confusion_matrix": [
+            [
+              3,
+              40,
+              38,
+              33,
+              35,
+              31,
+              47,
+              29
+            ],
+            [
+              28,
+              21,
+              37,
+              36,
+              36,
+              29,
+              41,
+              28
+            ],
+            [
+              41,
+              33,
+              1,
+              30,
+              40,
+              34,
+              38,
+              39
+            ],
+            [
+              37,
+              35,
+              37,
+              1,
+              35,
+              32,
+              46,
+              33
+            ],
+            [
+              38,
+              37,
+              37,
+              36,
+              9,
+              25,
+              37,
+              37
+            ],
+            [
+              43,
+              48,
+              26,
+              40,
+              34,
+              0,
+              37,
+              28
+            ],
+            [
+              39,
+              34,
+              34,
+              34,
+              34,
+              37,
+              23,
+              21
+            ],
+            [
+              28,
+              44,
+              40,
+              35,
+              44,
+              32,
+              30,
+              3
+            ]
+          ],
+          "per_value_recall": [
+            0.01171875,
+            0.08203125,
+            0.00390625,
+            0.00390625,
+            0.03515625,
+            0.0,
+            0.08984375,
+            0.01171875
+          ],
+          "selection_counts": [
+            257,
+            292,
+            250,
+            245,
+            267,
+            220,
+            299,
+            218
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "integrated_composite_recovered": {
+          "accuracy": 0.9609375,
+          "confusion_matrix": [
+            [
+              248,
+              3,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              1,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              10,
+              2,
+              2,
+              9,
+              224,
+              7,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              4,
+              1,
+              1,
+              1,
+              2,
+              14,
+              233
+            ]
+          ],
+          "per_value_recall": [
+            0.96875,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.98828125,
+            0.875,
+            1.0,
+            0.91015625
+          ],
+          "selection_counts": [
+            248,
+            279,
+            254,
+            252,
+            266,
+            226,
+            288,
+            235
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301,
+          "prediction_match": 1.0
+        }
+      },
+      "memory_path_audit": {
+        "integrated_composite_normal": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_context_masked": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_composite_recovered": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        }
+      },
+      "integration_audit": {
+        "component_weight": 1.0,
+        "component_address_dim": 32,
+        "composite_address_dim": 64,
+        "context_projector_frozen": true,
+        "context_projector_unchanged": true,
+        "key_projector_frozen": true,
+        "key_projector_unchanged": true,
+        "source_normal_metrics_match": true,
+        "source_state_audit_match": true,
+        "source_update_audit_match": true
+      },
+      "state_audit": {
+        "episodes": 2048,
+        "unique_episode_seeds": 2048,
+        "episode_seed_sha256": "95d0fd0f834b0476911f27b153df1c147cf40b980cab20a96be59bbef5755c80",
+        "minimum_cells": 47,
+        "maximum_cells": 48
+      },
+      "update_audit": {
+        "requested_updates": 8,
+        "performed_updates_minimum": 8,
+        "performed_updates_maximum": 8,
+        "disabled": [],
+        "state_before_sha256": "b4d14f9cb3b955ee7e5e7a8a4969bfc506bd0d6e978f728c427da0cc06fb669b",
+        "state_after_sha256": "7a5d6d909757d73e6d59ea1db3e6dff9755f298bcdb341c201365a6b6ea5ad28",
+        "query_rng_sha256": "0630af23b777a136c02dc81e99404b914b7fc1af53317134eeaec8e61c126285"
+      },
+      "prototype_checkpoint": {
+        "path": "checkpoints/episode1/seed_1337_prototypes.pt",
+        "sha256": "493485c2b67e0bc4bc1c603f62ac8a795bbab1c0305b7a176a2dd3228de8cc99"
+      }
+    },
+    {
+      "name": "v7331_e1337",
+      "prototype_seed": 7331,
+      "engine_seed": 1337,
+      "arms": {
+        "integrated_composite_normal": {
+          "accuracy": 0.95947265625,
+          "confusion_matrix": [
+            [
+              247,
+              4,
+              0,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              0,
+              6,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              12,
+              2,
+              3,
+              9,
+              217,
+              11,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              3,
+              1,
+              1,
+              2,
+              1,
+              11,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.9921875,
+            0.84765625,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            247,
+            280,
+            253,
+            253,
+            267,
+            218,
+            291,
+            239
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005,
+          "reference_prediction_match": 1.0,
+          "reference_selection_match": 1.0
+        },
+        "external_composite_reference": {
+          "accuracy": 0.95947265625,
+          "confusion_matrix": [
+            [
+              247,
+              4,
+              0,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              0,
+              6,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              12,
+              2,
+              3,
+              9,
+              217,
+              11,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              3,
+              1,
+              1,
+              2,
+              1,
+              11,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.9921875,
+            0.84765625,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            247,
+            280,
+            253,
+            253,
+            267,
+            218,
+            291,
+            239
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005
+        },
+        "integrated_context_masked": {
+          "accuracy": 0.29345703125,
+          "confusion_matrix": [
+            [
+              62,
+              24,
+              37,
+              23,
+              21,
+              22,
+              41,
+              26
+            ],
+            [
+              25,
+              90,
+              30,
+              25,
+              28,
+              17,
+              26,
+              15
+            ],
+            [
+              31,
+              27,
+              82,
+              22,
+              23,
+              21,
+              27,
+              23
+            ],
+            [
+              24,
+              21,
+              32,
+              74,
+              16,
+              25,
+              42,
+              22
+            ],
+            [
+              30,
+              37,
+              22,
+              19,
+              81,
+              15,
+              30,
+              22
+            ],
+            [
+              27,
+              30,
+              29,
+              22,
+              29,
+              61,
+              34,
+              24
+            ],
+            [
+              27,
+              30,
+              25,
+              22,
+              24,
+              20,
+              88,
+              20
+            ],
+            [
+              18,
+              33,
+              28,
+              19,
+              30,
+              26,
+              39,
+              63
+            ]
+          ],
+          "per_value_recall": [
+            0.2421875,
+            0.3515625,
+            0.3203125,
+            0.2890625,
+            0.31640625,
+            0.23828125,
+            0.34375,
+            0.24609375
+          ],
+          "selection_counts": [
+            244,
+            292,
+            285,
+            226,
+            252,
+            207,
+            327,
+            215
+          ],
+          "selection_accuracy": 0.2978515625,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.15049808080948424,
+          "key_margin_min": 0.0061206817626953125
+        },
+        "exact_context_key_control": {
+          "accuracy": 0.9599609375,
+          "confusion_matrix": [
+            [
+              247,
+              4,
+              0,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              0,
+              6,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              12,
+              2,
+              3,
+              9,
+              217,
+              11,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              3,
+              1,
+              1,
+              1,
+              1,
+              11,
+              238
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.9921875,
+            0.84765625,
+            1.0,
+            0.9296875
+          ],
+          "selection_counts": [
+            247,
+            280,
+            253,
+            253,
+            266,
+            218,
+            291,
+            240
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "exact_context_key_partner_swap": {
+          "accuracy": 0.03369140625,
+          "confusion_matrix": [
+            [
+              3,
+              40,
+              38,
+              33,
+              35,
+              31,
+              48,
+              28
+            ],
+            [
+              28,
+              23,
+              37,
+              36,
+              36,
+              26,
+              41,
+              29
+            ],
+            [
+              41,
+              33,
+              2,
+              30,
+              39,
+              33,
+              38,
+              40
+            ],
+            [
+              37,
+              35,
+              37,
+              3,
+              35,
+              31,
+              45,
+              33
+            ],
+            [
+              38,
+              38,
+              37,
+              36,
+              10,
+              24,
+              37,
+              36
+            ],
+            [
+              43,
+              48,
+              26,
+              40,
+              34,
+              0,
+              37,
+              28
+            ],
+            [
+              39,
+              34,
+              34,
+              32,
+              34,
+              36,
+              25,
+              22
+            ],
+            [
+              28,
+              45,
+              40,
+              35,
+              44,
+              31,
+              30,
+              3
+            ]
+          ],
+          "per_value_recall": [
+            0.01171875,
+            0.08984375,
+            0.0078125,
+            0.01171875,
+            0.0390625,
+            0.0,
+            0.09765625,
+            0.01171875
+          ],
+          "selection_counts": [
+            257,
+            296,
+            251,
+            245,
+            267,
+            212,
+            301,
+            219
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "integrated_composite_recovered": {
+          "accuracy": 0.95947265625,
+          "confusion_matrix": [
+            [
+              247,
+              4,
+              0,
+              0,
+              2,
+              0,
+              3,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              5,
+              250,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              249,
+              0,
+              0,
+              6,
+              0
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              254,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              12,
+              2,
+              3,
+              9,
+              217,
+              11,
+              2
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              3,
+              1,
+              1,
+              2,
+              1,
+              11,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.96484375,
+            0.99609375,
+            0.9765625,
+            0.97265625,
+            0.9921875,
+            0.84765625,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            247,
+            280,
+            253,
+            253,
+            267,
+            218,
+            291,
+            239
+          ],
+          "selection_accuracy": 0.99951171875,
+          "correct_content_accuracy": 0.9599609375,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5317617068358231,
+          "key_margin_min": 0.28936368227005005,
+          "prediction_match": 1.0
+        }
+      },
+      "memory_path_audit": {
+        "integrated_composite_normal": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_context_masked": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_composite_recovered": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        }
+      },
+      "integration_audit": {
+        "component_weight": 1.0,
+        "component_address_dim": 32,
+        "composite_address_dim": 64,
+        "context_projector_frozen": true,
+        "context_projector_unchanged": true,
+        "key_projector_frozen": true,
+        "key_projector_unchanged": true,
+        "source_normal_metrics_match": true,
+        "source_state_audit_match": true,
+        "source_update_audit_match": true
+      },
+      "state_audit": {
+        "episodes": 2048,
+        "unique_episode_seeds": 2048,
+        "episode_seed_sha256": "e164ca25f047f744ff6e281ab4c21b18aa319c9289643ff3b6a0232eee4e757b",
+        "minimum_cells": 47,
+        "maximum_cells": 48
+      },
+      "update_audit": {
+        "requested_updates": 8,
+        "performed_updates_minimum": 8,
+        "performed_updates_maximum": 8,
+        "disabled": [],
+        "state_before_sha256": "c7aa96c14be386290660e134bbdcdf4d3de82858c1f25da5c78de502ca7f0da5",
+        "state_after_sha256": "f4c9b1e11d9c50ec3a4feca7fdcce8033ce4af81179776c4edece8d012abe0b1",
+        "query_rng_sha256": "15cb718f8846b81a1b4a590038eb89a10eff6847759b3961c434ea0771238c41"
+      },
+      "prototype_checkpoint": {
+        "path": "checkpoints/episode1/seed_7331_prototypes.pt",
+        "sha256": "228290b5138408e3db2b991fae06c907257cfa1d6c9f09ff056895d6cdbac9d4"
+      }
+    },
+    {
+      "name": "v7331_e7331",
+      "prototype_seed": 7331,
+      "engine_seed": 7331,
+      "arms": {
+        "integrated_composite_normal": {
+          "accuracy": 0.95751953125,
+          "confusion_matrix": [
+            [
+              249,
+              2,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              4,
+              251,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              250,
+              0,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              15,
+              2,
+              4,
+              9,
+              210,
+              11,
+              5
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              2,
+              1,
+              1,
+              0,
+              1,
+              14,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.97265625,
+            0.99609375,
+            0.98046875,
+            0.9765625,
+            0.98828125,
+            0.8203125,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            249,
+            280,
+            255,
+            255,
+            264,
+            211,
+            292,
+            242
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301,
+          "reference_prediction_match": 1.0,
+          "reference_selection_match": 1.0
+        },
+        "external_composite_reference": {
+          "accuracy": 0.95751953125,
+          "confusion_matrix": [
+            [
+              249,
+              2,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              4,
+              251,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              250,
+              0,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              15,
+              2,
+              4,
+              9,
+              210,
+              11,
+              5
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              2,
+              1,
+              1,
+              0,
+              1,
+              14,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.97265625,
+            0.99609375,
+            0.98046875,
+            0.9765625,
+            0.98828125,
+            0.8203125,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            249,
+            280,
+            255,
+            255,
+            264,
+            211,
+            292,
+            242
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301
+        },
+        "integrated_context_masked": {
+          "accuracy": 0.29638671875,
+          "confusion_matrix": [
+            [
+              68,
+              23,
+              25,
+              23,
+              23,
+              21,
+              47,
+              26
+            ],
+            [
+              20,
+              94,
+              28,
+              26,
+              27,
+              19,
+              28,
+              14
+            ],
+            [
+              29,
+              24,
+              76,
+              22,
+              28,
+              25,
+              34,
+              18
+            ],
+            [
+              26,
+              26,
+              35,
+              74,
+              15,
+              23,
+              39,
+              18
+            ],
+            [
+              28,
+              44,
+              18,
+              19,
+              79,
+              19,
+              25,
+              24
+            ],
+            [
+              23,
+              35,
+              28,
+              28,
+              26,
+              59,
+              32,
+              25
+            ],
+            [
+              28,
+              25,
+              23,
+              21,
+              25,
+              22,
+              96,
+              16
+            ],
+            [
+              16,
+              32,
+              26,
+              22,
+              34,
+              28,
+              37,
+              61
+            ]
+          ],
+          "per_value_recall": [
+            0.265625,
+            0.3671875,
+            0.296875,
+            0.2890625,
+            0.30859375,
+            0.23046875,
+            0.375,
+            0.23828125
+          ],
+          "selection_counts": [
+            238,
+            303,
+            259,
+            235,
+            257,
+            216,
+            338,
+            202
+          ],
+          "selection_accuracy": 0.30078125,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.152215699388762,
+          "key_margin_min": 0.005174994468688965
+        },
+        "exact_context_key_control": {
+          "accuracy": 0.95751953125,
+          "confusion_matrix": [
+            [
+              249,
+              2,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              4,
+              251,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              250,
+              0,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              15,
+              2,
+              4,
+              9,
+              210,
+              11,
+              5
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              2,
+              1,
+              1,
+              0,
+              1,
+              14,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.97265625,
+            0.99609375,
+            0.98046875,
+            0.9765625,
+            0.98828125,
+            0.8203125,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            249,
+            280,
+            255,
+            255,
+            264,
+            211,
+            292,
+            242
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "exact_context_key_partner_swap": {
+          "accuracy": 0.03515625,
+          "confusion_matrix": [
+            [
+              3,
+              40,
+              38,
+              33,
+              35,
+              31,
+              47,
+              29
+            ],
+            [
+              28,
+              24,
+              37,
+              36,
+              36,
+              26,
+              41,
+              28
+            ],
+            [
+              41,
+              33,
+              2,
+              30,
+              40,
+              32,
+              39,
+              39
+            ],
+            [
+              37,
+              35,
+              38,
+              3,
+              35,
+              30,
+              45,
+              33
+            ],
+            [
+              38,
+              37,
+              37,
+              36,
+              9,
+              24,
+              37,
+              38
+            ],
+            [
+              43,
+              48,
+              26,
+              40,
+              34,
+              0,
+              37,
+              28
+            ],
+            [
+              39,
+              34,
+              34,
+              32,
+              34,
+              35,
+              27,
+              21
+            ],
+            [
+              28,
+              44,
+              40,
+              35,
+              45,
+              30,
+              30,
+              4
+            ]
+          ],
+          "per_value_recall": [
+            0.01171875,
+            0.09375,
+            0.0078125,
+            0.01171875,
+            0.03515625,
+            0.0,
+            0.10546875,
+            0.015625
+          ],
+          "selection_counts": [
+            257,
+            295,
+            252,
+            245,
+            268,
+            208,
+            303,
+            220
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.4999999701976776,
+          "key_margin_min": 0.4999999701976776
+        },
+        "integrated_composite_recovered": {
+          "accuracy": 0.95751953125,
+          "confusion_matrix": [
+            [
+              249,
+              2,
+              1,
+              0,
+              2,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              255,
+              0,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              4,
+              251,
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              250,
+              0,
+              0,
+              5,
+              0
+            ],
+            [
+              0,
+              1,
+              0,
+              0,
+              253,
+              0,
+              2,
+              0
+            ],
+            [
+              0,
+              15,
+              2,
+              4,
+              9,
+              210,
+              11,
+              5
+            ],
+            [
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              256,
+              0
+            ],
+            [
+              0,
+              2,
+              1,
+              1,
+              0,
+              1,
+              14,
+              237
+            ]
+          ],
+          "per_value_recall": [
+            0.97265625,
+            0.99609375,
+            0.98046875,
+            0.9765625,
+            0.98828125,
+            0.8203125,
+            1.0,
+            0.92578125
+          ],
+          "selection_counts": [
+            249,
+            280,
+            255,
+            255,
+            264,
+            211,
+            292,
+            242
+          ],
+          "selection_accuracy": 1.0,
+          "correct_content_accuracy": 0.95751953125,
+          "retrieval_api_match": 1.0,
+          "key_margin_mean": 0.5322147100378061,
+          "key_margin_min": 0.3296893239021301,
+          "prediction_match": 1.0
+        }
+      },
+      "memory_path_audit": {
+        "integrated_composite_normal": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_context_masked": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        },
+        "integrated_composite_recovered": {
+          "minimum_calls": 5,
+          "maximum_calls": 5,
+          "minimum_components": 2,
+          "maximum_components": 2,
+          "minimum_address_width": 64,
+          "maximum_address_width": 64,
+          "minimum_stores": 4,
+          "maximum_stores": 4,
+          "minimum_retrievals": 1,
+          "maximum_retrievals": 1
+        }
+      },
+      "integration_audit": {
+        "component_weight": 1.0,
+        "component_address_dim": 32,
+        "composite_address_dim": 64,
+        "context_projector_frozen": true,
+        "context_projector_unchanged": true,
+        "key_projector_frozen": true,
+        "key_projector_unchanged": true,
+        "source_normal_metrics_match": true,
+        "source_state_audit_match": true,
+        "source_update_audit_match": true
+      },
+      "state_audit": {
+        "episodes": 2048,
+        "unique_episode_seeds": 2048,
+        "episode_seed_sha256": "95d0fd0f834b0476911f27b153df1c147cf40b980cab20a96be59bbef5755c80",
+        "minimum_cells": 47,
+        "maximum_cells": 48
+      },
+      "update_audit": {
+        "requested_updates": 8,
+        "performed_updates_minimum": 8,
+        "performed_updates_maximum": 8,
+        "disabled": [],
+        "state_before_sha256": "b4d14f9cb3b955ee7e5e7a8a4969bfc506bd0d6e978f728c427da0cc06fb669b",
+        "state_after_sha256": "7a5d6d909757d73e6d59ea1db3e6dff9755f298bcdb341c201365a6b6ea5ad28",
+        "query_rng_sha256": "0630af23b777a136c02dc81e99404b914b7fc1af53317134eeaec8e61c126285"
+      },
+      "prototype_checkpoint": {
+        "path": "checkpoints/episode1/seed_7331_prototypes.pt",
+        "sha256": "228290b5138408e3db2b991fae06c907257cfa1d6c9f09ff056895d6cdbac9d4"
+      }
+    }
+  ]
+}

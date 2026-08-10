@@ -1,0 +1,60 @@
+{
+  "experiment": "context2_integrated_composite_memory_path",
+  "verdict": "CX2I_PATH_RECOVERED_NOT_UNIQUE",
+  "reason": "the optional common memory transform reproduced the frozen context+key address in every evaluation",
+  "spec_sha256": "c121a3d9a1f65efe67410af55ae7e5bbdb470be97d5c33496555d8ebdc956f6d",
+  "evaluations": {
+    "v1337_e1337": {
+      "prototype_seed": 1337,
+      "engine_seed": 1337,
+      "normal_selection_accuracy": 0.99951171875,
+      "normal_final_accuracy": 0.96337890625,
+      "normal_minimum_value_recall": 0.8828125,
+      "normal_content_accuracy": 0.9638671875,
+      "context_masked_accuracy": 0.29150390625,
+      "exact_final_accuracy": 0.9638671875,
+      "partner_swap_accuracy": 0.029296875,
+      "selection_passed": true,
+      "normal_passed": true
+    },
+    "v1337_e7331": {
+      "prototype_seed": 1337,
+      "engine_seed": 7331,
+      "normal_selection_accuracy": 1.0,
+      "normal_final_accuracy": 0.9609375,
+      "normal_minimum_value_recall": 0.875,
+      "normal_content_accuracy": 0.9609375,
+      "context_masked_accuracy": 0.2939453125,
+      "exact_final_accuracy": 0.9609375,
+      "partner_swap_accuracy": 0.02978515625,
+      "selection_passed": true,
+      "normal_passed": true
+    },
+    "v7331_e1337": {
+      "prototype_seed": 7331,
+      "engine_seed": 1337,
+      "normal_selection_accuracy": 0.99951171875,
+      "normal_final_accuracy": 0.95947265625,
+      "normal_minimum_value_recall": 0.84765625,
+      "normal_content_accuracy": 0.9599609375,
+      "context_masked_accuracy": 0.29345703125,
+      "exact_final_accuracy": 0.9599609375,
+      "partner_swap_accuracy": 0.03369140625,
+      "selection_passed": true,
+      "normal_passed": true
+    },
+    "v7331_e7331": {
+      "prototype_seed": 7331,
+      "engine_seed": 7331,
+      "normal_selection_accuracy": 1.0,
+      "normal_final_accuracy": 0.95751953125,
+      "normal_minimum_value_recall": 0.8203125,
+      "normal_content_accuracy": 0.95751953125,
+      "context_masked_accuracy": 0.29638671875,
+      "exact_final_accuracy": 0.95751953125,
+      "partner_swap_accuracy": 0.03515625,
+      "selection_passed": true,
+      "normal_passed": true
+    }
+  }
+}
