@@ -41,6 +41,9 @@ class StableKeyProjector(nn.Module):
         return addresses @ prototypes.T / self.temperature
 
 
+DEFAULT_STABLE_KEY_FIT_METHOD = "canonical_ridge"
+
+
 def _atomic_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -191,6 +194,15 @@ def fit_canonical_projector(states: torch.Tensor, key_labels: torch.Tensor,
         "design_rank": int(torch.linalg.matrix_rank(design)),
         "label_sha256": hashlib.sha256(key_labels.numpy().tobytes()).hexdigest(),
     }
+
+
+def fit_stable_key_projector(states: torch.Tensor, key_labels: torch.Tensor,
+                             spec: dict = KEY_SPEC, *,
+                             method: str = DEFAULT_STABLE_KEY_FIT_METHOD):
+    """Public stable-address fit; deterministic ridge is the canonical default."""
+    if method != DEFAULT_STABLE_KEY_FIT_METHOD:
+        raise ValueError(f"unknown stable key fit method: {method}")
+    return fit_canonical_projector(states, key_labels, spec)
 
 
 @torch.no_grad()
