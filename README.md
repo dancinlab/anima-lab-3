@@ -1023,14 +1023,17 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    `VectorMemory`는 변환이 없을 때 그대로 동작한다. 이는 공용 기억 경로 수리이지 의식이나
    고유한 기억의 증거는 아니다. 다음은 닮은 사건을 구분하는 `SEPARATION-1`이며 상세 사양은
    `docs/hypotheses/EPISODE-2-integrated-stable-memory-path.md`가 정본이다.
-9. **SEPARATION-1 — 닮은 사건 충돌 위치 검사 (사전등록, 실행 전):** 한 회차에 같은 열쇠를
+9. **SEPARATION-1 — 닮은 사건 충돌 위치 검사 (수리 사전등록, 재실행 전):** 한 회차에 같은 열쇠를
    공유하지만 앞선 상황과 값이 다른 사건 네 개를 저장한 뒤, `상황+열쇠` 질문으로 하나를 찾는다.
    `EPISODE-2`의 얼린 안정 주소·기존 `VectorMemory`·값 판독을 그대로 쓰며 새 구조나 학습은
    추가하지 않는다. 서로 다른 열쇠 조건과 정확한 `상황+열쇠` 주소가 두 seed 모두 정상이고,
    상황을 지우면 4지선다 우연 수준으로 떨어져야 검사 자체가 유효하다. 그 뒤 안정 주소와 원시
    내부 주소를 비교해 주소 변환이 상황을 지운 것인지, 변환 전부터 현재 상태에 상황이 남지 않은
    것인지 판정한다. 상세 조건과 중단 기준은
-   `docs/hypotheses/SEPARATION-1-similar-episode-collision.md`가 정본이다.
+   `docs/hypotheses/SEPARATION-1-similar-episode-collision.md`가 정본이다. 최초 실행은 결과 생성 전
+   seed 1337의 2,005번째 회차에서 셀 병합으로 셀 수가 48보다 줄어 기존 고정 모양 검사에 걸려
+   무효 중단됐다. 수리 실행은 주소 계산에 원래 쓰던 셀 평균은 유지하고, 특징 폭 96과 엔진의
+   등록 범위 2~48셀만 검사한다. 자료·팔·문턱·가중치는 바꾸지 않는다.
 10. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
