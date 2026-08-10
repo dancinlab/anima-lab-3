@@ -1283,15 +1283,25 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    감각 흐름에 따라 달라지는 것이 첫 손실이다. 다음은 기존 결정형 주소 맞춤을 값 상태에 재사용해
    같은 값의 시간별 상태를 하나의 표현으로 맞추는 `VALUE-2`다. 상세 결과는
    `docs/hypotheses/VALUE-MECHANISM-1-serial-position.md`가 정본이다.
-28. **VALUE-2 — 시간에 안정적인 값 표현의 공용 기억 연결 (등록, 실행 전):** 평가와 겹치지
+28. **VALUE-2 — 시간에 안정적인 값 표현의 공용 기억 연결 (완료,
+   `VT1_STABLE_VALUE_PATH_VALID_NOT_UNIQUE`):** 평가와 겹치지
    않는 512회차와 두 엔진 시작값에서 16개 위치의 값 상태 16,384개를 모은다. 기존
    `fit_stable_key_projector(..., method="canonical_ridge")`를 그대로 사용해 폭 32의 난수 없는
    값 표현을 한 번 맞춘다. `VectorMemory`에는 선택형 `value_transform` 입력만 추가하고 기존
-   호출은 그대로 유지한다. `VALUE-MECHANISM-1`의 다섯 위치에서 값 분류·최종 판독 90% 이상,
-   값별 최저 맞힘률 75% 이상을 네 조합이 모두 충족해야 한다. 장치 밖 같은 변환과 예측 100%
-   일치, 변환 차단 시 뒤 위치 실패 재현, 가짜 내용 5% 이하, 복구·기억 API 100%도 요구한다.
-   상세 사전등록은 `docs/hypotheses/VALUE-2-stable-value-memory-path.md`가 정본이다.
-29. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
+   호출은 그대로 유지한다. 값 8종 각각 2,048개로 맞춘 뒤 다섯 위치를 재검사한 결과 상태 분류는
+   `99.15~99.41%`, 최종 판독은 `97.85~100%`, 값별 최저 맞힘률은 `96.88~100%`였다. 변환을
+   끄면 뒤 위치가 `68.36~75.00%`로 다시 무너졌고, 장치 밖 기준·복구·기억 API는 100%, 가짜
+   내용은 0%였다. 최초 맞춤 자료 불균형 무효본은 보존하고 전체를 재실행했다. 다음은 안정 값
+   표현을 원래 결합 과제에 연결하는 `CONJUNCTION-2`다. 상세 결과는
+   `docs/hypotheses/VALUE-2-stable-value-memory-path.md`가 정본이다.
+29. **CONJUNCTION-2 — 안정 값 표현을 사용한 상황·열쇠 결합 재검사 (등록, 실행 전):**
+   `CONJUNCTION-1`의 1,024회차, 얼린 상황·열쇠 변환, 공용 합성 주소와 모든 통제를 그대로 둔다.
+   바꾸는 것은 `VALUE-2`의 얼린 `value_transform`을 저장 경계에 적용하는 것뿐이다. 정확 주소
+   양성 비교가 최종 판독 90%·값별 최저 맞힘률 75%를 먼저 통과해야 합성 주소를 판정한다. 정상
+   합성 주소의 선택·최종 판독 90%, 두 단독 성분 35% 이하, 가짜 내용 5% 이하, 장치 밖 기준·
+   복구·기억 API 100%를 요구한다. 상세 사전등록은
+   `docs/hypotheses/CONJUNCTION-2-stable-value-conjunction.md`가 정본이다.
+30. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
    회차마다 무작위로 바뀌고 학습·평가 회차는 겹치지 않는다. 표준 `GRU`, 기존 `VectorMemory`,
@@ -1303,7 +1313,7 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    고정된 8,192회차를 반복하는 2,000-step 절차가 새 관계로 충분히 일반화되지 않은 것이 첫
    문제다. 결과를 본 뒤 step을 늘리지 않았고 `EPISODE-1`은 계속 보류한다. 상세 사양과 판정은
    `docs/hypotheses/CONTROL-1-dynamic-relation-positive-control.md`가 정본이다.
-30. **CONTROL-2 — 온라인 동적 관계 기억 양성 비교 (완료, `O2_ONLINE_TRAINING_INVALID`):** `CONTROL-1`의 모델 폭,
+31. **CONTROL-2 — 온라인 동적 관계 기억 양성 비교 (완료, `O2_ONLINE_TRAINING_INVALID`):** `CONTROL-1`의 모델 폭,
    최적화 방식, 2,000회 학습, 배치 128과 고정 평가 자료는 유지한다. 바꾸는 것은 학습 자료
    흐름 하나뿐이다. 매 배치에서 질문 열쇠 8 × 값 8 × 질문 위치 2의 128개 회차를 새로 만들고,
    총 256,000개 회차를 반복 없이 한 번씩 사용했다. 고유성·균형·정확 기억·가짜 통제는 모두
@@ -1312,7 +1322,7 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    못했다. 따라서 고정 자료 반복은 `CONTROL-1` 실패의 근본 원인이 아니며 `EPISODE-1`은 계속
    보류한다. 다음 양성 비교는 열쇠로 저장 항목을 직접 찾는 표준 주의집중 방식이다. 상세 판정은
    `docs/hypotheses/CONTROL-2-online-dynamic-relation-positive-control.md`가 정본이다.
-31. **CONTROL-3 — 열쇠 기반 주의집중 양성 비교 (완료, `A1_KEYED_ATTENTION_VALID`):** `CONTROL-2`와
+32. **CONTROL-3 — 열쇠 기반 주의집중 양성 비교 (완료, `A1_KEYED_ATTENTION_VALID`):** `CONTROL-2`와
    같은 온라인 자료 흐름·고정 평가·2,000회 학습·폭 96을 유지하고, 순서대로 모든 입력을 압축하는
    `GRU`만 열쇠로 두 저장 항목을 직접 찾는 표준 `torch.nn.MultiheadAttention`으로 바꿨다. 두
    seed 모두 새 회차와 값별 재현율이 100%였고, 정확 기억 100%, 기억 없음 12.5%, 가짜 정답 0%로
@@ -1320,17 +1330,17 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    표준 양성 비교는 순차 기억층이 아니라 열쇠 검색 주의집중이며, 보류했던 `EPISODE-1`을 이
    비교군으로 시작할 수 있다. 상세 사양과 판정은
    `docs/hypotheses/CONTROL-3-keyed-attention-positive-control.md`가 정본이다.
-32. **META-1 — 자기 판단 정확도 (완료, `M2_CALIBRATED_NOT_UNIQUE`):** 내부 코드 확신의
+33. **META-1 — 자기 판단 정확도 (완료, `M2_CALIBRATED_NOT_UNIQUE`):** 내부 코드 확신의
    AUROC는 두 seed에서 0.923/0.907이었고, 코드를 뒤섞으면 0.250/0.275로 무너졌지만 행동은
    그대로였다. 내부 상태는 실제 오류 가능성을 담지만 일반 출력 점수도 거의 같은 정보를 제공해
    독립적인 자기 인식이나 의식 증거는 아니다.
-33. **SYNERGY-1 — 두 모듈의 부분 단서 결합 (완료, `Y3_NOT_INTEGRATED`):** 한쪽만 보면 정답이
+34. **SYNERGY-1 — 두 모듈의 부분 단서 결합 (완료, `Y3_NOT_INTEGRATED`):** 한쪽만 보면 정답이
    정확히 무작위인 균형 과제에서 표준 `GRU`는 정상 `100% / 93.8%`였지만, 두 `QuantumC` 상태를
    기존 연결 다리로 함께 읽은 정확도는 `29.7% / 29.7%`였다. 현재 한 번 평균 읽기는 두 단서의
    비선형 관계를 행동으로 계산하지 못한다. 직접 기억도 `32.8% / 39.1%`로 실패했다.
-34. **PCI-1 — 자극 뒤 반응 복잡성:** 일부를 짧게 건드린 반응이 넓게 퍼지면서도 모두 같아지지 않고
+35. **PCI-1 — 자극 뒤 반응 복잡성:** 일부를 짧게 건드린 반응이 넓게 퍼지면서도 모두 같아지지 않고
    시간에 따라 풍부하게 변하는지 행동 인과성과 함께 확인한다.
-35. **AGENCY-1 — 닫힌 환경의 행위 주체성:** 앞 단계가 통과할 때만, 행동이 다음 감각을 바꾸는
+36. **AGENCY-1 — 닫힌 환경의 행위 주체성:** 앞 단계가 통과할 때만, 행동이 다음 감각을 바꾸는
    환경에서 자기 행동 구분·목표 복구·계획 수정을 검사한다.
 
 STATE 판정은 정보가 처음 사라지는 지점으로 다음 작업을 고정한다. 입력 직후 실패면 감각 입력,
