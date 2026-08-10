@@ -158,7 +158,6 @@ def key_classification_metrics(model: StableKeyProjector, states: torch.Tensor,
     }
 
 
-@torch.no_grad()
 def run_seed(seed: int, calibration_episodes, eval_episodes, source_row: dict,
              source_receipt: dict, output_dir: Path, spec: dict = KEY_SPEC) -> dict:
     calibration_states, calibration_labels, calibration_audit = collect_calibration_states(
@@ -181,7 +180,7 @@ def run_seed(seed: int, calibration_episodes, eval_episodes, source_row: dict,
     stable_margins, raw_margins, sensory_margins = [], [], []
     eval_states, eval_labels, used_eval_seeds = [], [], []
     base = spec["eval_seed_base"] + seed * spec["seed_stride"]
-    transform = lambda value: projector.address(value.unsqueeze(0))[0]
+    transform = lambda value: projector.address(value.unsqueeze(0))[0].detach()
     for index, episode in enumerate(eval_episodes):
         trial_seed = base + index
         trace = trace_episode_states(episode, trial_seed, EPISODE_SPEC)

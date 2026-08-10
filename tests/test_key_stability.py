@@ -56,6 +56,18 @@ def test_projector_shapes_and_metric_learning_are_deterministic():
     assert key_classification_metrics(model, states, labels, 8)["accuracy"] == 1.0
 
 
+def test_projector_training_enables_gradients_for_the_training_scope():
+    states = torch.randn(32, KEY_SPEC["input_dim"])
+    labels = torch.arange(32) % KEY_SPEC["keys"]
+    local_spec = deepcopy(KEY_SPEC)
+    local_spec.update({"train_steps": 2, "batch_size": 16})
+    with torch.no_grad():
+        assert not states.requires_grad
+    model, audit = train_projector(states, labels, 321, False, local_spec)
+    assert audit["steps"] == 2
+    assert all(parameter.requires_grad for parameter in model.parameters())
+
+
 def _passing_payload(tmp_path: Path) -> dict:
     perfect = _metric(1.0)
     chance = _metrics(
