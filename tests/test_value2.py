@@ -10,6 +10,8 @@ import torch
 from measurement.value2_gate import adjudicate
 from measurement.value2_registry import VALUE2_SPEC, spec_sha256
 from trinity import VectorMemory
+from value import build_value_episodes
+from value2 import balance_calibration_values, calibration_episode_spec
 
 
 def test_value2_registry_matches_preregistration():
@@ -27,6 +29,16 @@ def test_vector_memory_default_value_path_is_backward_compatible():
     memory.store(key, value)
     assert torch.equal(memory.values[0], value.mean(0))
     assert torch.equal(memory.retrieve(key, top_k=1)[0], value.mean(0))
+
+
+def test_value2_calibration_values_are_exactly_balanced():
+    episodes = balance_calibration_values(
+        build_value_episodes(calibration_episode_spec())
+    )
+    labels = [value for episode in episodes for value in episode.values]
+    expected = len(labels) // VALUE2_SPEC["values"]
+    assert [labels.count(value) for value in range(VALUE2_SPEC["values"])] == [expected] * 8
+    assert [episode.target for episode in episodes].count(0) == len(episodes) // 8
 
 
 def test_vector_memory_applies_and_validates_one_value_transform_per_store():

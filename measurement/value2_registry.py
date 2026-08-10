@@ -23,6 +23,7 @@ VALUE2_SPEC = {
     "eval_episodes": VALUE_MECHANISM_SPEC["eval_episodes"],
     "query_positions": deepcopy(VALUE_MECHANISM_SPEC["query_positions"]),
     "events_per_episode": VALUE_MECHANISM_SPEC["events_per_episode"],
+    "active_values_per_episode": VALUE_MECHANISM_SPEC["active_values_per_episode"],
     "keys": VALUE_MECHANISM_SPEC["keys"],
     "values": VALUE_MECHANISM_SPEC["values"],
     "contexts": VALUE_MECHANISM_SPEC["contexts"],

@@ -92,6 +92,33 @@ def calibration_episode_spec(spec: dict = VALUE2_SPEC) -> dict:
     return value
 
 
+def balance_calibration_values(episodes, spec: dict = VALUE2_SPEC):
+    """Assign an exact balanced value roster without changing event pairs or Latin structure."""
+    balanced = []
+    for index, episode in enumerate(episodes):
+        target = index % spec["values"]
+        assigned = [
+            (target + offset) % spec["values"]
+            for offset in range(spec["active_values_per_episode"])
+        ]
+        original = [
+            episode.target,
+            *sorted(value for value in episode.active_values if value != episode.target),
+        ]
+        mapping = dict(zip(original, assigned))
+        balanced.append(type(episode)(
+            contexts=episode.contexts,
+            keys=episode.keys,
+            values=tuple(mapping[value] for value in episode.values),
+            active_contexts=episode.active_contexts,
+            active_keys=episode.active_keys,
+            active_values=tuple(sorted(assigned)),
+            distractors=episode.distractors,
+            query_position=episode.query_position,
+        ))
+    return balanced
+
+
 def _canonical_rows(states: torch.Tensor, labels: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
     order = sorted(
         range(len(states)),
@@ -347,7 +374,9 @@ def main() -> None:
     spec = VALUE2_SPEC
     _, source = _source_receipt(spec)
     calibration_spec = calibration_episode_spec(spec)
-    calibration_episodes = build_value_episodes(calibration_spec)
+    calibration_episodes = balance_calibration_values(
+        build_value_episodes(calibration_spec), spec
+    )
     eval_episodes = build_value_episodes(VALUE_SPEC)
     calibration_states, calibration_labels, calibration_state_audit = collect_calibration_states(
         calibration_episodes, spec
