@@ -5,7 +5,7 @@ from pathlib import Path
 
 import torch
 
-from episode import _decode, _memory_prediction, build_value_prototypes
+from episode import _decode, _memory_prediction, build_value_prototypes, trace_episode_states
 from episode_control import _metrics, build_reference_splits, dataset_audit
 from measurement.episode_control_registry import ATTENTION_CONTROL_SPEC, spec_sha256 as source_spec_sha256
 from measurement.episode_gate import adjudicate
@@ -53,6 +53,22 @@ def test_existing_vector_memory_retrieval_and_partner_swap_are_causal():
     assert (normal, selected, api_match) == (0, 0, True)
     assert (swapped, swapped_api_match) == (1, True)
     assert _decode(values[1], prototypes) == 1
+
+    transformed, transformed_selected, transformed_api, _ = _memory_prediction(
+        keys, values, keys[0], prototypes, key_transform=lambda value: value.flip(0)
+    )
+    assert (transformed, transformed_selected, transformed_api) == (0, 0, True)
+
+
+def test_episode_trace_uses_the_registered_sequence_once():
+    episode = build_reference_splits(ATTENTION_CONTROL_SPEC)["validation"][0]
+    trace = trace_episode_states(episode, 987654321)
+    assert set(trace) == {
+        "quantum_keys", "quantum_values", "quantum_query",
+        "sensory_keys", "sensory_values", "sensory_query",
+    }
+    assert len(trace["quantum_keys"]) == len(trace["quantum_values"]) == 2
+    assert trace["quantum_query"].shape == (48, 96)
 
 
 def _passing_payload(tmp_path: Path) -> dict:

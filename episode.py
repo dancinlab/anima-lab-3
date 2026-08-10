@@ -87,6 +87,40 @@ def _new_engine(seed: int, spec: dict = EPISODE_SPEC) -> tuple[QuantumC, PureMin
     return c, encoder
 
 
+def trace_episode_states(episode, trial_seed: int, spec: dict = EPISODE_SPEC) -> dict:
+    """Run the canonical EPISODE sensory sequence and return its read-only states."""
+    c, encoder = _new_engine(trial_seed, spec)
+    quantum_keys, quantum_values, sensory_keys, sensory_values = [], [], [], []
+    for key, value in episode.stores:
+        quantum_key, sensory_key = _sense_token(
+            c, encoder, spec["key_words"][key], spec["sense_steps"], spec
+        )
+        quantum_value, sensory_value = _sense_token(
+            c, encoder, spec["value_words"][value], spec["sense_steps"], spec
+        )
+        quantum_keys.append(quantum_key)
+        quantum_values.append(quantum_value)
+        sensory_keys.append(sensory_key)
+        sensory_values.append(sensory_value)
+    for distractor in episode.distractors:
+        _sense_token(
+            c, encoder,
+            spec["distractor_words"][distractor % len(spec["distractor_words"])],
+            spec["distractor_sense_steps"], spec,
+        )
+    quantum_query, sensory_query = _sense_token(
+        c, encoder, spec["key_words"][episode.query_key], spec["sense_steps"], spec
+    )
+    return {
+        "quantum_keys": quantum_keys,
+        "quantum_values": quantum_values,
+        "quantum_query": quantum_query,
+        "sensory_keys": sensory_keys,
+        "sensory_values": sensory_values,
+        "sensory_query": sensory_query,
+    }
+
+
 def build_value_prototypes(seed: int, spec: dict = EPISODE_SPEC) -> tuple[dict, dict]:
     quantum_rows = [[] for _ in range(spec["values"])]
     sensory_rows = [[] for _ in range(spec["values"])]
@@ -121,16 +155,22 @@ def _decode(state: torch.Tensor, prototypes: torch.Tensor) -> int:
 
 def _memory_prediction(keys: list[torch.Tensor], values: list[torch.Tensor],
                        query: torch.Tensor, prototypes: torch.Tensor,
-                       swap: bool = False) -> tuple[int, int, bool, float]:
-    memory = VectorMemory(capacity=len(keys), dim=prototypes.shape[-1])
+                       swap: bool = False, key_transform=None) -> tuple[int, int, bool, float]:
+    def address(state: torch.Tensor) -> torch.Tensor:
+        vector = state.mean(0) if state.dim() > 1 else state
+        return key_transform(vector) if key_transform is not None else vector
+
+    key_addresses = [address(key) for key in keys]
+    query_address = address(query)
+    memory = VectorMemory(capacity=len(keys), dim=key_addresses[0].numel())
     stored_values = list(reversed(values)) if swap else values
-    for key, value in zip(keys, stored_values):
+    for key, value in zip(key_addresses, stored_values):
         memory.store(key, value)
     similarities = torch.stack([
-        F.cosine_similarity(query.mean(0), key.mean(0), dim=0) for key in keys
+        F.cosine_similarity(query_address, key, dim=0) for key in key_addresses
     ])
     selected = int(similarities.argmax())
-    retrieved = memory.retrieve(query, top_k=1)[0]
+    retrieved = memory.retrieve(query_address, top_k=1)[0]
     api_match = bool(torch.equal(retrieved, stored_values[selected].mean(0)))
     prediction = _decode(retrieved, prototypes)
     margin = float(similarities.max() - similarities.min())
@@ -177,28 +217,13 @@ def run_seed(seed: int, episodes, source: dict, output_dir: Path,
     for index, episode in enumerate(episodes):
         trial_seed = base + index
         episode_seeds.append(trial_seed)
-        c, encoder = _new_engine(trial_seed, spec)
-        q_keys, q_values, s_keys, s_values = [], [], [], []
-        for key, value in episode.stores:
-            q_key, s_key = _sense_token(
-                c, encoder, spec["key_words"][key], spec["sense_steps"], spec
-            )
-            q_value, s_value = _sense_token(
-                c, encoder, spec["value_words"][value], spec["sense_steps"], spec
-            )
-            q_keys.append(q_key)
-            q_values.append(q_value)
-            s_keys.append(s_key)
-            s_values.append(s_value)
-        for distractor in episode.distractors:
-            _sense_token(
-                c, encoder,
-                spec["distractor_words"][distractor % len(spec["distractor_words"])],
-                spec["distractor_sense_steps"], spec,
-            )
-        q_query, s_query = _sense_token(
-            c, encoder, spec["key_words"][episode.query_key], spec["sense_steps"], spec
-        )
+        trace = trace_episode_states(episode, trial_seed, spec)
+        q_keys = trace["quantum_keys"]
+        q_values = trace["quantum_values"]
+        q_query = trace["quantum_query"]
+        s_keys = trace["sensory_keys"]
+        s_values = trace["sensory_values"]
+        s_query = trace["sensory_query"]
         qn, qs, qa, qm = _memory_prediction(
             q_keys, q_values, q_query, prototypes["quantum"]
         )
