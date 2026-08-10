@@ -22,6 +22,8 @@
 | `separation1-similar-episode` | 로컬 CPU SEPARATION-1 무효 결과·판정·재사용한 두 seed 안정 주소 체크포인트 | 5 | 97,980 | `d43396cf6a15d9786351faeb55a370136ac82f6b8db6ba099d733383e3186e97` |
 | `capacity1-stable-address-boundary` | 로컬 CPU CAPACITY-1 결과·판정·재사용한 두 seed 안정 주소 체크포인트 | 5 | 154,683 | `039b0ddc2e501822b398f07ec5a1e565dc9da59c59320114e3d087527bf97d43` |
 | `decay1-memory-decomposition` | 로컬 CPU DECAY-1 최초 무효·수리 결과와 판정·재사용한 두 seed 안정 주소 체크포인트 | 7 | 391,037 | `7f7c93c8479343a31915f79242fbb57ebc7498370ae0eb05d2d2920d55db4bda` |
+| `recovery1-dense-curve` | 로컬 CPU RECOVERY-1 최초 정밀도 무효본·수리 판정·독립 회복 곡선 | 5 | 2,340,685 | `fa9bd692b42d387795dd88041ccc46accbdae5696287393fe678ad6fa982a6fa` |
+| `reset1-recovery-mechanism` | 로컬 CPU RESET-1 감각 변화·같은 감각·자체 갱신 비교 결과와 판정 | 3 | 1,829,632 | `8badfd1b91e4bda72b72c584fa523e0290ca98426f42ac7359c459d2e0beb750` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -105,3 +107,11 @@ DECAY-1 보관은 Hugging Face 커밋 `0bba39ddf9121dcb85686bbdd57d0372af425d6a`
 `decay1-memory-decomposition` revision을 새 임시 디렉토리로 다시 내려받아 시간 조건별 초기 난수가
 달랐던 최초 무효본, 동일 초기 상태로 고친 수리 결과·판정과 두 주소 변환 체크포인트의 SHA-256을
 전수 확인했다. manifest 자체의 SHA-256도 위 표와 일치하며 새 학습이나 GPU 대여는 없었다.
+
+RECOVERY-1 보관은 Hugging Face 커밋 `c4e7579b00864c0c66f72fb16c5d5f4b8837ff16`에 올렸다. 원격
+`recovery1-dense-curve` revision을 새 임시 디렉토리로 다시 내려받아 최초 정밀도 무효본과 최종
+결과·판정의 SHA-256을 전수 확인했다. manifest 자체의 SHA-256도 위 표와 일치한다.
+
+RESET-1 보관은 Hugging Face 커밋 `91ee5c87f740571505a2f68e8da8d415f1027131`에 올렸다. 원격
+`reset1-recovery-mechanism` revision의 결과·판정·manifest 세 파일을 새 임시 디렉토리로 다시
+내려받아 SHA-256을 전수 확인했다. 새 학습이나 GPU 대여는 없었다.
