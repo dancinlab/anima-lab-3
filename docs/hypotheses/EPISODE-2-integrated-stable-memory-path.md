@@ -64,7 +64,9 @@
 - 새 학습이 일어나거나 얼린 주소 가중치가 평가 전후 달라짐
 - 공용 기억의 변환 없음 동작이 기존 단위 검사 또는 `EPISODE-1` 재생과 달라짐
 - 공용 내부 변환이 저장 두 번·검색 한 번 이외의 횟수로 호출되거나 저장 내용을 바꿈
-- `manual_stable_reference`가 `KEY-1` 정상 팔과 다르거나 `integrated_stable_normal`과 한 회차라도 다름
+- `manual_stable_reference`가 `KEY-1` 정상 팔과 한 회차라도 다름. 공용
+  `integrated_stable_normal`만 이 기준과 다르면 무효가 아니라 아래 `E2I_MEMORY_INTEGRATION_LOSS`로
+  판정한다.
 - 직접 감각 기억·표준 열쇠 검색 90% 미만, 기억 없음 25% 초과
 - 내용 맞바꾸기 25% 초과, 복구 예측이 정상과 하나라도 다름
 - seed·팔·체크포인트·수치가 누락되거나 NaN·무한값이 있음
