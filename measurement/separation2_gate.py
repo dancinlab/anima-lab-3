@@ -7,11 +7,21 @@ import json
 import os
 from pathlib import Path
 
-from measurement.canonical2_gate import _checkpoint_valid, adjudicate as adjudicate_canonical2
-from measurement.canonical2_registry import CANONICAL2_SPEC, spec_sha256 as canonical2_spec_sha256
-from measurement.capacity_gate import _finite_tree, _metric_shape, _valid_receipt, _verify_prototypes
-from measurement.projector_registry import evaluation_name
-from measurement.separation2_registry import SEPARATION2_SPEC, spec_sha256
+try:
+    from measurement.canonical2_gate import _checkpoint_valid, adjudicate as adjudicate_canonical2
+    from measurement.canonical2_registry import CANONICAL2_SPEC, spec_sha256 as canonical2_spec_sha256
+    from measurement.capacity_gate import _finite_tree, _metric_shape, _valid_receipt, _verify_prototypes
+    from measurement.projector_registry import evaluation_name
+    from measurement.separation2_registry import SEPARATION2_SPEC, spec_sha256
+except ModuleNotFoundError:
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from measurement.canonical2_gate import _checkpoint_valid, adjudicate as adjudicate_canonical2
+    from measurement.canonical2_registry import CANONICAL2_SPEC, spec_sha256 as canonical2_spec_sha256
+    from measurement.capacity_gate import _finite_tree, _metric_shape, _valid_receipt, _verify_prototypes
+    from measurement.projector_registry import evaluation_name
+    from measurement.separation2_registry import SEPARATION2_SPEC, spec_sha256
 
 
 def _balanced(counts: dict, categories: int, total: int) -> bool:
