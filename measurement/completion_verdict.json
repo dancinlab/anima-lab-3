@@ -1,0 +1,140 @@
+{
+  "experiment": "completion1_partial_cue_retrieval",
+  "verdict": "CP2_FRAGILE_CUE_PATH",
+  "reason": "removing one quarter of both cue states broke the registered path",
+  "spec_sha256": "a86501200a71d376613c8d1f923fea6a3df2f986bc15ca0e1738d65347f03b22",
+  "evaluations": {
+    "v1337_e1337": {
+      "full_cue": {
+        "selection_accuracy": 0.9384765625,
+        "accuracy": 0.931640625,
+        "minimum_value_recall": 0.8984375
+      },
+      "context_half_cue": {
+        "selection_accuracy": 0.7255859375,
+        "accuracy": 0.724609375,
+        "minimum_value_recall": 0.671875
+      },
+      "key_half_cue": {
+        "selection_accuracy": 0.6728515625,
+        "accuracy": 0.6748046875,
+        "minimum_value_recall": 0.625
+      },
+      "both_quarter_missing": {
+        "selection_accuracy": 0.734375,
+        "accuracy": 0.7333984375,
+        "minimum_value_recall": 0.6875
+      },
+      "both_half_missing": {
+        "selection_accuracy": 0.51953125,
+        "accuracy": 0.544921875,
+        "minimum_value_recall": 0.4921875
+      },
+      "both_three_quarters_missing": {
+        "selection_accuracy": 0.294921875,
+        "accuracy": 0.3857421875,
+        "minimum_value_recall": 0.34375
+      }
+    },
+    "v1337_e7331": {
+      "full_cue": {
+        "selection_accuracy": 0.943359375,
+        "accuracy": 0.93359375,
+        "minimum_value_recall": 0.9140625
+      },
+      "context_half_cue": {
+        "selection_accuracy": 0.7255859375,
+        "accuracy": 0.7197265625,
+        "minimum_value_recall": 0.640625
+      },
+      "key_half_cue": {
+        "selection_accuracy": 0.68359375,
+        "accuracy": 0.681640625,
+        "minimum_value_recall": 0.640625
+      },
+      "both_quarter_missing": {
+        "selection_accuracy": 0.740234375,
+        "accuracy": 0.740234375,
+        "minimum_value_recall": 0.703125
+      },
+      "both_half_missing": {
+        "selection_accuracy": 0.521484375,
+        "accuracy": 0.5439453125,
+        "minimum_value_recall": 0.5
+      },
+      "both_three_quarters_missing": {
+        "selection_accuracy": 0.3056640625,
+        "accuracy": 0.39453125,
+        "minimum_value_recall": 0.3359375
+      }
+    },
+    "v7331_e1337": {
+      "full_cue": {
+        "selection_accuracy": 0.9384765625,
+        "accuracy": 0.931640625,
+        "minimum_value_recall": 0.8984375
+      },
+      "context_half_cue": {
+        "selection_accuracy": 0.7255859375,
+        "accuracy": 0.724609375,
+        "minimum_value_recall": 0.671875
+      },
+      "key_half_cue": {
+        "selection_accuracy": 0.6728515625,
+        "accuracy": 0.6748046875,
+        "minimum_value_recall": 0.625
+      },
+      "both_quarter_missing": {
+        "selection_accuracy": 0.734375,
+        "accuracy": 0.7333984375,
+        "minimum_value_recall": 0.6875
+      },
+      "both_half_missing": {
+        "selection_accuracy": 0.51953125,
+        "accuracy": 0.544921875,
+        "minimum_value_recall": 0.4921875
+      },
+      "both_three_quarters_missing": {
+        "selection_accuracy": 0.294921875,
+        "accuracy": 0.3857421875,
+        "minimum_value_recall": 0.34375
+      }
+    },
+    "v7331_e7331": {
+      "full_cue": {
+        "selection_accuracy": 0.943359375,
+        "accuracy": 0.93359375,
+        "minimum_value_recall": 0.9140625
+      },
+      "context_half_cue": {
+        "selection_accuracy": 0.7255859375,
+        "accuracy": 0.7197265625,
+        "minimum_value_recall": 0.640625
+      },
+      "key_half_cue": {
+        "selection_accuracy": 0.68359375,
+        "accuracy": 0.681640625,
+        "minimum_value_recall": 0.640625
+      },
+      "both_quarter_missing": {
+        "selection_accuracy": 0.740234375,
+        "accuracy": 0.740234375,
+        "minimum_value_recall": 0.703125
+      },
+      "both_half_missing": {
+        "selection_accuracy": 0.521484375,
+        "accuracy": 0.5439453125,
+        "minimum_value_recall": 0.5
+      },
+      "both_three_quarters_missing": {
+        "selection_accuracy": 0.3056640625,
+        "accuracy": 0.39453125,
+        "minimum_value_recall": 0.3359375
+      }
+    }
+  },
+  "source_checkpoint": {
+    "path": "checkpoints/component2/stable_components.pt",
+    "sha256": "d2ea57bd628f865bc69b2592d3d036433ab0fd31d14027c36c632b12aa4c3a36"
+  }
+}

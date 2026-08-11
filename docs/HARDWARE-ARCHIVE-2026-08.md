@@ -40,6 +40,7 @@
 | `context-settle2-integrated` | 로컬 CPU CONTEXT-SETTLE-2 3·6회 공용 결합 결과·판정·재사용한 상황/열쇠·값 변환 | 5 | 297,897 | `b4e21b41d2612399ce5854939ea10b84e024aad4fd88e1d9eb3454e89be9b305` |
 | `address-margin1-composite-address` | 로컬 CPU ADDRESS-MARGIN-1 연속·고정 중심 주소 결과·판정·재사용한 상황/열쇠·값 변환 | 5 | 137,431 | `c64de300f49e4124958771985b9586a66ed72c8e6998c063be9471359e8f8561` |
 | `address-center2-integrated-context-center` | 로컬 CPU ADDRESS-CENTER-2 공용 상황 중심 결과·판정·재사용한 상황/열쇠·값 변환 | 5 | 122,772 | `49a02a81148e84168078b7ea5bc8b525d436299aebb8876f6be04600fb14b538` |
+| `completion1-partial-cue` | 로컬 CPU COMPLETION-1 부분 단서 손상 결과·판정·재사용한 상황/열쇠·값 변환 | 5 | 145,173 | `cb9b4a8a433ae21ffc454cae59547b914bd55a901d2e8f1dde733052254f0426` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -201,3 +202,8 @@ ADDRESS-CENTER-2 보관은 Hugging Face 커밋
 `7eb4c8bfbf12016a468101a0dd209301ad518f93`에 올렸다. 원격
 `address-center2-integrated-context-center` revision의 결과·판정·재사용한 상황/열쇠·값 변환과
 manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
+
+COMPLETION-1 보관은 Hugging Face 커밋
+`67bce887097f44416bb9b98b27fa02e91c7e41c3`에 올렸다. 원격 `completion1-partial-cue`
+revision의 결과·판정·재사용한 상황/열쇠·값 변환과 manifest를 새 임시 디렉토리로 다시 내려받아
+SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
