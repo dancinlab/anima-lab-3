@@ -207,3 +207,10 @@ COMPLETION-1 보관은 Hugging Face 커밋
 `67bce887097f44416bb9b98b27fa02e91c7e41c3`에 올렸다. 원격 `completion1-partial-cue`
 revision의 결과·판정·재사용한 상황/열쇠·값 변환과 manifest를 새 임시 디렉토리로 다시 내려받아
 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
+
+CUE-MECHANISM-1 보관은 Hugging Face 커밋
+`2a8c8ffe3c8cf15a9744a519df6ffea0f53b063a`에 올렸다. 원격
+`cue-mechanism1-partial-cue-decomposition` revision의 결과·판정·재사용한 상황/열쇠·값 변환과
+manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`1723ef0edd25ff685fe5f5488aaab84ab7b46e6f714817c37f728eaf5958f1ed`다. 로컬 CPU에서만
+실행했다.
