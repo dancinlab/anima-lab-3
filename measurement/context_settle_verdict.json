@@ -1,0 +1,706 @@
+{
+  "experiment": "context_settle1_transition_settling",
+  "verdict": "CT1_MINIMUM_SETTLING_FOUND",
+  "reason": "all context positions recovered at 6 settling steps",
+  "spec_sha256": "be808c315e77e3dcc210f1a5b15faada44dffcb28f4f9f789faf1b871340a696",
+  "minimum_settling_steps": 6,
+  "baseline_reproduced": {
+    "1337": true,
+    "7331": true
+  },
+  "candidate_pass": {
+    "4": false,
+    "6": true,
+    "9": true
+  },
+  "engines": {
+    "1337": {
+      "3": {
+        "all_positions_passed": false,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.76171875,
+            "minimum_recall": 0.6060606241226196,
+            "passed": false
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.416015625,
+            "minimum_recall": 0.32258063554763794,
+            "passed": false
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "4": {
+        "all_positions_passed": false,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.87109375,
+            "minimum_recall": 0.7727272510528564,
+            "passed": false
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.638671875,
+            "minimum_recall": 0.5,
+            "passed": false
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "6": {
+        "all_positions_passed": true,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.982421875,
+            "minimum_recall": 0.9589040875434875,
+            "passed": true
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.9296875,
+            "minimum_recall": 0.8461538553237915,
+            "passed": true
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "9": {
+        "all_positions_passed": true,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.998046875,
+            "minimum_recall": 0.9863013625144958,
+            "passed": true
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.9921875,
+            "minimum_recall": 0.9433962106704712,
+            "passed": true
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      }
+    },
+    "7331": {
+      "3": {
+        "all_positions_passed": false,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.7421875,
+            "minimum_recall": 0.6212121248245239,
+            "passed": false
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.408203125,
+            "minimum_recall": 0.36764705181121826,
+            "passed": false
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "4": {
+        "all_positions_passed": false,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.869140625,
+            "minimum_recall": 0.7424242496490479,
+            "passed": false
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.654296875,
+            "minimum_recall": 0.5161290168762207,
+            "passed": false
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "6": {
+        "all_positions_passed": true,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.982421875,
+            "minimum_recall": 0.9545454382896423,
+            "passed": true
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.927734375,
+            "minimum_recall": 0.8307692408561707,
+            "passed": true
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      },
+      "9": {
+        "all_positions_passed": true,
+        "positions": {
+          "0": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "1": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "2": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "3": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "4": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "5": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "6": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "7": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "8": {
+            "accuracy": 0.998046875,
+            "minimum_recall": 0.9863013625144958,
+            "passed": true
+          },
+          "9": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "10": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "11": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "12": {
+            "accuracy": 0.9921875,
+            "minimum_recall": 0.9433962106704712,
+            "passed": true
+          },
+          "13": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "14": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          },
+          "15": {
+            "accuracy": 1.0,
+            "minimum_recall": 1.0,
+            "passed": true
+          }
+        }
+      }
+    }
+  },
+  "source_checkpoint": {
+    "path": "checkpoints/component2/stable_components.pt",
+    "sha256": "d2ea57bd628f865bc69b2592d3d036433ab0fd31d14027c36c632b12aa4c3a36"
+  }
+}
