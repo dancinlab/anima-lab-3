@@ -25,7 +25,7 @@ CUE_CONTEXT_SPEC = {
             "keys", "values", "data_seed", "episode_seed_base", "seed_stride",
             "settled_context_steps", "key_sense_steps", "value_sense_steps",
             "distractor_sense_steps", "state_dim", "component_address_dim",
-            "minimum_cells", "maximum_cells", "device",
+            "minimum_cells", "maximum_cells", "temperature", "bias", "device",
         )
     },
     "calibration_episodes": COMPONENT2_SPEC["calibration_episodes"],
