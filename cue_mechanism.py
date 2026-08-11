@@ -199,7 +199,8 @@ def _aggregate_distance(rows: list[dict]) -> dict:
 def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict,
                    source_results: dict, spec: dict = CUE_MECHANISM_SPEC, *,
                    context_projector_override=None, key_projector_override=None,
-                   fake_context_projector=None, fake_key_projector=None) -> dict:
+                   fake_context_projector=None, fake_key_projector=None,
+                   include_trace_digests: bool = False) -> dict:
     context_projector, key_projector = _load_components(source["component_checkpoint"], spec)
     if context_projector_override is not None:
         context_projector = context_projector_override
@@ -237,6 +238,13 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
     context_labels = [episode.query_context for episode in episodes]
     key_labels = [episode.query_key for episode in episodes]
     episode_seeds, cell_counts, sense_audits = [], [], []
+    trace_hashers = (
+        {name: hashlib.sha256() for name in (
+            "storage_context", "storage_key", "storage_value",
+            "query_context", "query_key", "labels",
+        )}
+        if include_trace_digests else None
+    )
     restore_context_equal = True
     restore_key_equal = True
     base = spec["episode_seed_base"] + engine_seed * spec["seed_stride"]
@@ -244,6 +252,28 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
         trial_seed = base + index
         episode_seeds.append(trial_seed)
         trace = trace_episode(episode, trial_seed, runtime_spec)
+        if trace_hashers is not None:
+            for name, states in (
+                ("storage_context", trace["contexts"]),
+                ("storage_key", trace["keys"]),
+                ("storage_value", trace["values"]),
+            ):
+                for state in states:
+                    trace_hashers[name].update(
+                        state.detach().contiguous().numpy().tobytes()
+                    )
+            trace_hashers["query_context"].update(
+                trace["query_context"].detach().contiguous().numpy().tobytes()
+            )
+            trace_hashers["query_key"].update(
+                trace["query"].detach().contiguous().numpy().tobytes()
+            )
+            trace_hashers["labels"].update(
+                json.dumps(
+                    [episode.query_context, episode.query_key, episode.target,
+                     episode.query_position], separators=(",", ":"),
+                ).encode()
+            )
         cell_counts.extend(trace["cell_counts"])
         sense_audits.append(trace["sense_audit"])
         outcomes = {}
@@ -420,6 +450,17 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
                 "key": _aggregate_component(rows["key"], key_labels, spec["keys"]),
             }
             for condition, rows in fake_diagnostics.items()
+        }
+    if trace_hashers is not None:
+        result["trace_digests"] = {
+            name: digest.hexdigest() for name, digest in trace_hashers.items()
+        }
+        result["record_digests"] = {
+            name: hashlib.sha256(json.dumps(
+                {"predictions": row["predictions"], "selections": row["selections"]},
+                sort_keys=True, separators=(",", ":"),
+            ).encode()).hexdigest()
+            for name, row in records.items()
         }
     return result
 

@@ -1,0 +1,2 @@
+97d5fd66d55fe9bf0462041a77d3111d559f1e5c883b688a7e0b436431a12b53  measurement/query_refresh2_results.json
+a2cf3f2d6c17abc1f75df3bc13317a8ca0d8ee434418e9b794276de1adac98f7  measurement/query_refresh2_verdict.json
