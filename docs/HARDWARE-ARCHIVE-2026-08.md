@@ -235,3 +235,10 @@ CUE-ALIGN-1 보관은 Hugging Face 커밋
 manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `d86f4dc8d57f1b21c7ef28a38b46583002d29dde3636e144c5277f80222cb2dd`다. 로컬 CPU에서만
 실행했다.
+
+CUE-HISTORY-1 보관은 Hugging Face 커밋
+`3c8e72800812bb8c90c762dd0f1c679658eb3111`에 올렸다. 원격
+`cue-history1-episode-processing-history` revision의 결과·판정·manifest를 새 임시 디렉토리로
+다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`e45542d4568ac1febc800014a4088e50ed160dbc3ef99f85752e144bbeecc87e`다. 로컬 CPU에서만
+실행했다.

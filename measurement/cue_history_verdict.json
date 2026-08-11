@@ -1,0 +1,66 @@
+{
+  "experiment": "cue_history1_episode_processing_history",
+  "verdict": "CH4_HISTORY_SENSITIVE_NOT_SUFFICIENT",
+  "reason": "processing history changes decisions but no registered intervention recovers them",
+  "spec_sha256": "398ea8c9fabbd28b4a84f4adab1998297e889f92bf0346c7c1be97dd34a67526",
+  "evaluations": {
+    "v1337_e1337": {
+      "recovered": {
+        "event_reversed": false,
+        "distractor_swapped": false,
+        "both_changed": false
+      },
+      "sensitive": {
+        "event_reversed": true,
+        "distractor_swapped": false,
+        "both_changed": true
+      }
+    },
+    "v1337_e7331": {
+      "recovered": {
+        "event_reversed": false,
+        "distractor_swapped": false,
+        "both_changed": false
+      },
+      "sensitive": {
+        "event_reversed": true,
+        "distractor_swapped": false,
+        "both_changed": true
+      }
+    },
+    "v7331_e1337": {
+      "recovered": {
+        "event_reversed": false,
+        "distractor_swapped": false,
+        "both_changed": false
+      },
+      "sensitive": {
+        "event_reversed": true,
+        "distractor_swapped": false,
+        "both_changed": true
+      }
+    },
+    "v7331_e7331": {
+      "recovered": {
+        "event_reversed": false,
+        "distractor_swapped": false,
+        "both_changed": false
+      },
+      "sensitive": {
+        "event_reversed": true,
+        "distractor_swapped": false,
+        "both_changed": true
+      }
+    }
+  },
+  "all_recovered": {
+    "event_reversed": false,
+    "distractor_swapped": false,
+    "both_changed": false
+  },
+  "all_sensitive": {
+    "event_reversed": true,
+    "distractor_swapped": false,
+    "both_changed": true
+  }
+}
