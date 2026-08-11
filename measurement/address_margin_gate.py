@@ -8,11 +8,22 @@ import math
 import os
 from pathlib import Path
 
-from graft_behavior import sha256_file
-from measurement.address_margin_registry import ADDRESS_MARGIN_SPEC, spec_sha256
-from measurement.context_settle2_gate import adjudicate as adjudicate_context_settle2
-from measurement.context_settle2_registry import CONTEXT_SETTLE2_SPEC
-from measurement.projector_registry import evaluation_name
+try:
+    from graft_behavior import sha256_file
+    from measurement.address_margin_registry import ADDRESS_MARGIN_SPEC, spec_sha256
+    from measurement.capacity_gate import _metric_shape
+    from measurement.context_settle2_gate import adjudicate as adjudicate_context_settle2
+    from measurement.context_settle2_registry import CONTEXT_SETTLE2_SPEC
+    from measurement.projector_registry import evaluation_name
+except ModuleNotFoundError:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from graft_behavior import sha256_file
+    from measurement.address_margin_registry import ADDRESS_MARGIN_SPEC, spec_sha256
+    from measurement.capacity_gate import _metric_shape
+    from measurement.context_settle2_gate import adjudicate as adjudicate_context_settle2
+    from measurement.context_settle2_registry import CONTEXT_SETTLE2_SPEC
+    from measurement.projector_registry import evaluation_name
 
 
 def _finite(value) -> bool:
@@ -99,6 +110,11 @@ def adjudicate(payload: dict, spec: dict = ADDRESS_MARGIN_SPEC,
                 return invalid(f"evaluation {name} identity changed")
             if set(row["arms"]) != set(spec["arms"]):
                 return invalid(f"evaluation {name} arm roster changed")
+            if any(
+                not _metric_shape(arm, spec["values"])
+                for arm in row["arms"].values()
+            ):
+                return invalid(f"evaluation {name} arm metric shape changed")
             if row["frozen_audit"] != {"context": True, "key": True, "value": True}:
                 return invalid(f"evaluation {name} changed a frozen transform")
             states = row["state_audit"]

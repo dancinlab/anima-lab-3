@@ -1,0 +1,128 @@
+{
+  "experiment": "address_margin1_composite_address_margin",
+  "verdict": "AM1_WITHIN_CLASS_MARGIN_LOSS",
+  "reason": "fixed predicted category centers recovered retrieval from continuous within-category drift",
+  "spec_sha256": "d5fa9546a1f9df44ec831dd5afcea7c2da4d5142803bebe9fc0afb6c8b0ac4f0",
+  "evaluations": {
+    "v1337_e1337": {
+      "continuous_selection": 0.8095703125,
+      "centered_selection": 0.93359375,
+      "selection_gain": 0.1240234375,
+      "centered_final_accuracy": 0.9267578125,
+      "minimum_value_recall": 0.90625,
+      "context_category_accuracy": 0.9910386204719543,
+      "key_category_accuracy": 0.9948874115943909,
+      "continuous_margin": {
+        "correct_similarity_mean": 0.8360252818092704,
+        "closest_wrong_similarity_mean": 0.720183280238416,
+        "retrieval_margin_mean": 0.11584200157085434,
+        "retrieval_margin_minimum": -0.3260853886604309,
+        "positive_margin_fraction": 0.8095703125
+      },
+      "centered_margin": {
+        "correct_similarity_mean": 0.967773379816208,
+        "closest_wrong_similarity_mean": 0.5292968434514478,
+        "retrieval_margin_mean": 0.43847653636476025,
+        "retrieval_margin_minimum": -0.4999999701976776,
+        "positive_margin_fraction": 0.931640625
+      },
+      "deviation": {
+        "context_mean": 0.056072374192915636,
+        "context_maximum": 0.41304099559783936,
+        "key_mean": 0.11019236966967583,
+        "key_maximum": 0.5614317655563354
+      }
+    },
+    "v1337_e7331": {
+      "continuous_selection": 0.8203125,
+      "centered_selection": 0.939453125,
+      "selection_gain": 0.119140625,
+      "centered_final_accuracy": 0.9296875,
+      "minimum_value_recall": 0.9140625,
+      "context_category_accuracy": 0.9914981722831726,
+      "key_category_accuracy": 0.995002269744873,
+      "continuous_margin": {
+        "correct_similarity_mean": 0.8367096643196419,
+        "closest_wrong_similarity_mean": 0.719594241323648,
+        "retrieval_margin_mean": 0.11711542299599387,
+        "retrieval_margin_minimum": -0.34324896335601807,
+        "positive_margin_fraction": 0.8203125
+      },
+      "centered_margin": {
+        "correct_similarity_mean": 0.970703067141585,
+        "closest_wrong_similarity_mean": 0.5283202810096554,
+        "retrieval_margin_mean": 0.4423827861319296,
+        "retrieval_margin_minimum": -0.4999999701976776,
+        "positive_margin_fraction": 0.935546875
+      },
+      "deviation": {
+        "context_mean": 0.05598498688093113,
+        "context_maximum": 0.3977179527282715,
+        "key_mean": 0.10987693718155189,
+        "key_maximum": 0.5434862375259399
+      }
+    },
+    "v7331_e1337": {
+      "continuous_selection": 0.8095703125,
+      "centered_selection": 0.93359375,
+      "selection_gain": 0.1240234375,
+      "centered_final_accuracy": 0.9267578125,
+      "minimum_value_recall": 0.90625,
+      "context_category_accuracy": 0.9910386204719543,
+      "key_category_accuracy": 0.9948874115943909,
+      "continuous_margin": {
+        "correct_similarity_mean": 0.8360252818092704,
+        "closest_wrong_similarity_mean": 0.720183280238416,
+        "retrieval_margin_mean": 0.11584200157085434,
+        "retrieval_margin_minimum": -0.3260853886604309,
+        "positive_margin_fraction": 0.8095703125
+      },
+      "centered_margin": {
+        "correct_similarity_mean": 0.967773379816208,
+        "closest_wrong_similarity_mean": 0.5292968434514478,
+        "retrieval_margin_mean": 0.43847653636476025,
+        "retrieval_margin_minimum": -0.4999999701976776,
+        "positive_margin_fraction": 0.931640625
+      },
+      "deviation": {
+        "context_mean": 0.056072374192915636,
+        "context_maximum": 0.41304099559783936,
+        "key_mean": 0.11019236966967583,
+        "key_maximum": 0.5614317655563354
+      }
+    },
+    "v7331_e7331": {
+      "continuous_selection": 0.8203125,
+      "centered_selection": 0.939453125,
+      "selection_gain": 0.119140625,
+      "centered_final_accuracy": 0.9296875,
+      "minimum_value_recall": 0.9140625,
+      "context_category_accuracy": 0.9914981722831726,
+      "key_category_accuracy": 0.995002269744873,
+      "continuous_margin": {
+        "correct_similarity_mean": 0.8367096643196419,
+        "closest_wrong_similarity_mean": 0.719594241323648,
+        "retrieval_margin_mean": 0.11711542299599387,
+        "retrieval_margin_minimum": -0.34324896335601807,
+        "positive_margin_fraction": 0.8203125
+      },
+      "centered_margin": {
+        "correct_similarity_mean": 0.970703067141585,
+        "closest_wrong_similarity_mean": 0.5283202810096554,
+        "retrieval_margin_mean": 0.4423827861319296,
+        "retrieval_margin_minimum": -0.4999999701976776,
+        "positive_margin_fraction": 0.935546875
+      },
+      "deviation": {
+        "context_mean": 0.05598498688093113,
+        "context_maximum": 0.3977179527282715,
+        "key_mean": 0.10987693718155189,
+        "key_maximum": 0.5434862375259399
+      }
+    }
+  },
+  "source_checkpoint": {
+    "path": "checkpoints/component2/stable_components.pt",
+    "sha256": "d2ea57bd628f865bc69b2592d3d036433ab0fd31d14027c36c632b12aa4c3a36"
+  }
+}

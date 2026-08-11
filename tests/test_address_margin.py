@@ -66,3 +66,6 @@ def test_committed_address_margin_result_replays_and_fails_closed():
     changed = deepcopy(payload)
     changed["evaluations"][0]["path_audit"]["retrievals"] += 1
     assert adjudicate(changed)["verdict"] == "AM0_INVALID"
+    changed = deepcopy(payload)
+    changed["evaluations"][0]["arms"]["context_centered"].pop("selection_counts")
+    assert adjudicate(changed)["verdict"] == "AM0_INVALID"
