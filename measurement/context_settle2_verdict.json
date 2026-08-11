@@ -1,0 +1,76 @@
+{
+  "experiment": "context_settle2_integrated_transition_path",
+  "verdict": "CT2I_COMPOSITION_LOSS",
+  "reason": "six-step context states passed upstream, but integrated behavior did not recover",
+  "spec_sha256": "1f9967389fe7677c35d7bcfd7602e6b0782f4e6b0bfda4332ba36ec8ff59db5d",
+  "evaluations": {
+    "v1337_e1337": {
+      "baseline_3": {
+        "selection_accuracy": 0.5478515625,
+        "final_accuracy": 0.548828125,
+        "minimum_value_recall": 0.5078125
+      },
+      "settled_6": {
+        "selection_accuracy": 0.8095703125,
+        "final_accuracy": 0.8056640625,
+        "minimum_value_recall": 0.7734375
+      },
+      "selection_gain": 0.26171875,
+      "baseline_reproduced": true,
+      "settled_passed": false,
+      "causal": true
+    },
+    "v1337_e7331": {
+      "baseline_3": {
+        "selection_accuracy": 0.5537109375,
+        "final_accuracy": 0.5517578125,
+        "minimum_value_recall": 0.5
+      },
+      "settled_6": {
+        "selection_accuracy": 0.8203125,
+        "final_accuracy": 0.8134765625,
+        "minimum_value_recall": 0.765625
+      },
+      "selection_gain": 0.2666015625,
+      "baseline_reproduced": true,
+      "settled_passed": false,
+      "causal": true
+    },
+    "v7331_e1337": {
+      "baseline_3": {
+        "selection_accuracy": 0.5478515625,
+        "final_accuracy": 0.548828125,
+        "minimum_value_recall": 0.5078125
+      },
+      "settled_6": {
+        "selection_accuracy": 0.8095703125,
+        "final_accuracy": 0.8056640625,
+        "minimum_value_recall": 0.7734375
+      },
+      "selection_gain": 0.26171875,
+      "baseline_reproduced": true,
+      "settled_passed": false,
+      "causal": true
+    },
+    "v7331_e7331": {
+      "baseline_3": {
+        "selection_accuracy": 0.5537109375,
+        "final_accuracy": 0.5517578125,
+        "minimum_value_recall": 0.5
+      },
+      "settled_6": {
+        "selection_accuracy": 0.8203125,
+        "final_accuracy": 0.8134765625,
+        "minimum_value_recall": 0.765625
+      },
+      "selection_gain": 0.2666015625,
+      "baseline_reproduced": true,
+      "settled_passed": false,
+      "causal": true
+    }
+  },
+  "source_checkpoint": {
+    "path": "checkpoints/component2/stable_components.pt",
+    "sha256": "d2ea57bd628f865bc69b2592d3d036433ab0fd31d14027c36c632b12aa4c3a36"
+  }
+}

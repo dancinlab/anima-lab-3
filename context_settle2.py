@@ -10,7 +10,6 @@ from pathlib import Path
 
 import torch
 
-from component2 import _source_receipt as component2_source_receipt
 from conjunction import _atomic_json, build_episodes, dataset_audit
 from conjunction2 import _source_receipt as conjunction2_source_receipt, run_evaluation
 from key_stability import StableKeyProjector

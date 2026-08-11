@@ -37,6 +37,7 @@
 | `context2-integrated-composite-memory-path` | 로컬 CPU CONTEXT-2 공용 합성 주소 결과·판정·두 결정형 주소·값 원형 | 7 | 119,828 | `9794458c8a76c64e423f0e1fda43433fbc0b7825a1cf0617718b93cbc2555e76` |
 | `conjunction1-context-key` | 로컬 CPU CONJUNCTION-1 최종 무효·동점 진단 무효 결과·판정·두 결정형 주소·값 원형 | 9 | 256,074 | `262a46aac6e112c057c817aac09198d46c972a9e56ac07268b7c8583074f2f2b` |
 | `context-settle1-transition` | 로컬 CPU CONTEXT-SETTLE-1 처리 횟수별 결과·판정·재사용한 얼린 상황·열쇠 주소 | 4 | 356,732 | `c825b7a84af6cf21959acaa1046f116ee6f9b776f086dc23804a71c74bdc467e` |
+| `context-settle2-integrated` | 로컬 CPU CONTEXT-SETTLE-2 3·6회 공용 결합 결과·판정·재사용한 상황/열쇠·값 변환 | 5 | 297,897 | `b4e21b41d2612399ce5854939ea10b84e024aad4fd88e1d9eb3454e89be9b305` |
 
 `aiden`의 이전 NF 중간 체크포인트는 결론·계측 결과·로그가 남고 마지막 재현 체크포인트로 대체되므로 보관 집합에서 제외했다. `.git`, Hugging Face 캐시, `__pycache__`, GPU 잠금 파일과 인증정보도 제외했다. 서버 원본은 삭제하지 않았다.
 
@@ -183,3 +184,8 @@ CONTEXT-SETTLE-1 보관은 Hugging Face 커밋
 `d55a3ccbec0d157b4d4758c767bce942d1ba3618`에 올렸다. 원격
 `context-settle1-transition` revision의 결과·판정·재사용한 얼린 상황·열쇠 주소와 manifest를 새
 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
+
+CONTEXT-SETTLE-2 보관은 Hugging Face 커밋
+`2dc043ee04d4cfb4656350d69755d3d0cb9b4023`에 올렸다. 원격
+`context-settle2-integrated` revision의 결과·판정·재사용한 상황/열쇠 변환·값 변환과 manifest를
+새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. 로컬 CPU에서만 실행했다.
