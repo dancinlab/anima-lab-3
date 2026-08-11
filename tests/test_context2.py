@@ -78,6 +78,40 @@ def test_composite_state_transform_validates_registered_state_shape():
         transform((torch.randn(2, 5), torch.randn(2, 4)))
 
 
+def test_composite_state_transform_optionally_uses_predicted_context_center():
+    spec = deepcopy(CONTEXT2_SPEC)
+    spec.update({
+        "state_dim": 4, "component_address_dim": 4, "composite_address_dim": 8,
+        "minimum_cells": 1, "maximum_cells": 3, "component_weight": 1.0,
+    })
+    context = _projector(4)
+    key = _projector(4)
+    with torch.no_grad():
+        context.projection.weight.copy_(torch.eye(4))
+        context.projection.bias.zero_()
+        context.prototypes.copy_(torch.eye(4))
+        key.projection.weight.copy_(torch.eye(4))
+        key.projection.bias.zero_()
+    states = (torch.tensor([[3.0, 0, 0, 0]]), torch.tensor([[0, 2.0, 0, 0]]))
+    legacy = CompositeStateTransform(context, key, spec)(states)
+    centered = CompositeStateTransform(context, key, spec, center_context=True)(states)
+    assert torch.equal(legacy, centered)
+
+    shifted = (torch.tensor([[3.0, 0.2, 0, 0]]), states[1])
+    legacy_shifted = CompositeStateTransform(context, key, spec)(shifted)
+    centered_shifted = CompositeStateTransform(
+        context, key, spec, center_context=True
+    )(shifted)
+    assert not torch.equal(legacy_shifted, centered_shifted)
+    assert torch.equal(centered_shifted[:4], torch.tensor([1.0, 0, 0, 0]))
+    assert torch.equal(
+        CompositeStateTransform(
+            context, key, spec, center_context=True, mask_context=True
+        )(shifted)[:4],
+        torch.zeros(4),
+    )
+
+
 def test_committed_context2_result_replays_and_fails_closed():
     results_path = Path("measurement/context2_results.json")
     verdict_path = Path("measurement/context2_verdict.json")

@@ -12,7 +12,9 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from context import _composite, _composite_prediction, _load_key_projector
+from context import (
+    _component_address, _composite, _composite_prediction, _load_key_projector,
+)
 from episode import _decode
 from graft_behavior import sha256_file
 from key_stability import StableKeyProjector
@@ -102,12 +104,14 @@ class CompositeStateTransform:
     """Validated experiment adapter for the registered context+key projectors."""
 
     def __init__(self, context_projector, key_projector, spec: dict = CONTEXT2_SPEC,
-                 *, mask_context: bool = False, mask_key: bool = False):
+                 *, mask_context: bool = False, mask_key: bool = False,
+                 center_context: bool = False):
         self.context_projector = context_projector
         self.key_projector = key_projector
         self.spec = spec
         self.mask_context = mask_context
         self.mask_key = mask_key
+        self.center_context = center_context
         self.calls = 0
         self.component_counts: list[int] = []
         self.address_widths: list[int] = []
@@ -128,10 +132,32 @@ class CompositeStateTransform:
                 or not torch.isfinite(component).all()
             ):
                 raise ValueError("composite address component changed shape or became non-finite")
-        address = _composite(
-            self.context_projector, self.key_projector, components[0], components[1],
-            self.spec, mask_context=self.mask_context, mask_key=self.mask_key,
-        )
+        if self.center_context:
+            context_state = components[0].mean(0).unsqueeze(0)
+            context_label = int(self.context_projector(context_state).argmax(1)[0])
+            context = F.normalize(
+                self.context_projector.prototypes.detach(), dim=-1
+            )[context_label] * self.spec["component_weight"]
+            key = _component_address(
+                self.key_projector, components[1]
+            ) * self.spec["component_weight"]
+            if self.mask_context:
+                context = torch.zeros_like(context)
+            if self.mask_key:
+                key = torch.zeros_like(key)
+            address = torch.cat((context, key))
+            if (
+                address.numel() != self.spec["composite_address_dim"]
+                or not torch.isfinite(address).all()
+            ):
+                raise RuntimeError(
+                    "composite memory address changed shape or became non-finite"
+                )
+        else:
+            address = _composite(
+                self.context_projector, self.key_projector, components[0], components[1],
+                self.spec, mask_context=self.mask_context, mask_key=self.mask_key,
+            )
         self.calls += 1
         self.component_counts.append(len(components))
         self.address_widths.append(address.numel())
