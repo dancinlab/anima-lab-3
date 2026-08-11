@@ -24,8 +24,8 @@ def test_address_margin_registry_matches_preregistration():
 
 
 def test_registered_source_dataset_can_be_built_without_runtime_only_fields():
-    episodes = build_episodes({**CONJUNCTION2_SPEC, "eval_episodes": 8})
-    assert len(episodes) == 8
+    episodes = build_episodes({**CONJUNCTION2_SPEC, "eval_episodes": 512})
+    assert len(episodes) == 512
 
 
 def test_center_uses_frozen_registered_prototype():
