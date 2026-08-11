@@ -191,13 +191,14 @@ def run_evaluation(prototype_seed, engine_seed, episodes, source, spec=CONJUNCTI
     )}
     expected = torch.tensor([episode.target for episode in episodes])
     positions = [episode.query_position for episode in episodes]
-    cell_counts, episode_seeds = [], []
+    cell_counts, episode_seeds, sense_audits = [], [], []
     base = spec["episode_seed_base"] + engine_seed * spec["seed_stride"]
     for index, episode in enumerate(episodes):
         trial_seed = base + index
         episode_seeds.append(trial_seed)
         trace = trace_episode(episode, trial_seed, spec)
         cell_counts.extend(trace["cell_counts"])
+        sense_audits.append(trace["sense_audit"])
         exact, exact_query = _exact_addresses(episode, spec=spec)
         context_only, context_query = _exact_addresses(episode, mask_key=True, spec=spec)
         key_only, key_query = _exact_addresses(episode, mask_context=True, spec=spec)
@@ -307,6 +308,16 @@ def run_evaluation(prototype_seed, engine_seed, episodes, source, spec=CONJUNCTI
             "episodes": len(episodes), "unique_episode_seeds": len(set(episode_seeds)),
             "episode_seed_sha256": hashlib.sha256("\n".join(map(str, episode_seeds)).encode()).hexdigest(),
             "minimum_cells": min(cell_counts), "maximum_cells": max(cell_counts),
+            "context_sense_steps_minimum": min(row["context_sense_steps"] for row in sense_audits),
+            "context_sense_steps_maximum": max(row["context_sense_steps"] for row in sense_audits),
+            "key_sense_steps_minimum": min(row["key_sense_steps"] for row in sense_audits),
+            "key_sense_steps_maximum": max(row["key_sense_steps"] for row in sense_audits),
+            "value_sense_steps_minimum": min(row["value_sense_steps"] for row in sense_audits),
+            "value_sense_steps_maximum": max(row["value_sense_steps"] for row in sense_audits),
+            "context_step_calls": sum(row["context_step_calls"] for row in sense_audits),
+            "key_step_calls": sum(row["key_step_calls"] for row in sense_audits),
+            "value_step_calls": sum(row["value_step_calls"] for row in sense_audits),
+            "distractor_step_calls": sum(row["distractor_step_calls"] for row in sense_audits),
         },
         "prototype_checkpoint": source["prototype_checkpoints"][str(prototype_seed)],
     }

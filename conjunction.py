@@ -257,20 +257,30 @@ def dataset_audit(episodes: list[ConjunctionEpisode],
 
 def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
                   spec: dict = CONJUNCTION_SPEC) -> dict:
+    sense_steps = {
+        "context": spec.get("context_sense_steps", EPISODE_SPEC["sense_steps"]),
+        "key": spec.get("key_sense_steps", EPISODE_SPEC["sense_steps"]),
+        "value": spec.get("value_sense_steps", EPISODE_SPEC["sense_steps"]),
+        "distractor": spec.get(
+            "distractor_sense_steps", EPISODE_SPEC["distractor_sense_steps"]
+        ),
+    }
+    if any(type(steps) is not int or steps < 1 for steps in sense_steps.values()):
+        raise ValueError("sense step counts must be positive integers")
     c, encoder = _new_engine(trial_seed, EPISODE_SPEC)
     contexts, keys, values, cell_counts = [], [], [], []
     for context, key, value in zip(episode.contexts, episode.keys, episode.values):
         context_state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["distractor_words"][context],
-            EPISODE_SPEC["sense_steps"], spec,
+            sense_steps["context"], spec,
         )
         key_state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["key_words"][key],
-            EPISODE_SPEC["sense_steps"], spec,
+            sense_steps["key"], spec,
         )
         value_state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["value_words"][value],
-            EPISODE_SPEC["sense_steps"], spec,
+            sense_steps["value"], spec,
         )
         contexts.append(context_state)
         keys.append(key_state)
@@ -279,7 +289,7 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
     for distractor in episode.distractors:
         state = _sense_separation_token(
             c, encoder, EPISODE_SPEC["distractor_words"][distractor],
-            EPISODE_SPEC["distractor_sense_steps"], spec,
+            sense_steps["distractor"], spec,
         )
         cell_counts.append(state.shape[0])
     query_rng = torch.get_rng_state().clone()
@@ -291,17 +301,27 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
     torch.set_rng_state(query_rng)
     query_context = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
-        EPISODE_SPEC["sense_steps"], spec,
+        sense_steps["context"], spec,
     )
     query_key = _sense_separation_token(
         c, encoder, EPISODE_SPEC["key_words"][episode.query_key],
-        EPISODE_SPEC["sense_steps"], spec,
+        sense_steps["key"], spec,
     )
     cell_counts.extend((query_context.shape[0], query_key.shape[0]))
     return {
         "contexts": contexts, "keys": keys, "values": values,
         "query_context": query_context, "query": query_key,
         "cell_counts": cell_counts,
+        "sense_audit": {
+            "context_sense_steps": sense_steps["context"],
+            "key_sense_steps": sense_steps["key"],
+            "value_sense_steps": sense_steps["value"],
+            "distractor_sense_steps": sense_steps["distractor"],
+            "context_step_calls": (len(episode.contexts) + 1) * sense_steps["context"],
+            "key_step_calls": (len(episode.keys) + 1) * sense_steps["key"],
+            "value_step_calls": len(episode.values) * sense_steps["value"],
+            "distractor_step_calls": len(episode.distractors) * sense_steps["distractor"],
+        },
         "update_audit": {
             "requested_updates": spec["pre_query_updates"],
             "performed_updates": spec["pre_query_updates"],
