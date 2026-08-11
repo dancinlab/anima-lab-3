@@ -1354,14 +1354,15 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    범주 정보 손실이 아니라 특히 상황 성분의 범주 안 흔들림이다. 다음 `ADDRESS-CENTER-2`는 상황
    성분만 고정 중심으로 바꾸는 선택 기능을 공용 기억 경로에 연결한다. 상세 사양과 결과는
    `docs/hypotheses/ADDRESS-MARGIN-1-composite-address-margin.md`가 정본이다.
-35. **ADDRESS-CENTER-2 — 상황 범주 중심의 공용 기억 경로 연결 (사전등록):**
-   `ADDRESS-MARGIN-1`에서 검증한 최소 수정만 기존 `CompositeStateTransform`에 선택 기능으로
-   연결한다. 상황 상태가 예측한 범주를 얼린 직교 중심으로 바꾸고, 열쇠의 연속 주소·값 변환·
-   6회 상황 처리·`VectorMemory`의 코사인 검색은 그대로 둔다. 기본값은 꺼서 기존 호출을
-   보존한다. 정상 중심 경로가 네 조합 모두 기억 선택·최종 행동 90% 이상이고, 기능을 끄면
-   선행 80%대 손실이 재현되며, 다시 켜면 같은 결과로 회복돼야 공용 경로 수리로 판정한다.
-   정확 주소·상황 차단·내용 맞바꾸기 비교와 원본 지문도 함께 확인한다. 이는 일반 기억 검색의
-   범주 대표 주소 방식이며 Anima나 의식에 고유한 증거가 아니다. 상세 사전 기준은
+35. **ADDRESS-CENTER-2 — 상황 범주 중심의 공용 기억 경로 연결 (완료,
+   `AC1_CONTEXT_CENTER_INTEGRATED_NOT_UNIQUE`):** `ADDRESS-MARGIN-1`의 최소 수정을 기존
+   `CompositeStateTransform → VectorMemory` 공용 호출에 기본값이 꺼진 선택 기능으로 연결했다.
+   상황 상태만 예측 범주의 얼린 중심으로 바꾸고 열쇠 연속 주소·값 변환·6회 상황 처리는
+   유지했다. 네 조합의 기억 선택은 `93.85~94.34%`, 최종 행동은 `93.16~93.36%`로 통과했다.
+   기능을 끄면 `80.96~82.03%`로 돌아가고 선택 차이는 `12.30~12.89%p`, 상황 차단은
+   `30.76~31.25%`, 내용 맞바꾸기는 `1.37~1.46%`였다. 다시 켠 복구 결과와 선행 외부 비교가
+   모두 100% 일치했고 기존 기본 호출도 유지됐다. 이는 일반 기억 검색에서 쓸 수 있는 범주 대표
+   주소 수리이며 Anima나 의식에 고유한 증거가 아니다. 상세 사양과 결과는
    `docs/hypotheses/ADDRESS-CENTER-2-integrated-context-center.md`가 정본이다.
 36. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
