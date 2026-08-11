@@ -197,8 +197,14 @@ def _aggregate_distance(rows: list[dict]) -> dict:
 
 
 def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict,
-                   source_results: dict, spec: dict = CUE_MECHANISM_SPEC) -> dict:
+                   source_results: dict, spec: dict = CUE_MECHANISM_SPEC, *,
+                   context_projector_override=None, key_projector_override=None,
+                   fake_context_projector=None, fake_key_projector=None) -> dict:
     context_projector, key_projector = _load_components(source["component_checkpoint"], spec)
+    if context_projector_override is not None:
+        context_projector = context_projector_override
+    if key_projector_override is not None:
+        key_projector = key_projector_override
     value_projector = _load_value_projector(source["value_checkpoint"], spec)
     models = {"context": context_projector, "key": key_projector, "value": value_projector}
     before = {
@@ -215,6 +221,16 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
         name: {"context": [], "key": [], "retrieval": []}
         for name in spec["conditions"]
     }
+    fake_diagnostics = (
+        {
+            name: {"context": [], "key": []}
+            for name in spec["conditions"]
+        }
+        if fake_context_projector is not None and fake_key_projector is not None
+        else None
+    )
+    if (fake_context_projector is None) != (fake_key_projector is None):
+        raise ValueError("fake context and key projectors must be supplied together")
     call_audits = {name: [] for name in spec["conditions"]}
     expected = torch.tensor([episode.target for episode in episodes])
     positions = [episode.query_position for episode in episodes]
@@ -241,6 +257,34 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
             call_audits[name].append(audit)
             for component in diagnostics[name]:
                 diagnostics[name][component].append(diagnostic[component])
+            if fake_diagnostics is not None:
+                query_context = (
+                    _partial_state(
+                        trace["query_context"], index, "context", context_missing,
+                        COMPLETION_SPEC,
+                    )
+                    if context_missing else trace["query_context"]
+                )
+                query_key = (
+                    _partial_state(
+                        trace["query"], index, "key", key_missing, COMPLETION_SPEC,
+                    )
+                    if key_missing else trace["query"]
+                )
+                fake_context_reference = fake_context_projector.address(
+                    trace["query_context"].mean(0).unsqueeze(0)
+                )[0].detach()
+                fake_key_reference = fake_key_projector.address(
+                    trace["query"].mean(0).unsqueeze(0)
+                )[0].detach()
+                fake_diagnostics[name]["context"].append(_component_diagnostic(
+                    fake_context_projector, query_context, episode.query_context,
+                    fake_context_reference,
+                ))
+                fake_diagnostics[name]["key"].append(_component_diagnostic(
+                    fake_key_projector, query_key, episode.query_key,
+                    fake_key_reference,
+                ))
 
         # Removing a mask must restore the exact full-cue path, not merely its average.
         restored_context, _, _ = _integrated_diagnostic(
@@ -313,7 +357,7 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
         })
     )
     event_queries = len(episodes) * (spec["events_per_episode"] + 1)
-    return {
+    result = {
         "prototype_seed": prototype_seed,
         "engine_seed": engine_seed,
         "arms": arms,
@@ -367,6 +411,17 @@ def run_evaluation(prototype_seed: int, engine_seed: int, episodes, source: dict
             "expected_key_states": event_queries,
         },
     }
+    if fake_diagnostics is not None:
+        result["fake_component_metrics"] = {
+            condition: {
+                "context": _aggregate_component(
+                    rows["context"], context_labels, spec["contexts"]
+                ),
+                "key": _aggregate_component(rows["key"], key_labels, spec["keys"]),
+            }
+            for condition, rows in fake_diagnostics.items()
+        }
+    return result
 
 
 def main() -> None:
