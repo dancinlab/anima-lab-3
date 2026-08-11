@@ -1,0 +1,36 @@
+{
+  "experiment": "cue_align1_storage_query_alignment",
+  "verdict": "CA4_NONLINEAR_OR_EPISODE_SHIFT",
+  "reason": "neither common alignment nor the category oracle recovers all query conditions",
+  "spec_sha256": "95f522d4607138d1dc5eda512fd77b3a5d0d2fac7632b92faf50159abd4518ac",
+  "evaluations": {
+    "v1337_e1337": {
+      "global_full_pass": false,
+      "global_damaged_pass": false,
+      "oracle_full_pass": true,
+      "oracle_damaged_pass": false,
+      "damaged_accuracy_gain": -0.1015625
+    },
+    "v1337_e7331": {
+      "global_full_pass": false,
+      "global_damaged_pass": false,
+      "oracle_full_pass": true,
+      "oracle_damaged_pass": false,
+      "damaged_accuracy_gain": -0.11328125
+    },
+    "v7331_e1337": {
+      "global_full_pass": false,
+      "global_damaged_pass": false,
+      "oracle_full_pass": true,
+      "oracle_damaged_pass": false,
+      "damaged_accuracy_gain": -0.1015625
+    },
+    "v7331_e7331": {
+      "global_full_pass": false,
+      "global_damaged_pass": false,
+      "oracle_full_pass": true,
+      "oracle_damaged_pass": false,
+      "damaged_accuracy_gain": -0.11328125
+    }
+  }
+}
