@@ -8,9 +8,11 @@ import pytest
 import torch
 
 from address_margin import _center, _classification, _join, _margin
+from conjunction import build_episodes
 from key_stability import StableKeyProjector
 from measurement.address_margin_gate import adjudicate
 from measurement.address_margin_registry import ADDRESS_MARGIN_SPEC, canonical_spec, spec_sha256
+from measurement.conjunction2_registry import CONJUNCTION2_SPEC
 
 
 def test_address_margin_registry_matches_preregistration():
@@ -19,6 +21,11 @@ def test_address_margin_registry_matches_preregistration():
     assert ADDRESS_MARGIN_SPEC["thresholds"]["minimum_selection_gain"] == 0.08
     assert len(canonical_spec()) > 100
     assert len(spec_sha256()) == 64
+
+
+def test_registered_source_dataset_can_be_built_without_runtime_only_fields():
+    episodes = build_episodes({**CONJUNCTION2_SPEC, "eval_episodes": 8})
+    assert len(episodes) == 8
 
 
 def test_center_uses_frozen_registered_prototype():

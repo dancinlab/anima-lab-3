@@ -18,6 +18,7 @@ from context_settle2 import _load_components, _runtime_spec
 from episode import _decode
 from graft_behavior import sha256_file
 from measurement.address_margin_registry import ADDRESS_MARGIN_SPEC, spec_sha256
+from measurement.conjunction2_registry import CONJUNCTION2_SPEC
 from measurement.context_settle2_gate import adjudicate as adjudicate_context_settle2
 from measurement.context_settle2_registry import (
     CONTEXT_SETTLE2_SPEC,
@@ -311,7 +312,7 @@ def main() -> None:
     args = parser.parse_args()
     spec = ADDRESS_MARGIN_SPEC
     source_results, source = _source_receipt(spec)
-    episodes = build_episodes(CONTEXT_SETTLE2_SPEC)
+    episodes = build_episodes(CONJUNCTION2_SPEC)
     evaluations = [
         {"name": evaluation_name(row), **run_evaluation(
             row["prototype_seed"], row["engine_seed"], episodes, source, spec
@@ -321,7 +322,7 @@ def main() -> None:
     payload = {
         "experiment": spec["experiment"], "spec": spec,
         "spec_sha256": spec_sha256(spec), "source": source,
-        "dataset_audit": dataset_audit(episodes, CONTEXT_SETTLE2_SPEC),
+        "dataset_audit": dataset_audit(episodes, CONJUNCTION2_SPEC),
         "runtime": {"python": platform.python_version(), "torch": torch.__version__, "device": spec["device"]},
         "evaluations": evaluations,
     }
