@@ -1,0 +1,2 @@
+724a2198467f24876b63dc3fc92842eb31ddbb8d1e93b5554f96e12026b0825d  query_refresh_results.json
+67400cdd686514ed676ec6dfb68dcbd35936c997d50ba27ee346b80c3272b21b  query_refresh_verdict.json

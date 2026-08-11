@@ -100,6 +100,7 @@ def _runtime_spec(context_steps: int, spec: dict = CONTEXT_SETTLE2_SPEC) -> dict
     runtime = deepcopy(CONJUNCTION2_SPEC)
     runtime.update({
         "context_sense_steps": context_steps,
+        "query_context_sense_steps": spec.get("query_context_sense_steps", context_steps),
         "key_sense_steps": spec["key_sense_steps"],
         "value_sense_steps": spec["value_sense_steps"],
         "distractor_sense_steps": spec["distractor_sense_steps"],

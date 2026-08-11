@@ -259,6 +259,10 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
                   spec: dict = CONJUNCTION_SPEC) -> dict:
     sense_steps = {
         "context": spec.get("context_sense_steps", EPISODE_SPEC["sense_steps"]),
+        "query_context": spec.get(
+            "query_context_sense_steps",
+            spec.get("context_sense_steps", EPISODE_SPEC["sense_steps"]),
+        ),
         "key": spec.get("key_sense_steps", EPISODE_SPEC["sense_steps"]),
         "value": spec.get("value_sense_steps", EPISODE_SPEC["sense_steps"]),
         "distractor": spec.get(
@@ -301,7 +305,7 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
     torch.set_rng_state(query_rng)
     query_context = _sense_separation_token(
         c, encoder, EPISODE_SPEC["distractor_words"][episode.query_context],
-        sense_steps["context"], spec,
+        sense_steps["query_context"], spec,
     )
     query_key = _sense_separation_token(
         c, encoder, EPISODE_SPEC["key_words"][episode.query_key],
@@ -317,7 +321,10 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
             "key_sense_steps": sense_steps["key"],
             "value_sense_steps": sense_steps["value"],
             "distractor_sense_steps": sense_steps["distractor"],
-            "context_step_calls": (len(episode.contexts) + 1) * sense_steps["context"],
+            "context_step_calls": (
+                len(episode.contexts) * sense_steps["context"]
+                + sense_steps["query_context"]
+            ),
             "key_step_calls": (len(episode.keys) + 1) * sense_steps["key"],
             "value_step_calls": len(episode.values) * sense_steps["value"],
             "distractor_step_calls": len(episode.distractors) * sense_steps["distractor"],

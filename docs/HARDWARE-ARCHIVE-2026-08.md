@@ -242,3 +242,10 @@ CUE-HISTORY-1 보관은 Hugging Face 커밋
 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `e45542d4568ac1febc800014a4088e50ed160dbc3ef99f85752e144bbeecc87e`다. 로컬 CPU에서만
 실행했다.
+
+QUERY-REFRESH-1 보관은 Hugging Face 커밋
+`6e12cb9aee9890e4f9dbfc7bb2c62a34dde80a23`에 올렸다. 원격
+`query-refresh1-query-state-refresh` revision의 결과·판정·manifest를 새 임시 디렉토리로 다시
+내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`e907ff1927c0865a0a50b974924820f01783b98350c6519c465168a4bbbbf3cd`다. 로컬 CPU에서만
+실행했다.

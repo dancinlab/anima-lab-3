@@ -1,0 +1,599 @@
+{
+  "experiment": "query_refresh1_query_state_refresh",
+  "verdict": "QR1_REFRESH_RECOVERS_AND_CONVERGES",
+  "reason": "full and damaged queries recover and event histories converge from 8 steps",
+  "spec_sha256": "0927713044c6941dd7a58adab63b279fa34aa5d33d04dc9b1df1364fd9f6c3fa",
+  "minimum_sustained_recovery_steps": 8,
+  "minimum_sustained_convergence_steps": 8,
+  "processing_influence": true,
+  "recovery": {
+    "6": false,
+    "8": true,
+    "12": true,
+    "16": true
+  },
+  "convergence": {
+    "6": false,
+    "8": true,
+    "12": true,
+    "16": true
+  },
+  "influence": {
+    "8:original": false,
+    "8:event_reversed": false,
+    "12:original": true,
+    "12:event_reversed": true,
+    "16:original": true,
+    "16:event_reversed": true
+  },
+  "evaluations": {
+    "v1337_e1337": {
+      "6": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.9619140625,
+              "minimum_recall": 0.8984375,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.8916015625,
+              "minimum_recall": 0.8203125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9541015625,
+              "minimum_recall": 0.9140625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.896484375,
+              "minimum_recall": 0.8125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          }
+        },
+        "history_disagreement": 0.19921875,
+        "recovered": false,
+        "converged": false
+      },
+      "8": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.998046875,
+              "minimum_recall": 0.984375,
+              "passed": true,
+              "baseline_disagreement": 0.0361328125
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.9853515625,
+              "minimum_recall": 0.9609375,
+              "passed": true,
+              "baseline_disagreement": 0.09375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9990234375,
+              "minimum_recall": 0.9921875,
+              "passed": true,
+              "baseline_disagreement": 0.044921875
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.982421875,
+              "minimum_recall": 0.953125,
+              "passed": true,
+              "baseline_disagreement": 0.0859375
+            }
+          }
+        },
+        "history_disagreement": 0.03125,
+        "recovered": true,
+        "converged": true
+      },
+      "12": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0380859375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0458984375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.103515625
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      },
+      "16": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0380859375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0458984375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.103515625
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      }
+    },
+    "v1337_e7331": {
+      "6": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.96484375,
+              "minimum_recall": 0.9140625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.8994140625,
+              "minimum_recall": 0.828125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9521484375,
+              "minimum_recall": 0.890625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.888671875,
+              "minimum_recall": 0.796875,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          }
+        },
+        "history_disagreement": 0.197265625,
+        "recovered": false,
+        "converged": false
+      },
+      "8": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.998046875,
+              "minimum_recall": 0.984375,
+              "passed": true,
+              "baseline_disagreement": 0.033203125
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.9833984375,
+              "minimum_recall": 0.953125,
+              "passed": true,
+              "baseline_disagreement": 0.083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.984375,
+              "minimum_recall": 0.9609375,
+              "passed": true,
+              "baseline_disagreement": 0.095703125
+            }
+          }
+        },
+        "history_disagreement": 0.03125,
+        "recovered": true,
+        "converged": true
+      },
+      "12": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.03515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1005859375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.111328125
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      },
+      "16": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.03515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1005859375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.111328125
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      }
+    },
+    "v7331_e1337": {
+      "6": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.9619140625,
+              "minimum_recall": 0.8984375,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.8916015625,
+              "minimum_recall": 0.8203125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9541015625,
+              "minimum_recall": 0.9140625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.896484375,
+              "minimum_recall": 0.8125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          }
+        },
+        "history_disagreement": 0.19921875,
+        "recovered": false,
+        "converged": false
+      },
+      "8": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.998046875,
+              "minimum_recall": 0.984375,
+              "passed": true,
+              "baseline_disagreement": 0.0361328125
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.9853515625,
+              "minimum_recall": 0.9609375,
+              "passed": true,
+              "baseline_disagreement": 0.09375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9990234375,
+              "minimum_recall": 0.9921875,
+              "passed": true,
+              "baseline_disagreement": 0.044921875
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.982421875,
+              "minimum_recall": 0.953125,
+              "passed": true,
+              "baseline_disagreement": 0.0859375
+            }
+          }
+        },
+        "history_disagreement": 0.03125,
+        "recovered": true,
+        "converged": true
+      },
+      "12": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0380859375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0458984375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.103515625
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      },
+      "16": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0380859375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0458984375
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.103515625
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      }
+    },
+    "v7331_e7331": {
+      "6": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.96484375,
+              "minimum_recall": 0.9140625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.8994140625,
+              "minimum_recall": 0.828125,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 0.9521484375,
+              "minimum_recall": 0.890625,
+              "passed": true,
+              "baseline_disagreement": 0.0
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.888671875,
+              "minimum_recall": 0.796875,
+              "passed": false,
+              "baseline_disagreement": 0.0
+            }
+          }
+        },
+        "history_disagreement": 0.197265625,
+        "recovered": false,
+        "converged": false
+      },
+      "8": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 0.998046875,
+              "minimum_recall": 0.984375,
+              "passed": true,
+              "baseline_disagreement": 0.033203125
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.9833984375,
+              "minimum_recall": 0.953125,
+              "passed": true,
+              "baseline_disagreement": 0.083984375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 0.984375,
+              "minimum_recall": 0.9609375,
+              "passed": true,
+              "baseline_disagreement": 0.095703125
+            }
+          }
+        },
+        "history_disagreement": 0.03125,
+        "recovered": true,
+        "converged": true
+      },
+      "12": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.03515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1005859375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.111328125
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      },
+      "16": {
+        "histories": {
+          "original": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.03515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.1005859375
+            }
+          },
+          "event_reversed": {
+            "query_full": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.0478515625
+            },
+            "query_quarter_missing": {
+              "accuracy": 1.0,
+              "minimum_recall": 1.0,
+              "passed": true,
+              "baseline_disagreement": 0.111328125
+            }
+          }
+        },
+        "history_disagreement": 0.0,
+        "recovered": true,
+        "converged": true
+      }
+    }
+  }
+}
