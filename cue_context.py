@@ -205,6 +205,21 @@ def _pair_similarity(projector, storage: torch.Tensor, query: torch.Tensor) -> d
     }
 
 
+def _reference_metric_match(current: dict, reference: dict) -> bool:
+    exact = (
+        "accuracy", "per_class_recall", "minimum_class_recall",
+        "positive_center_margin_fraction",
+    )
+    approximate = (
+        "correct_similarity_mean", "closest_wrong_similarity_mean",
+        "center_margin_mean", "center_margin_minimum",
+    )
+    return (
+        all(current[name] == reference[name] for name in exact)
+        and all(abs(current[name] - reference[name]) <= 1e-6 for name in approximate)
+    )
+
+
 def _evaluate_models(models: dict, pairs: dict, masks: list[tuple[int, ...]]) -> dict:
     storage_masked = _mask_rows(pairs["storage"], masks)
     query_masked = _mask_rows(pairs["query"], masks)
@@ -311,10 +326,14 @@ def main() -> None:
             "engine_seed": identity["engine_seed"],
             **row,
             "source_reference_audit": {
-                "query_full_match": query_source["query_full"]
-                == source_row["component_metrics"]["full_cue"]["context"],
-                "query_quarter_match": query_source["query_quarter_missing"]
-                == source_row["component_metrics"]["context_quarter_missing"]["context"],
+                "query_full_match": _reference_metric_match(
+                    query_source["query_full"],
+                    source_row["component_metrics"]["full_cue"]["context"],
+                ),
+                "query_quarter_match": _reference_metric_match(
+                    query_source["query_quarter_missing"],
+                    source_row["component_metrics"]["context_quarter_missing"]["context"],
+                ),
             },
         })
 

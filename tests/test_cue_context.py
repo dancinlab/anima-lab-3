@@ -6,7 +6,7 @@ from pathlib import Path
 
 import torch
 
-from cue_context import _mask_rows
+from cue_context import _mask_rows, _reference_metric_match
 from measurement.cue_context_gate import adjudicate
 from measurement.cue_context_registry import (
     CUE_CONTEXT_SPEC,
@@ -48,6 +48,24 @@ def test_mask_rows_is_non_mutating_and_fail_closed():
         pass
     else:
         raise AssertionError("state and mask roster mismatch must fail")
+
+
+def test_reference_metric_match_accepts_only_tiny_reduction_error():
+    metric = {
+        "accuracy": 0.9, "per_class_recall": [0.8, 1.0],
+        "minimum_class_recall": 0.8, "positive_center_margin_fraction": 0.9,
+        "correct_similarity_mean": 0.7, "closest_wrong_similarity_mean": 0.2,
+        "center_margin_mean": 0.5, "center_margin_minimum": -0.1,
+    }
+    close = deepcopy(metric)
+    close["center_margin_mean"] += 5e-7
+    assert _reference_metric_match(metric, close)
+    changed = deepcopy(metric)
+    changed["accuracy"] += 1e-6
+    assert not _reference_metric_match(metric, changed)
+    changed = deepcopy(metric)
+    changed["center_margin_mean"] += 2e-6
+    assert not _reference_metric_match(metric, changed)
 
 
 def test_committed_cue_context_result_replays_and_fails_closed():
