@@ -221,3 +221,10 @@ CUE-ROBUST-1 보관은 Hugging Face 커밋
 manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `89c0c63c43f34406a29c8e9ae5dbfe2d7717f9abe991c1982d21aea6c3611db0`다. 로컬 CPU에서만
 실행했다.
+
+CUE-CONTEXT-1 보관은 Hugging Face 커밋
+`b7f74c614e03c8cb5b2fd203b74cca9fa3358995`에 올렸다. 원격
+`cue-context1-storage-query-shift` revision의 결과·판정·저장/질문 시점 판독기와 manifest를 새
+임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`5bebe1187c0d18d6640dad0ef57ff9b8ecbf665d2ebd00465c0181ba45d252e7`이다. 로컬 CPU에서만
+실행했다.

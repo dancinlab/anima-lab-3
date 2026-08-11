@@ -1,0 +1,64 @@
+{
+  "experiment": "cue_context1_storage_query_state_shift",
+  "verdict": "CC3_QUERY_REFIT_INSUFFICIENT",
+  "reason": "query-time state loss remains after registered query calibration",
+  "spec_sha256": "0de32c23037a9f9311426240157e61f7875afcf04a5e89f4211748af75492225",
+  "evaluations": {
+    "v1337_e1337": {
+      "source_storage_quarter_pass": true,
+      "source_query_quarter_pass": false,
+      "candidate_recovery": {
+        "query_only": {
+          "query_recovered": false,
+          "storage_regression": true
+        },
+        "combined": {
+          "query_recovered": false,
+          "storage_regression": false
+        }
+      }
+    },
+    "v1337_e7331": {
+      "source_storage_quarter_pass": true,
+      "source_query_quarter_pass": false,
+      "candidate_recovery": {
+        "query_only": {
+          "query_recovered": false,
+          "storage_regression": true
+        },
+        "combined": {
+          "query_recovered": false,
+          "storage_regression": false
+        }
+      }
+    },
+    "v7331_e1337": {
+      "source_storage_quarter_pass": true,
+      "source_query_quarter_pass": false,
+      "candidate_recovery": {
+        "query_only": {
+          "query_recovered": false,
+          "storage_regression": true
+        },
+        "combined": {
+          "query_recovered": false,
+          "storage_regression": false
+        }
+      }
+    },
+    "v7331_e7331": {
+      "source_storage_quarter_pass": true,
+      "source_query_quarter_pass": false,
+      "candidate_recovery": {
+        "query_only": {
+          "query_recovered": false,
+          "storage_regression": true
+        },
+        "combined": {
+          "query_recovered": false,
+          "storage_regression": false
+        }
+      }
+    }
+  }
+}
