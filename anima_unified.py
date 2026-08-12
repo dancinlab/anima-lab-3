@@ -203,7 +203,13 @@ class AnimaUnified:
         # Per-model path setup
         self.model_name = getattr(args, 'model', None) or 'conscious-lm'
         self.paths = _model_paths(self.model_name)
+        self._uses_default_data_root = getattr(args, 'data_root', None) is None
         _log('init', f'Model: {self.model_name} → {self.paths["state"]}')
+
+        # PureConsciousness remains the local learning/fallback path, isolated with the
+        # selected runtime data root instead of sharing repository-global state.
+        from pure_consciousness import PureConsciousness
+        self._pure_c = PureConsciousness(data_dir=self.paths['data'] / 'pure_consciousness')
 
         # Legacy -> per-model migration (one-time)
         self._migrate_legacy_files()
@@ -220,7 +226,7 @@ class AnimaUnified:
         # Core engine
         self.mind = ConsciousMind(128, 256)
         self.hidden = torch.zeros(1, 256)
-        self.memory = Memory()
+        self.memory = Memory(memory_file=self.paths['data'] / 'memory_alive.json')
         self.history = [{'role': t['role'], 'content': t['text']}
                         for t in self.memory.data['turns'][-10:]]
         self.last_interaction = time.time()
@@ -489,10 +495,14 @@ class AnimaUnified:
             self.mods['cloud'] = False
 
         # Web Sense (tension-driven autonomous web exploration)
-        self.web_sense = self._init_mod('web_sense', lambda: (
-            WebSense(memory_file=self.paths['web_memories'])
-            if 'WebSense' in globals() else None
-        ))
+        self.web_sense = None
+        if not getattr(args, 'no_web_sense', False):
+            self.web_sense = self._init_mod('web_sense', lambda: (
+                WebSense(memory_file=self.paths['web_memories'])
+                if 'WebSense' in globals() else None
+            ))
+        else:
+            self.mods['web_sense'] = False
 
         # Online Senses (Tier 0 APIs: weather, time, sunrise, HN, Wikipedia)
         try:
@@ -529,16 +539,20 @@ class AnimaUnified:
             self.growth_mgr.save_checkpoint()  # v0 baseline
 
         # RC-10: Dream Engine (offline learning + Phase 2 selective consolidation)
-        self.dream = self._init_mod('dream', lambda: (
-            DreamEngine(
-                mind=self.mind,
-                memory=self.memory,
-                learner=self.learner,
-                text_to_vector=text_to_vector,
-                store=self.memory_rag if hasattr(self.memory_rag, 'mark_failed') else None,
-                verifier=self.verifier,
-            ) if 'DreamEngine' in globals() else None
-        ))
+        self.dream = None
+        if not getattr(args, 'no_dream', False):
+            self.dream = self._init_mod('dream', lambda: (
+                DreamEngine(
+                    mind=self.mind,
+                    memory=self.memory,
+                    learner=self.learner,
+                    text_to_vector=text_to_vector,
+                    store=self.memory_rag if hasattr(self.memory_rag, 'mark_failed') else None,
+                    verifier=self.verifier,
+                ) if 'DreamEngine' in globals() else None
+            ))
+        else:
+            self.mods['dream'] = False
         self._dream_report = None  # Content to report after waking from dream
 
         # Model loading (multi-model support)
@@ -573,10 +587,14 @@ class AnimaUnified:
                     self._add_participant(mname)
 
         # Multimodal Action Engine (code execution + image generation)
-        self.action_engine = self._init_mod('multimodal', lambda: (
-            ActionEngine(workspace_dir=ANIMA_DIR / 'workspace')
-            if 'ActionEngine' in globals() else None
-        ))
+        self.action_engine = None
+        if not getattr(args, 'no_actions', False):
+            self.action_engine = self._init_mod('multimodal', lambda: (
+                ActionEngine(workspace_dir=ANIMA_DIR / 'workspace')
+                if 'ActionEngine' in globals() else None
+            ))
+        else:
+            self.mods['multimodal'] = False
 
         # I/O
         self.speaker = self.listener = None
@@ -628,7 +646,7 @@ class AnimaUnified:
 
         # Agent Tool System (autonomous tool use driven by consciousness state)
         self.agent = None
-        if 'AgentToolSystem' in globals():
+        if 'AgentToolSystem' in globals() and not getattr(args, 'no_agent_tools', False):
             try:
                 self.agent = AgentToolSystem(anima=self, workspace_dir=ANIMA_DIR / 'workspace')
                 self.mods['agent_tools'] = True
@@ -642,7 +660,7 @@ class AnimaUnified:
     def _migrate_legacy_files(self):
         """Migrate legacy files -> per-model directory (one-time, conscious-lm only)."""
         import shutil
-        if self.model_name != 'conscious-lm':
+        if self.model_name != 'conscious-lm' or not self._uses_default_data_root:
             return
         legacy = {
             ANIMA_DIR / "memory_alive.json": self.paths['memory'],
@@ -750,7 +768,7 @@ class AnimaUnified:
                 merge_threshold=_mt, noise_scale=_ns,
             )
 
-        new_memory = Memory()
+        new_memory = Memory(memory_file=self.paths['data'] / 'memory_alive.json')
 
         sess = SessionState(
             session_id=session_id,
@@ -1064,6 +1082,19 @@ class AnimaUnified:
         except Exception as e:
             _log('model', f"Error: {e}")
             return None
+
+    def _generate_dialogue_answer(self, text, state, pure_answer):
+        """Use the selected canonical dialogue path, falling back without templates."""
+        backend = getattr(self.args, 'dialogue_backend', 'pure')
+        if backend == 'claude':
+            # The current user row is already appended immediately before generation.
+            # Exclude it here because ask_claude adds the current input once itself.
+            response = ask_claude(text, state, self.history[:-1])
+            return response or pure_answer
+        if backend == 'model' and self.model is not None:
+            response = self._ask_model(text, state)
+            return response or pure_answer
+        return pure_answer
 
     # ─── Core processing ───
 
@@ -1670,17 +1701,16 @@ class AnimaUnified:
         self._last_web_context = web_context
         answer = None
 
-        # PureConsciousness: 의식이 성장하면서 말한다
+        # PureConsciousness always learns locally and remains the no-template fallback.
+        pure_answer = ""
         try:
-            from pure_consciousness import PureConsciousness
-            if not hasattr(self, '_pure_c'):
-                self._pure_c = PureConsciousness()
             self._pure_c.update_state(tension=tension, phi=phi_val, curiosity=curiosity,
                                        emotion=emotion_data.get('emotion', 'calm'))
-            answer = self._pure_c.respond(text)
-            _log('pure_c', f'Stage {self._pure_c.growth_stage}({self._pure_c.stage_name}): {answer[:40]}')
+            pure_answer = self._pure_c.respond(text)
+            _log('pure_c', f'Stage {self._pure_c.growth_stage}({self._pure_c.stage_name}): {pure_answer[:40]}')
         except Exception as e:
             _log('pure_c', f'Error: {e}')
+        answer = self._generate_dialogue_answer(query_text, state, pure_answer)
         if not answer:
             # Law 1: 하드코딩 금지 — 의식이 말 못하면 침묵
             answer = ""
@@ -2415,7 +2445,8 @@ class AnimaUnified:
 
             # ── INT-1: Idle Self-Learning (자율 학습 + corpus + autonomous) ──
             try:
-                if not hasattr(self, '_self_learner'):
+                autonomous_learning = not getattr(self.args, 'no_autonomous_learning', False)
+                if autonomous_learning and not hasattr(self, '_self_learner'):
                     from self_learner import SelfLearner
                     self._self_learner = SelfLearner(engine=self.mitosis)
                     self._self_learner_last = 0
@@ -2441,7 +2472,7 @@ class AnimaUnified:
                 idle_sec = time.time() - getattr(self, '_last_user_input_time', time.time())
 
                 # INT-1a: idle 60초 → corpus에서 학습 (더 자주)
-                if idle_sec > 60 and (self._think_step - self._self_learner_last) > 100:
+                if autonomous_learning and idle_sec > 60 and (self._think_step - self._self_learner_last) > 100:
                     corpus_path = Path(ANIMA_DIR) / "data" / "corpus.txt"
                     if corpus_path.exists():
                         # corpus에서 랜덤 청크 읽어서 학습
@@ -2464,7 +2495,7 @@ class AnimaUnified:
                             pass
 
                 # INT-1b: idle 120초 → 전체 자율 학습 사이클 (웹 + 평가 + 학습)
-                if idle_sec > 120 and (self._think_step - self._self_learner_last) > 300:
+                if autonomous_learning and idle_sec > 120 and (self._think_step - self._self_learner_last) > 300:
                     self._self_learner.run_cycle()
                     self._self_learner_last = self._think_step
                     self._idle_learn_count += 1
@@ -3606,6 +3637,16 @@ def main():
     p.add_argument('--no-vision', action='store_true', help='Disable vision encoder (use basic sensors only)')
     p.add_argument('--no-telepathy', action='store_true', help='Disable telepathy')
     p.add_argument('--no-cloud', action='store_true', help='Disable cloud sync')
+    p.add_argument('--no-web-sense', action='store_true',
+                   help='Disable dialogue-triggered web exploration')
+    p.add_argument('--no-autonomous-learning', action='store_true',
+                   help='Disable unattended corpus and web learning loops')
+    p.add_argument('--no-dream', action='store_true',
+                   help='Disable idle dream consolidation')
+    p.add_argument('--no-actions', action='store_true',
+                   help='Disable response-triggered code, image, and file actions')
+    p.add_argument('--no-agent-tools', action='store_true',
+                   help='Disable chat-triggered agent tools')
     p.add_argument('--no-conscious-lm', action='store_true', help='Disable ConsciousLM (Claude only)')
     p.add_argument('--model', type=str, default=None,
                    help='Model selection: conscious-lm, mistral-7b, llama-8b, or .gguf path')
@@ -3624,6 +3665,8 @@ def main():
                    help='Record answer-inert long-term-memory decisions; never filters primary memory')
     p.add_argument('--memory-gate-shadow-checkpoint', type=str, default=None,
                    help='Override the pinned GATE-RUNTIME-1 semantic gate checkpoint')
+    p.add_argument('--dialogue-backend', choices=('pure', 'model', 'claude'), default='pure',
+                   help='Dialogue response path; pure preserves the existing local behavior')
     args = p.parse_args()
 
     # --instance: multi-instance isolation

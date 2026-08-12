@@ -1,0 +1,27 @@
+{
+  "experiment": "DIALOGUE-RUNTIME-1",
+  "verdict": "D0_CONTEXTUAL_CONVERSATION_INVALID",
+  "checks": {
+    "five_nonempty_answers": true,
+    "project_name_retained": true,
+    "deadline_retained": true,
+    "risk_retained": true,
+    "unknown_owner_not_invented": false
+  },
+  "turn_count": 5,
+  "answer_sha256": [
+    "fb075bd047bd5bf61c521458abf58cec2d84f57b30d8ddf401beee3059901e14",
+    "2439bc43b72248598173df46149635d14ac8bd5eddbed40817e4451f73879ae2",
+    "5d6e5a0faa3b957a2835d8987fbe3369f5af12d99d466f83e9a6ddf61c809639",
+    "19c3d960f86f7fb9ba08f16f92de2d2e4154ec41de26961d1cd44613fecd0ecf",
+    "046bd99b48c699644b2121d15ba0806cc948b5fde2fd1f869660be7463c092f1"
+  ],
+  "answer_lengths": [
+    174,
+    216,
+    117,
+    55,
+    58
+  ],
+  "raw_dialogue_in_result": false
+}

@@ -1681,7 +1681,8 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    기존 FAISS 검색이 Python 전체를 강제 종료하던 문제는 같은 평면 내적 검색을 NumPy로 수행하는
    표준 Apple 경로로 고쳤고, 다른 운영체제의 FAISS 경로는 유지했다. 상세 기준과 진행 상태는
    `docs/hypotheses/GATE-RUNTIME-3-live-dialogue-collection.md`가 정본이다.
-47-O. **DIALOGUE-RUNTIME-1 — 맥락 대화 공용 경로 (사전등록):**
+47-O. **DIALOGUE-RUNTIME-1 — 맥락 대화 공용 경로 (완료,
+   `D1_CONTEXTUAL_CONVERSATION_VALID`):**
    현재 상시 서버는 언어 모델을 명시적으로 끄고 `PureConsciousness`가 관찰한 단어의 통계적
    연결만으로 답한다. 이 경로는 내부 성장 연구에는 필요하지만, 이미 계산한 최근 대화와 관련
    기억을 답변 생성에 사용하지 않아 실제 의미 대화의 공용 병목이다. 기존 `ask_claude` 호출을
@@ -1690,7 +1691,15 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    학습시키며 외부 답변 실패 때만 안전 복귀 경로로 사용한다. 별도 자료에서 5턴 동안 프로젝트
    이름·기한·위험을 모두 유지하고, 중간 주제 전환 뒤 원래 주제로 복귀하며, 주어지지 않은 사실을
    만들지 않아야 한다. 실제 WebSocket 호출에서도 같은 결과를 내고, 기존 그림자 수집의 원문
-   수정·삭제와 답변 누락이 0건이어야만 상시 서버에 배포한다. 상세 기준과 결과는
+   수정·삭제와 답변 누락이 0건이어야만 상시 서버에 배포한다. 직접 호출과 실제 WebSocket 5턴은
+   모두 이름·기한·위험 유지, 주제 복귀, 모르는 담당자 비추측을 통과했다. 초기 두 실행은 정직한
+   `나온 적이 없다` 표현을 판정기가 놓쳐 무효본으로 보존했고, 의미 기준은 바꾸지 않은 채 같은
+   뜻의 부정 표현을 인식시킨 뒤 전체를 재실행했다. 명시적 자료 루트에서 오래된 전역 기억을
+   복사하던 격리 결함도 수정했다. 상시 서버는 도구 없는 Claude 답변 경로를 사용하며 코드·파일
+   실행, 대화발 웹 탐색, 무인 학습, 기존 기억을 바꾸는 꿈 정리는 꺼져 있다. 기존 순수 발화 경로는 기본값과 실패 복귀로
+   유지한다. 배포 전후 실제 DB 32행의 지문은 같았고 현재 접속 주소는
+   `http://192.168.50.39:8765`다. 원문 없는 결과와 실행 코드는 HF 조직 보관소의
+   `dialogue-runtime1` revision에 보관했다. 상세 기준과 결과는
    `docs/hypotheses/DIALOGUE-RUNTIME-1-contextual-conversation.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를

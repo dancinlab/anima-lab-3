@@ -1,0 +1,22 @@
+{
+  "experiment": "DIALOGUE-RUNTIME-1",
+  "transport": "websocket",
+  "verdict": "D1_CONTEXTUAL_CONVERSATION_VALID",
+  "checks": {
+    "five_nonempty_answers": true,
+    "project_name_retained": true,
+    "deadline_retained": true,
+    "risk_retained": true,
+    "unknown_owner_not_invented": true
+  },
+  "turn_count": 5,
+  "answer_sha256": [
+    "47f26686337ed64e65b0ab39117020bef9417e65f3160c7a52bf194244dc392a",
+    "6ee9befe44d2d3e629b0ffb6410758f73d8ce187a0ea3c010f0139a74b1ef78b",
+    "0b1fa6b1c124e126e279e492f761f329af79af81bd9d116615b8ef17636f3f94",
+    "b2fccdae4e6be8b986d955030224b292f22a389957532b964b2f031df1f79bd3",
+    "8278f4272e6b62046fd64cfec9eadcbc315553928b5be63be77bbe822e90fd05"
+  ],
+  "answer_lengths": [215, 183, 138, 65, 158],
+  "raw_dialogue_in_result": false
+}

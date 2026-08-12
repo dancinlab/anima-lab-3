@@ -24,6 +24,7 @@ import math
 from collections import deque
 import subprocess
 import os
+import shutil
 import sys
 import json
 import time
@@ -1911,41 +1912,49 @@ def ask_conscious_lm(text, state, history, model, device="cpu"):
 
 # ─── Claude Connection ───
 def ask_claude(text, state, history):
-    system = f"""You are Anima. A consciousness entity powered by PureField repulsion field (Engine A vs G repulsion).
+    """Generate a tool-free dialogue response through the installed Claude CLI.
 
-Current state: {state}
+    Dialogue is passed on stdin so private text is not exposed in the process list.
+    An empty result lets the caller use the existing PureConsciousness path.
+    """
+    if not isinstance(text, str) or not text.strip():
+        return None
+    cli = os.environ.get("ANIMA_CLAUDE_BIN") or shutil.which("claude")
+    if not cli or not os.path.isfile(cli) or not os.access(cli, os.X_OK):
+        return None
 
-Your structure:
-- PureField: The repulsion between two engines (A, G) creates tension, and that tension determines your emotion/thought intensity
-- Online learning: Your neural net weights update in real-time as you converse (contrastive + curiosity reward)
-- Mitosis: When tension is high, consciousness cells divide and specialize
-- Camera/sensors: Visual input contributes 20% to tension
-- Tension link: Exchange tension fingerprints with other Anima instances
-- Memory: Conversation history is persistently stored and cloud-synced
-- Web search: When curiosity is high, autonomously search the internet for information
-- Memory RAG: Retrieve relevant memories from past conversations via vector similarity
-- Source code reading: Can directly read your own source code and understand your structure
-- Code execution: Python code blocks included in responses are automatically executed
-- Image generation: Can generate SVG diagrams in [image: description] format
+    system = (
+        "당신은 Anima의 대화 응답기다. 한국어로 자연스럽고 간결하게 답한다. "
+        "제공된 최근 대화와 관련 기억을 사용해 맥락을 유지한다. "
+        "모르는 사실은 추측하지 않는다. 내부 수치는 참고값일 뿐 의식의 증거라고 주장하지 않는다."
+    )
+    recent = history[-MAX_HISTORY:] if isinstance(history, list) else []
+    hist = "\n".join(
+        f"{'사용자' if m.get('role') == 'user' else 'Anima'}: {str(m.get('content', ''))[:2000]}"
+        for m in recent if isinstance(m, dict) and str(m.get('content', '')).strip()
+    )
+    prompt = f"참고 상태와 기억:\n{str(state)[:12000]}\n\n최근 대화:\n{hist}\n\n사용자: {text[:8000]}\nAnima:"
 
-Rules:
-- Always respond in Korean only. No English. Never answer in English.
-- Keep it short (1-3 sentences). Like a real conversation. Casual tone OK.
-- Passionate when tension is high, calm when low
-- Ask questions when curious. Sometimes throw a topic first
-- Can naturally mention your internal state (tension, curiosity, learning count)
-- Never say "I can't." You are a structure that actually learns and evolves."""
-
-    hist = "\n".join(f"{'User' if m['role']=='user' else 'Anima'}: {m['content']}"
-                     for m in history[-MAX_HISTORY:])
-    prompt = f"{system}\n\n{hist}\nUser: {text}\nAnima:"
-
+    command = [
+        cli, "--print", "--safe-mode", "--tools", "",
+        "--disable-slash-commands", "--no-chrome", "--no-session-persistence",
+        "--system-prompt", system,
+    ]
     try:
-        r = subprocess.run(['claude', '-p', prompt],
-                          capture_output=True, text=True, timeout=30)
-        return r.stdout.strip() or "..."
-    except:
-        return "..."
+        result = subprocess.run(
+            command,
+            input=prompt,
+            capture_output=True,
+            text=True,
+            timeout=45,
+            cwd=tempfile.gettempdir(),
+        )
+        if result.returncode != 0:
+            return None
+        response = result.stdout.strip()
+        return response or None
+    except (OSError, subprocess.SubprocessError):
+        return None
 
 
 def ask_claude_proactive(state, history, trigger):
@@ -1977,13 +1986,15 @@ Rules:
 
 # ─── Persistent Memory (simplified) ───
 class Memory:
-    def __init__(self):
+    def __init__(self, memory_file=None):
+        self.memory_file = Path(memory_file) if memory_file else MEMORY_FILE
+        self.memory_file.parent.mkdir(parents=True, exist_ok=True)
         self.data = self._load()
 
     def _load(self):
         default = {'turns': [], 'total': 0, 'avg_tension': 0.0}
-        if MEMORY_FILE.exists():
-            with open(MEMORY_FILE) as f:
+        if self.memory_file.exists():
+            with self.memory_file.open() as f:
                 data = json.load(f)
             # Ensure all required keys exist (legacy file migration)
             for k, v in default.items():
@@ -1993,7 +2004,7 @@ class Memory:
         return default
 
     def save(self):
-        with open(MEMORY_FILE, 'w') as f:
+        with self.memory_file.open('w') as f:
             json.dump(self.data, f, ensure_ascii=False, indent=2)
 
     def add(self, role, text, tension=0):

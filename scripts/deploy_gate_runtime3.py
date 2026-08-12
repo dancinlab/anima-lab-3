@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import plistlib
+import shutil
 import subprocess
 import sys
 import time
@@ -40,17 +41,26 @@ def _check_files() -> None:
         cwd=ROOT,
         check=True,
     )
+    claude = shutil.which("claude")
+    if not claude or not os.access(claude, os.X_OK):
+        raise SystemExit("claude CLI is required for the contextual dialogue runtime")
 
 
 def _runtime_payload() -> dict[str, object]:
+    claude = shutil.which("claude")
+    if not claude:
+        raise SystemExit("claude CLI is required for the contextual dialogue runtime")
     return {
         "Label": RUNTIME_LABEL,
         "ProgramArguments": [
             str(PYTHON), "-u", str(ENTRYPOINT), "--web", "--port", str(PORT),
             "--data-root", str(DATA_ROOT), "--max-cells", "64", "--no-camera",
             "--no-vision", "--no-telepathy", "--no-cloud", "--no-conscious-lm",
-            "--memory-gate-shadow",
+            "--no-actions", "--no-agent-tools", "--no-web-sense",
+            "--no-autonomous-learning", "--no-dream",
+            "--memory-gate-shadow", "--dialogue-backend", "claude",
         ],
+        "EnvironmentVariables": {"ANIMA_CLAUDE_BIN": claude},
         "WorkingDirectory": str(ROOT),
         "RunAtLoad": True,
         "KeepAlive": True,
