@@ -361,3 +361,12 @@ GATE-RUNTIME-1 보관은 Hugging Face 커밋
 전수 확인했다. manifest SHA-256은
 `81cd989e41350dcb3346db2e0a522ad4d51976149178a00398bffc986492b90c`다. Python 3.13.13,
 torch 2.8.0, transformers 4.55.4의 로컬 CPU에서 실행했으며 GPU를 대여하지 않았다.
+
+GATE-RUNTIME-2 보관은 Hugging Face 커밋
+`a5ae35aa09502ee79a9a0887b9623ac10de59b83`에 올렸다. 원격
+`gate-runtime2-real-dialogue-shadow` revision의 결과·판정·등록 기준·단일 선택 체크포인트·연구
+원장과 manifest를 새 임시 폴더로 다시 내려받아 manifest 5개 항목의 SHA-256을 전수 확인했다.
+manifest SHA-256은
+`c703abecc95fc9732e75e54ea990de91f99f9a33314d8b1208f791a97246ccf1`이다. 실제 대화 원본 DB는
+보관본에 넣지 않았고 결과에도 원문을 복제하지 않았다. 자료 충분성 검사만 수행해 의미 모델이나
+GPU는 실행하지 않았다.

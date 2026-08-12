@@ -1645,14 +1645,18 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    명시적 `--memory-gate-shadow`에서만 켜지며 실제 선택으로 삭제하거나 검색을 거르지 않는다.
    상세 기준과 결과는
    `docs/hypotheses/GATE-RUNTIME-1-answer-inert-memory-shadow.md`가 정본이다.
-47-M. **GATE-RUNTIME-2 — 실제 대화 그림자 관찰 (사전등록):**
+47-M. **GATE-RUNTIME-2 — 실제 대화 그림자 관찰 (완료,
+   `GR21_INSUFFICIENT_FIELD_DATA`):**
    Git이 관리하는 실제 기억 DB를 읽기 전용으로 관찰해, 사용자가 오래 기억해 달라고 한 사실의
    누락과 기억 요청이 없는 민감한 내용의 오선택을 사람 검토 기준으로 잰다. 원문은 결과·감사·HF
    보관본에 복제하지 않고 SHA-256 지문만 남기며, 실행 전후 DB 지문이 같아야 한다. 사용자 발화
    100개·고유 90개·활동일 7일·30분 간격 세션 3개와 사람 검토 100개를 모두 확보하기 전에는
    선택 성능을 해석하지 않는다. 현재 관리 자료는 사용자 발화 13개·고유 12개·활동일 1일이라,
-   기준 미달 시 합성 자료나 미추적 사용자 파일을 섞지 않고 `GR21_INSUFFICIENT_FIELD_DATA`로
-   종료한다. 그림자는 계속 기본값이 꺼져 있고 실제 저장·검색·답변을 제한하지 않는다. 상세 기준은
+   실제 실행에서도 사용자 발화 13개·고유 12개·활동일 1일·세션 1개뿐이라 선택 점수와 사람 원문
+   검토를 수행하지 않고 `GR21_INSUFFICIENT_FIELD_DATA`로 종료했다. 원본 DB의 실행 전후 지문은
+   같았고 결과의 원문 복제는 0건이었다. 합성 자료나 미추적 사용자 파일을 섞지 않았다. 그림자는
+   계속 기본값이 꺼져 있고 실제 저장·검색·답변을 제한하지 않는다. 다음은 그림자 모드로 최소
+   7일·3세션·사용자 발화 100개를 수집하는 `GATE-RUNTIME-3`이다. 상세 기준과 결과는
    `docs/hypotheses/GATE-RUNTIME-2-real-dialogue-shadow-review.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를

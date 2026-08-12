@@ -1,0 +1,12 @@
+{
+  "experiment": "gate_runtime2_real_dialogue_shadow_review",
+  "verdict": "GR21_INSUFFICIENT_FIELD_DATA",
+  "reason": "the managed real-dialogue snapshot is too small and too short for a field claim",
+  "spec_sha256": "74a8e57f548ac3a021a0186f9575d9fadee470912a9c4a2fd2cf4d7ec98d3184",
+  "source": {
+    "eligible_user_turns": 13,
+    "unique_user_turns": 12,
+    "active_days": 1,
+    "sessions": 1
+  }
+}

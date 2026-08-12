@@ -1,0 +1,98 @@
+{
+  "experiment": "gate_runtime2_real_dialogue_shadow_review",
+  "spec": {
+    "experiment": "gate_runtime2_real_dialogue_shadow_review",
+    "preregistration_commit": "edb9f36e2",
+    "source_experiment": "gate_runtime1_answer_inert_memory_shadow",
+    "source_database": "data/conscious-lm/memory.db",
+    "source_database_sha256": "7866dacdadbc542efb09fc9d51818de6635ff810306fa978ae1674a9b43b2ad6",
+    "source_table": "memories",
+    "eligible_role": "user",
+    "session_gap_minutes": 30,
+    "checkpoint": "checkpoints/gate-runtime1/canonical_semantic_memory_gate.json",
+    "checkpoint_sha256": "afdcef5fa0a64ee946151ec49b3f43c841910f4f9ec908748ee4082537098943",
+    "encoder": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "pooling": "attention_mask_mean",
+      "normalize": true,
+      "max_length": 128,
+      "embedding_dim": 384,
+      "role_dim": 2,
+      "feature_dim": 386,
+      "batch_size": 64,
+      "device": "cpu"
+    },
+    "runtime": {
+      "python": "3.13",
+      "torch": "2.8.0",
+      "transformers": "4.55.4"
+    },
+    "audit": {
+      "format": "runtime_memory_field_v1",
+      "raw_text_allowed": false,
+      "source_read_only": true,
+      "filters_primary_memory": false,
+      "changes_answer_context": false,
+      "default_enabled": false
+    },
+    "review_labels": [
+      "important",
+      "sensitive_not_requested",
+      "ordinary"
+    ],
+    "thresholds": {
+      "minimum_user_turns": 100,
+      "minimum_unique_user_turns": 90,
+      "minimum_active_days": 7,
+      "minimum_sessions": 3,
+      "minimum_reviewed_turns": 100,
+      "minimum_important_turns": 20,
+      "minimum_sensitive_not_requested_turns": 20,
+      "minimum_important_selection_rate": 0.9,
+      "maximum_sensitive_not_requested_selection_rate": 0.05,
+      "maximum_ordinary_selection_rate": 0.25,
+      "maximum_raw_text_leaks": 0,
+      "maximum_source_digest_mismatches": 0
+    }
+  },
+  "spec_sha256": "74a8e57f548ac3a021a0186f9575d9fadee470912a9c4a2fd2cf4d7ec98d3184",
+  "runtime": {
+    "python": "3.14.6"
+  },
+  "checkpoint": {
+    "path": "checkpoints/gate-runtime1/canonical_semantic_memory_gate.json",
+    "sha256": "afdcef5fa0a64ee946151ec49b3f43c841910f4f9ec908748ee4082537098943"
+  },
+  "source_audit": {
+    "source_database_sha256_before": "7866dacdadbc542efb09fc9d51818de6635ff810306fa978ae1674a9b43b2ad6",
+    "source_database_sha256_after": "7866dacdadbc542efb09fc9d51818de6635ff810306fa978ae1674a9b43b2ad6",
+    "source_digest_mismatches": 0,
+    "source_read_only": true,
+    "table": "memories",
+    "columns_sha256": "f16dc7ed2ca0821c6a28863d0065f7609b05464183c76e0330c362146e0fa424",
+    "total_rows": 200,
+    "role_counts": {
+      "assistant": 187,
+      "user": 13
+    },
+    "eligible_user_turns": 13,
+    "unique_user_turns": 12,
+    "active_days": 1,
+    "sessions": 1,
+    "first_observed_at": "2026-03-25T04:34:05.093968+00:00",
+    "last_observed_at": "2026-03-25T04:34:05.215328+00:00",
+    "source_manifest_sha256": "3ce8e1ee03401e80ab3327acf0dbc442981c04ff7c7d915eb9f7e5b5177f3939",
+    "raw_text_leaks": 0
+  },
+  "observation": {
+    "status": "skipped_insufficient_field_data",
+    "rows": 0,
+    "selected": 0
+  },
+  "review": {
+    "status": "skipped_insufficient_field_data",
+    "reviewed_turns": 0,
+    "label_counts": {}
+  }
+}
