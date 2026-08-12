@@ -291,3 +291,11 @@ GATE-CONTROL-2 보관은 Hugging Face 커밋
 manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `d94bdf96539d3d27bc336877aae6154aa5236c0f5d58d623f5bd2a06d2a7560c`다. 로컬 CPU에서만
 실행했다.
+
+GATE-2 보관은 Hugging Face 커밋
+`9d377f773562b7c38b888a0b3771a7929c347767`에 올렸다. 원격
+`gate2-realistic-dialogue-write` revision의 결과·최종 판정·최초 형식 차단 판정·정상/가짜
+체크포인트 네 개와 manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다.
+manifest SHA-256은
+`52caa315ce3e13d0068c1e189be3944a4d4043d30b2a28af222cf639d6d17279`다. 로컬 CPU에서만
+실행했다.
