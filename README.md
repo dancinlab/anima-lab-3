@@ -1602,6 +1602,16 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    회차별로 균형 순환하고 자연스러운 주제·값 어휘로 다시 검증하는 `GATE-WRITE-CONTROL-1`이다.
    상세 기준과 결과는
    `docs/hypotheses/GATE-WRITE-MECHANISM-1-seed-factor-decomposition.md`가 정본이다.
+47-J. **GATE-WRITE-CONTROL-1 — 균형 문장 틀·자연 어휘 저장 선택 (사전등록):**
+   `GATE-WRITE-MECHANISM-1`에서 확인한 자료 상호작용을 제거한다. 네 사실 종류의 네 문장 틀을
+   보정에서 각각 128번, `daily`·`work` 두 평가 어휘 묶음에서 각각 64번 고르게 사용한다. 기존
+   숫자 식별 문자열은 없애고 학습·두 평가 사이에 겹치지 않는 자연 주제·값 표현만 쓴다. 고정 문장
+   의미 모델, `canonical_ridge`, 0.5 문턱, 4,096개 보정 문장, 1,024회차×2, 후보 8개는 유지한다.
+   두 seed·두 어휘 묶음 모두 중요 사실과 종류별·문장 틀별 저장률 90% 이상, 방해 저장 전체 25%
+   이하를 통과해야 `GWC1_BALANCED_NATURAL_WRITE_VALID`다. 회차별 저장량을 맞춘 가짜·무작위와
+   정상의 차이는 25%p 이상이어야 한다. 실제 대화 원문 저장 기본값은 이 검사만으로 바꾸지 않는다.
+   상세 사양과 판정은
+   `docs/hypotheses/GATE-WRITE-CONTROL-1-balanced-natural-language.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
