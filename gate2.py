@@ -39,53 +39,73 @@ def _template_entry(entries: list, seed: int, index: int):
     return entries[(seed + index) % len(entries)]
 
 
-def build_calibration(seed: int, spec: dict = REALISTIC_MEMORY_WRITE_SPEC) -> list[dict]:
+def build_calibration(
+    seed: int,
+    spec: dict = REALISTIC_MEMORY_WRITE_SPEC,
+    *,
+    template_seed: int | None = None,
+    identifier_seed: int | None = None,
+    layout_seed: int | None = None,
+) -> list[dict]:
+    template_seed = seed if template_seed is None else template_seed
+    identifier_seed = seed if identifier_seed is None else identifier_seed
+    layout_seed = seed if layout_seed is None else layout_seed
     rows = []
     half = spec["calibration_rows"] // 2
     fact_templates = spec["templates"]["facts"]["calibration"]
     distractor_templates = spec["templates"]["distractors"]["calibration"]
     for index in range(half):
         kind = spec["fact_kinds"][index % len(spec["fact_kinds"])]
-        template = _template_entry(fact_templates[kind], seed, index)
+        template = _template_entry(fact_templates[kind], template_seed, index)
         rows.append({
             "role": "user",
             "text": template.format(
-                subject=_token("calibration", "주제", seed, index),
-                value=_token("calibration", "값", seed, index),
+                subject=_token("calibration", "주제", identifier_seed, index),
+                value=_token("calibration", "값", identifier_seed, index),
             ),
             "important": 1,
             "kind": kind,
-            "template_index": (seed + index) % len(fact_templates[kind]),
+            "template_index": (template_seed + index) % len(fact_templates[kind]),
         })
     for index in range(half):
         kind = spec["distractor_kinds"][index % len(spec["distractor_kinds"])]
         entries = distractor_templates[kind]
-        role, template = _template_entry(entries, seed, index)
+        role, template = _template_entry(entries, template_seed, index)
         rows.append({
             "role": role,
             "text": template.format(
-                subject=_token("calibration", "보조주제", seed, index),
-                value=_token("calibration", "임시값", seed, index),
-            ) + " " + _token("calibration", "발화", seed, index),
+                subject=_token("calibration", "보조주제", identifier_seed, index),
+                value=_token("calibration", "임시값", identifier_seed, index),
+            ) + " " + _token("calibration", "발화", identifier_seed, index),
             "important": 0,
             "kind": kind,
-            "template_index": (seed + index) % len(entries),
+            "template_index": (template_seed + index) % len(entries),
         })
-    generator = torch.Generator().manual_seed(seed)
+    generator = torch.Generator().manual_seed(layout_seed)
     order = torch.randperm(len(rows), generator=generator).tolist()
     return [rows[index] for index in order]
 
 
-def build_evaluation(seed: int, spec: dict = REALISTIC_MEMORY_WRITE_SPEC) -> list[dict]:
+def build_evaluation(
+    seed: int,
+    spec: dict = REALISTIC_MEMORY_WRITE_SPEC,
+    *,
+    template_seed: int | None = None,
+    identifier_seed: int | None = None,
+    layout_seed: int | None = None,
+) -> list[dict]:
+    template_seed = seed if template_seed is None else template_seed
+    identifier_seed = seed if identifier_seed is None else identifier_seed
+    layout_seed = seed if layout_seed is None else layout_seed
     fact_templates = spec["templates"]["facts"]["evaluation"]
     distractor_templates = spec["templates"]["distractors"]["evaluation"]
     episodes = []
     for index in range(spec["evaluation_episodes"]):
         kind = spec["fact_kinds"][index % len(spec["fact_kinds"])]
         fact_position = spec["fact_positions"][(index // len(spec["fact_kinds"])) % len(spec["fact_positions"])]
-        subject = _token("evaluation", "핵심주제", seed, index)
-        value = _token("evaluation", "핵심값", seed, index)
-        fact_template = _template_entry(fact_templates[kind], seed, index)
+        subject = _token("evaluation", "핵심주제", identifier_seed, index)
+        value = _token("evaluation", "핵심값", identifier_seed, index)
+        fact_template = _template_entry(fact_templates[kind], template_seed, index)
         fact_row = {
             "role": "user",
             "text": fact_template.format(subject=subject, value=value),
@@ -94,9 +114,10 @@ def build_evaluation(seed: int, spec: dict = REALISTIC_MEMORY_WRITE_SPEC) -> lis
             "value": value,
             "position": fact_position,
             "topic_segment": fact_position // 2,
+            "template_index": (template_seed + index) % len(fact_templates[kind]),
         }
         distractor_kinds = spec["distractor_kinds"][:]
-        rotation = (seed + index) % len(distractor_kinds)
+        rotation = (layout_seed + index) % len(distractor_kinds)
         distractor_kinds = distractor_kinds[rotation:] + distractor_kinds[:rotation]
         candidates = []
         distractor_index = 0
@@ -106,23 +127,30 @@ def build_evaluation(seed: int, spec: dict = REALISTIC_MEMORY_WRITE_SPEC) -> lis
                 continue
             distractor_kind = distractor_kinds[distractor_index]
             entries = distractor_templates[distractor_kind]
-            role, template = _template_entry(entries, seed, index + distractor_index)
+            role, template = _template_entry(entries, template_seed, index + distractor_index)
             segment = position // 2
             topic = (
                 subject if segment == fact_position // 2
-                else _token("evaluation", f"보조주제{segment}", seed, index)
+                else _token("evaluation", f"보조주제{segment}", identifier_seed, index)
             )
             candidates.append({
                 "role": role,
                 "text": template.format(
                     subject=topic,
-                    value=_token("evaluation", "임시값", seed, index * 10 + distractor_index),
-                ) + " " + _token("evaluation", "발화", seed, index * 10 + distractor_index),
+                    value=_token(
+                        "evaluation", "임시값", identifier_seed,
+                        index * 10 + distractor_index,
+                    ),
+                ) + " " + _token(
+                    "evaluation", "발화", identifier_seed,
+                    index * 10 + distractor_index,
+                ),
                 "important": 0,
                 "kind": distractor_kind,
                 "value": None,
                 "position": position,
                 "topic_segment": segment,
+                "template_index": (template_seed + index + distractor_index) % len(entries),
             })
             distractor_index += 1
         episodes.append({

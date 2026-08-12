@@ -33,10 +33,23 @@ def _atomic_json(path: Path, payload: dict) -> None:
     os.replace(temporary, path)
 
 
-def build_balanced_evaluation(seed: int, spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC) -> list[dict]:
+def build_balanced_evaluation(
+    seed: int,
+    spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC,
+    *,
+    template_seed: int | None = None,
+    identifier_seed: int | None = None,
+    layout_seed: int | None = None,
+) -> list[dict]:
     source_spec = copy.deepcopy(REALISTIC_MEMORY_WRITE_SPEC)
     source_spec["evaluation_episodes"] = spec["evaluation_episodes"]
-    episodes = build_evaluation(seed, source_spec)
+    episodes = build_evaluation(
+        seed,
+        source_spec,
+        template_seed=template_seed,
+        identifier_seed=identifier_seed,
+        layout_seed=layout_seed,
+    )
     width = spec["candidates_per_episode"]
     positions = spec["fact_positions"]
     if width != len(positions) or len(episodes) % len(positions):
