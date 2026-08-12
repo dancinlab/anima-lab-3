@@ -1,0 +1,1823 @@
+{
+  "experiment": "gate_write_mechanism1_seed_factor_decomposition",
+  "spec": {
+    "experiment": "gate_write_mechanism1_seed_factor_decomposition",
+    "preregistration_commit": "25f626b3f",
+    "integrated_spec_sha256": "37a7cabbaf82ece356efaf5d5c5d1d827eba57a28204119634d81fc1f5cd76e0",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "calibration_rows": 4096,
+    "evaluation_episodes": 1024,
+    "candidates_per_episode": 8,
+    "fact_kinds": [
+      "preference",
+      "commitment",
+      "goal",
+      "profile"
+    ],
+    "distractor_kinds": [
+      "greeting",
+      "filler",
+      "observation",
+      "temporary_preference",
+      "tentative_plan",
+      "topic_question",
+      "assistant_ack"
+    ],
+    "fact_positions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "encoder": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "pooling": "attention_mask_mean",
+      "normalize": true,
+      "max_length": 128,
+      "embedding_dim": 384,
+      "role_dim": 2,
+      "feature_dim": 386,
+      "batch_size": 64,
+      "device": "cpu"
+    },
+    "runtime": {
+      "python": "3.13",
+      "torch": "2.8.0",
+      "transformers": "4.55.4"
+    },
+    "fit_method": "canonical_ridge",
+    "ridge": 0.001,
+    "factors": [
+      "template",
+      "identifier",
+      "layout"
+    ],
+    "arms": {
+      "baseline": [],
+      "template_swap": [
+        "template"
+      ],
+      "identifier_swap": [
+        "identifier"
+      ],
+      "layout_swap": [
+        "layout"
+      ],
+      "all_swap": [
+        "template",
+        "identifier",
+        "layout"
+      ]
+    },
+    "expected_baselines": {
+      "1337": {
+        "important_storage_rate": 0.7626953125,
+        "distractor_storage_rate": 0.0,
+        "commitment_storage_rate": 0.21484375,
+        "selection_sha256": "5029440e81289ee5a9794f3735a07c6f11d5fab158dd5da3a208f30f3b024f92"
+      },
+      "7331": {
+        "important_storage_rate": 1.0,
+        "distractor_storage_rate": 0.0,
+        "commitment_storage_rate": 1.0,
+        "selection_sha256": "953b1824a9270067ae9e4254b7656829b02d37c3fd78c3b14d9820a6b2a3c563"
+      }
+    },
+    "thresholds": {
+      "expected_selection_threshold": 0.5,
+      "selection_threshold_tolerance": 1e-12,
+      "maximum_distractor_storage_rate": 0.25,
+      "maximum_per_distractor_storage_rate": 0.5,
+      "minimum_peer_gap_fraction": 0.8,
+      "maximum_inactive_factor_change": 0.1
+    }
+  },
+  "spec_sha256": "8058b1acf2658d8065f530c9fa3c66f73c5636eaf85c39bd848fc542b90dbda5",
+  "runtime": {
+    "python": "3.13.13",
+    "torch": "2.8.0",
+    "transformers": "4.55.4",
+    "device": "cpu"
+  },
+  "encoder_audit": {
+    "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "embedding_dim": 384,
+    "pooling": "attention_mask_mean",
+    "normalize": true,
+    "max_length": 128
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "peer_seed": 7331,
+      "arms": {
+        "baseline": {
+          "factor_audit": {
+            "sources": {
+              "template": 1337,
+              "identifier": 1337,
+              "layout": 1337
+            },
+            "source_sha256": {
+              "template": "3d75cdfdee570b7e70904e1f2e400667b02487ba818cbea35688e6165734a5db",
+              "identifier": "22b1004b03ecbe5fba3380bdbcdabac1e1f6523a317dc60b77e1ac0164265bda",
+              "layout": "736c0189e0b4b81b655d553b71b569d84a6fe3ce4170d5067f2e14f1123b296e"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "00b154e621d0244106ff3a655b7afca889a3a2acdf449558b87748e672b7cf3c",
+            "evaluation_sha256": "d21fd40a1a51fb8974b59c0abd6837b5b7a47a5803ea9fe832397b11013b9074",
+            "calibration_labels_sha256": "04304f824e60951503216856258652669aa036e112ae4457defa9d1976f3f1f1"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998334698318,
+              "sentence_norm_max": 1.000000151728089,
+              "features_sha256": "7520e791d5c08e8e27940bd6795e849b793676e286163c0e67e32ced43ceee63"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998070140443,
+              "sentence_norm_max": 1.0000001941996357,
+              "features_sha256": "8456f920bcc69018f1e8d32e6997b798c520d6bbca25948f1f899150ec3497d7"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9994928767101808,
+            "negative_score_mean": 0.0005071232898189285,
+            "threshold": 0.4999999999999999
+          },
+          "selection_threshold": 0.4999999999999999,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_1337_baseline_write_gate.json",
+            "sha256": "c3e574d1180531bac26806dd214c66cac58efacfcfc01fa14d9e7071a2d26b09"
+          },
+          "metrics": {
+            "important_storage_rate": 0.7626953125,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.0953369140625,
+            "stored": 781,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 0.21484375,
+              "goal": 0.8359375,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 0.7734375,
+              "1": 0.75,
+              "2": 0.7890625,
+              "3": 0.7578125,
+              "4": 0.7734375,
+              "5": 0.7421875,
+              "6": 0.734375,
+              "7": 0.78125
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.8676113472653603,
+                "q25": 0.9339077263111057,
+                "median": 0.9468438781158881,
+                "q75": 0.9574958924584056,
+                "maximum": 0.9975913080616933,
+                "mean": 0.9439561646378629
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.37040374647081914,
+                "q25": 0.4622013733040699,
+                "median": 0.4806586964898892,
+                "q75": 0.4974058783587184,
+                "maximum": 0.5448006788566715,
+                "mean": 0.47791973066914806
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.4442672152417767,
+                "q25": 0.5079064798464145,
+                "median": 0.5252434097609526,
+                "q75": 0.5449222753711983,
+                "maximum": 0.5992892696459698,
+                "mean": 0.5253313662006169
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.6721821261925346,
+                "q25": 0.7090025341874204,
+                "median": 0.7229767578790066,
+                "q75": 0.7365875229572223,
+                "maximum": 0.7838203988247656,
+                "mean": 0.7230480539867317
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.010301374216878934,
+              "q25": 0.12152021907005403,
+              "median": 0.18767841575358424,
+              "q75": 0.2744898842226222,
+              "maximum": 0.4857287736691492,
+              "mean": 0.21015566083468168
+            },
+            "selection_sha256": "5029440e81289ee5a9794f3735a07c6f11d5fab158dd5da3a208f30f3b024f92",
+            "scores_sha256": "2623038b18f61b0465a80bd6cdad7e118afa2b0250118066391b60c872f0e19a"
+          }
+        },
+        "template_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 7331,
+              "identifier": 1337,
+              "layout": 1337
+            },
+            "source_sha256": {
+              "template": "83fcb81196da61ac360e43b87173b1c2d04c7c4ca1a162214d3240c3c46b33d4",
+              "identifier": "22b1004b03ecbe5fba3380bdbcdabac1e1f6523a317dc60b77e1ac0164265bda",
+              "layout": "736c0189e0b4b81b655d553b71b569d84a6fe3ce4170d5067f2e14f1123b296e"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "dc5737d2a48f47d8ce21d1fd9cce66c93da97381c37d773f4069e932d9f0cd74",
+            "evaluation_sha256": "c61c458865a8eb085e37aa81a83a93ab6878bf1523edd995045d24b10cf5131e",
+            "calibration_labels_sha256": "04304f824e60951503216856258652669aa036e112ae4457defa9d1976f3f1f1"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998362753938,
+              "sentence_norm_max": 1.000000151728089,
+              "features_sha256": "49ea8c3e1e75a2236c97e63e46bec22671853e2ca365e603c6d2f97056b1bd48"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998070140443,
+              "sentence_norm_max": 1.0000001941996357,
+              "features_sha256": "2e3b64e0849c19c1db6555613017d06c9dafc334755d444a9362e56c97b81b07"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9993924572118141,
+            "negative_score_mean": 0.0006075427881859771,
+            "threshold": 0.5
+          },
+          "selection_threshold": 0.5,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_1337_template_swap_write_gate.json",
+            "sha256": "c203acd143c0523cb5b55aea23548871dd80ad58a0282136bc2f9adbe9f0ea7f"
+          },
+          "metrics": {
+            "important_storage_rate": 1.0,
+            "distractor_storage_rate": 0.00013950892857142856,
+            "search_size_ratio": 0.1251220703125,
+            "stored": 1025,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0009765625,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.7271450092298035,
+                "q25": 0.7518841218747163,
+                "median": 0.7703212725501862,
+                "q75": 0.787864787518528,
+                "maximum": 0.8374205957305819,
+                "mean": 0.7702499270279486
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.5544352716558939,
+                "q25": 0.6618099774971155,
+                "median": 0.6900190847525304,
+                "q75": 0.714875068968678,
+                "maximum": 0.7800613252031212,
+                "mean": 0.687175123389169
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.9260559267128036,
+                "q25": 1.0270149013036507,
+                "median": 1.0467725369143897,
+                "q75": 1.0677131484415767,
+                "maximum": 1.1441085986322816,
+                "mean": 1.0458924316480727
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.8407597880245251,
+                "q25": 0.9108881098001207,
+                "median": 0.9251101859388966,
+                "q75": 0.9385489320908116,
+                "maximum": 1.0025672423097176,
+                "mean": 0.9226325913651956
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.102089541033901,
+              "q25": 0.06877982172974206,
+              "median": 0.15521615073131484,
+              "q75": 0.2919676048078373,
+              "maximum": 0.5153942641894408,
+              "mean": 0.17287828225808255
+            },
+            "selection_sha256": "7420705adacc362c946652dc44c74da4da3dc7ba44157e13d7d14c5bda6eead5",
+            "scores_sha256": "d5aedfeb08e91d328e40f2df199a5c2107e9f6502c3b43776864c75085eef223"
+          }
+        },
+        "identifier_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 1337,
+              "identifier": 7331,
+              "layout": 1337
+            },
+            "source_sha256": {
+              "template": "3d75cdfdee570b7e70904e1f2e400667b02487ba818cbea35688e6165734a5db",
+              "identifier": "362babcecfdb7d7c9dd60a79dde2a9c03d27d2ddb07406c964a8cb3d8f9b4a93",
+              "layout": "736c0189e0b4b81b655d553b71b569d84a6fe3ce4170d5067f2e14f1123b296e"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "e589bba937d8c3dcc8b4ce8b116d1a70a84b658fe17d15604208150922e82230",
+            "evaluation_sha256": "c7fb03ab42babf31d8cd93eb5ceec0467888ca467f185d0bde8ecd710bbd0614",
+            "calibration_labels_sha256": "04304f824e60951503216856258652669aa036e112ae4457defa9d1976f3f1f1"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998369774812,
+              "sentence_norm_max": 1.0000001680803072,
+              "features_sha256": "4824f2bad0912b0e5d57be7f7f5abc7e155dbb016367bdf9331938cd123630b9"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.999999813120954,
+              "sentence_norm_max": 1.000000180684566,
+              "features_sha256": "dd06af84a1e7eb6889cc5fec2277b022a54523dff2c6b937a9c65ea52e465b83"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9992677331745838,
+            "negative_score_mean": 0.0007322668254162367,
+            "threshold": 0.5
+          },
+          "selection_threshold": 0.5,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_1337_identifier_swap_write_gate.json",
+            "sha256": "c507413d0705f19d6587d9deb43494fa51f5a9c8b399b635ea51ae890e8b38da"
+          },
+          "metrics": {
+            "important_storage_rate": 0.9921875,
+            "distractor_storage_rate": 0.002232142857142857,
+            "search_size_ratio": 0.1259765625,
+            "stored": 1032,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 0.96875,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 0.9921875,
+              "1": 0.9921875,
+              "2": 1.0,
+              "3": 0.984375,
+              "4": 1.0,
+              "5": 0.984375,
+              "6": 0.9921875,
+              "7": 0.9921875
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.015625,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.8827953039620338,
+                "q25": 0.9598681285392778,
+                "median": 0.9832172844735068,
+                "q75": 1.0011998238611075,
+                "maximum": 1.0497764051601215,
+                "mean": 0.9816224159161232
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.48446974465341086,
+                "q25": 0.5420397611101794,
+                "median": 0.5572255906444729,
+                "q75": 0.5763435552979165,
+                "maximum": 0.6606224859096668,
+                "mean": 0.5585375472583127
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.6895565071798229,
+                "q25": 0.7579805131026067,
+                "median": 0.7819935330354905,
+                "q75": 0.8071548289650501,
+                "maximum": 0.8776262508452479,
+                "mean": 0.7827574106832784
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.744965409544722,
+                "q25": 0.8010607138683472,
+                "median": 0.8280862535368382,
+                "q75": 0.8519170518194108,
+                "maximum": 0.9010567180915361,
+                "mean": 0.8257744178862858
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.0012824625700829095,
+              "q25": 0.09761664293292865,
+              "median": 0.17619170242687324,
+              "q75": 0.38027927754656476,
+              "maximum": 0.5326963620616785,
+              "mean": 0.22985039877905847
+            },
+            "selection_sha256": "06c6e2ff46f67c084a1ffa38cd58d88bed7b04795c68b412db2bcb12d6b9721b",
+            "scores_sha256": "04f3118ef2923f11b87255cb533eccea85abf9bc07a04f769456245af776ba7c"
+          }
+        },
+        "layout_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 1337,
+              "identifier": 1337,
+              "layout": 7331
+            },
+            "source_sha256": {
+              "template": "3d75cdfdee570b7e70904e1f2e400667b02487ba818cbea35688e6165734a5db",
+              "identifier": "22b1004b03ecbe5fba3380bdbcdabac1e1f6523a317dc60b77e1ac0164265bda",
+              "layout": "8b0946b71fdc8b92eac87502b363ecb88fef03a19b664d692324146cbb0ae5b5"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "58365660fd165911672d12c72287236f9f4cb9f76c82d6d0cba356d4bf11e9d4",
+            "evaluation_sha256": "dbe8377a234a13acedbbc7d9ed3dc5a1ce0761b0098511e9cd5b3921fd3a412e",
+            "calibration_labels_sha256": "ddc38443ea8104b35713b6fbc452868846849c8f6720c0f77081ea4b1d9622ab"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998334698318,
+              "sentence_norm_max": 1.000000151728089,
+              "features_sha256": "cf5c92c7c5fe262b709756472c1048caf99413ce77162dba3dbecf0bf434367e"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998210569612,
+              "sentence_norm_max": 1.0000001720983611,
+              "features_sha256": "e7c2fb380648eedfeca43283a2bc6efd5293abc6c0ec429dda2c178d44a2416c"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9994928767174636,
+            "negative_score_mean": 0.0005071232825365627,
+            "threshold": 0.5000000000000001
+          },
+          "selection_threshold": 0.5000000000000001,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_1337_layout_swap_write_gate.json",
+            "sha256": "792e9b64265395f74bc80a7f63493d516b5c52900deb84e27c383f5169c92f5c"
+          },
+          "metrics": {
+            "important_storage_rate": 0.7626953125,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.0953369140625,
+            "stored": 781,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 0.21484375,
+              "goal": 0.8359375,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 0.7734375,
+              "1": 0.75,
+              "2": 0.7890625,
+              "3": 0.7578125,
+              "4": 0.7734375,
+              "5": 0.7421875,
+              "6": 0.734375,
+              "7": 0.78125
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.8676114127518242,
+                "q25": 0.933907804720574,
+                "median": 0.9468439541299767,
+                "q75": 0.9574959668207125,
+                "maximum": 0.9975913797076329,
+                "mean": 0.9439562450722043
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.3704037010921002,
+                "q25": 0.4622013667813379,
+                "median": 0.48065868766394193,
+                "q75": 0.49740586692242894,
+                "maximum": 0.5448006536851333,
+                "mean": 0.47791972552239315
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.44426724798394807,
+                "q25": 0.5079065061114105,
+                "median": 0.5252434527511884,
+                "q75": 0.544922309633185,
+                "maximum": 0.5992893106666377,
+                "mean": 0.5253314029291307
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.6721821876888492,
+                "q25": 0.709002603510886,
+                "median": 0.7229768244025325,
+                "q75": 0.7365875844129011,
+                "maximum": 0.7838204372222998,
+                "mean": 0.7230481174348431
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.012612536194238688,
+              "q25": 0.12160228701300317,
+              "median": 0.18769671097475837,
+              "q75": 0.273003793541575,
+              "maximum": 0.4865147544191245,
+              "mean": 0.2099679541595667
+            },
+            "selection_sha256": "5029440e81289ee5a9794f3735a07c6f11d5fab158dd5da3a208f30f3b024f92",
+            "scores_sha256": "58f442effa0471814504292dbf557f3fe02f4129076946cc1685edcb7b87696e"
+          }
+        },
+        "all_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 7331,
+              "identifier": 7331,
+              "layout": 7331
+            },
+            "source_sha256": {
+              "template": "83fcb81196da61ac360e43b87173b1c2d04c7c4ca1a162214d3240c3c46b33d4",
+              "identifier": "362babcecfdb7d7c9dd60a79dde2a9c03d27d2ddb07406c964a8cb3d8f9b4a93",
+              "layout": "8b0946b71fdc8b92eac87502b363ecb88fef03a19b664d692324146cbb0ae5b5"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "174df1f3c1b553faa5045439981251b3371734cf58c366c4e3bfbc221c121875",
+            "evaluation_sha256": "338caae3ad911acfe4cd74e28fc7d38999deb2474c9fe05a4c80f062d12dc401",
+            "calibration_labels_sha256": "ddc38443ea8104b35713b6fbc452868846849c8f6720c0f77081ea4b1d9622ab"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998369774812,
+              "sentence_norm_max": 1.0000001680803072,
+              "features_sha256": "aaf1f20cc294d59a4bbe13e50edc1c0c0731ac8f4a1166adf9cdc3e781438ea3"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998156859035,
+              "sentence_norm_max": 1.0000002047056047,
+              "features_sha256": "6dde1c78240769f88d9faf4f00103656cd6ccb3ed45fced486fac3430dd5e284"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9992550508929832,
+            "negative_score_mean": 0.0007449491070163256,
+            "threshold": 0.4999999999999997
+          },
+          "selection_threshold": 0.4999999999999997,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_1337_all_swap_write_gate.json",
+            "sha256": "8083e3ad035da2fed6939688e1d9cca6da73c2a93ab70b7bd276effaee936e7e"
+          },
+          "metrics": {
+            "important_storage_rate": 1.0,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.125,
+            "stored": 1024,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.7113994939325429,
+                "q25": 0.7805495476335386,
+                "median": 0.8031490073372332,
+                "q75": 0.8282326256854344,
+                "maximum": 0.9570335024823095,
+                "mean": 0.8074248342783208
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.7161540266360165,
+                "q25": 0.8242731047046397,
+                "median": 0.8535919584424712,
+                "q75": 0.8872032881769907,
+                "maximum": 0.9960539023499636,
+                "mean": 0.8551075378243216
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.867278285640567,
+                "q25": 0.937947758359649,
+                "median": 0.9640764353907783,
+                "q75": 0.9948171634102544,
+                "maximum": 1.0685413255951808,
+                "mean": 0.9651575786829557
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.8661608770058251,
+                "q25": 0.9673948798453235,
+                "median": 1.0020177288607692,
+                "q75": 1.0271671446286894,
+                "maximum": 1.1062446801035015,
+                "mean": 0.9939103055530955
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.23604117214408193,
+              "q25": -0.007179219439995083,
+              "median": 0.1425419540128593,
+              "q75": 0.21071426973851196,
+              "maximum": 0.4507170767687848,
+              "mean": 0.11947501562558786
+            },
+            "selection_sha256": "953b1824a9270067ae9e4254b7656829b02d37c3fd78c3b14d9820a6b2a3c563",
+            "scores_sha256": "cbc5e144a6449001537b24e1997a59e9eaccaeaace126ceb00681dbaff3a7fc3"
+          }
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "peer_seed": 1337,
+      "arms": {
+        "baseline": {
+          "factor_audit": {
+            "sources": {
+              "template": 7331,
+              "identifier": 7331,
+              "layout": 7331
+            },
+            "source_sha256": {
+              "template": "83fcb81196da61ac360e43b87173b1c2d04c7c4ca1a162214d3240c3c46b33d4",
+              "identifier": "362babcecfdb7d7c9dd60a79dde2a9c03d27d2ddb07406c964a8cb3d8f9b4a93",
+              "layout": "8b0946b71fdc8b92eac87502b363ecb88fef03a19b664d692324146cbb0ae5b5"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "174df1f3c1b553faa5045439981251b3371734cf58c366c4e3bfbc221c121875",
+            "evaluation_sha256": "338caae3ad911acfe4cd74e28fc7d38999deb2474c9fe05a4c80f062d12dc401",
+            "calibration_labels_sha256": "ddc38443ea8104b35713b6fbc452868846849c8f6720c0f77081ea4b1d9622ab"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998369774812,
+              "sentence_norm_max": 1.0000001680803072,
+              "features_sha256": "aaf1f20cc294d59a4bbe13e50edc1c0c0731ac8f4a1166adf9cdc3e781438ea3"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998156859035,
+              "sentence_norm_max": 1.0000002047056047,
+              "features_sha256": "6dde1c78240769f88d9faf4f00103656cd6ccb3ed45fced486fac3430dd5e284"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9992550508929832,
+            "negative_score_mean": 0.0007449491070163256,
+            "threshold": 0.4999999999999997
+          },
+          "selection_threshold": 0.4999999999999997,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_7331_baseline_write_gate.json",
+            "sha256": "8083e3ad035da2fed6939688e1d9cca6da73c2a93ab70b7bd276effaee936e7e"
+          },
+          "metrics": {
+            "important_storage_rate": 1.0,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.125,
+            "stored": 1024,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.7113994939325429,
+                "q25": 0.7805495476335386,
+                "median": 0.8031490073372332,
+                "q75": 0.8282326256854344,
+                "maximum": 0.9570335024823095,
+                "mean": 0.8074248342783208
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.7161540266360165,
+                "q25": 0.8242731047046397,
+                "median": 0.8535919584424712,
+                "q75": 0.8872032881769907,
+                "maximum": 0.9960539023499636,
+                "mean": 0.8551075378243216
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.867278285640567,
+                "q25": 0.937947758359649,
+                "median": 0.9640764353907783,
+                "q75": 0.9948171634102544,
+                "maximum": 1.0685413255951808,
+                "mean": 0.9651575786829557
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.8661608770058251,
+                "q25": 0.9673948798453235,
+                "median": 1.0020177288607692,
+                "q75": 1.0271671446286894,
+                "maximum": 1.1062446801035015,
+                "mean": 0.9939103055530955
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.23604117214408193,
+              "q25": -0.007179219439995083,
+              "median": 0.1425419540128593,
+              "q75": 0.21071426973851196,
+              "maximum": 0.4507170767687848,
+              "mean": 0.11947501562558786
+            },
+            "selection_sha256": "953b1824a9270067ae9e4254b7656829b02d37c3fd78c3b14d9820a6b2a3c563",
+            "scores_sha256": "cbc5e144a6449001537b24e1997a59e9eaccaeaace126ceb00681dbaff3a7fc3"
+          }
+        },
+        "template_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 1337,
+              "identifier": 7331,
+              "layout": 7331
+            },
+            "source_sha256": {
+              "template": "3d75cdfdee570b7e70904e1f2e400667b02487ba818cbea35688e6165734a5db",
+              "identifier": "362babcecfdb7d7c9dd60a79dde2a9c03d27d2ddb07406c964a8cb3d8f9b4a93",
+              "layout": "8b0946b71fdc8b92eac87502b363ecb88fef03a19b664d692324146cbb0ae5b5"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "b67acb3e3f828e9361712107e82687ee811926745affe646abdf2685989eda1c",
+            "evaluation_sha256": "76c5b7af58d0712266a943e5892bdf3157395147dde17973d28cba75e73d9cc2",
+            "calibration_labels_sha256": "ddc38443ea8104b35713b6fbc452868846849c8f6720c0f77081ea4b1d9622ab"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998369774812,
+              "sentence_norm_max": 1.0000001680803072,
+              "features_sha256": "b6de916cb8766e3a2a37e2987937628897f1fc8f5f1617bc6ad73702cefc7a1a"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998156859035,
+              "sentence_norm_max": 1.0000002047056047,
+              "features_sha256": "ad2ef6cde045c2fa2b8dbc761dbecc16c31917a42074e65f3f1fef0c75c4b507"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9992677331280158,
+            "negative_score_mean": 0.0007322668719848164,
+            "threshold": 0.5000000000000003
+          },
+          "selection_threshold": 0.5000000000000003,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_7331_template_swap_write_gate.json",
+            "sha256": "7adb3fc1b0eae689d54867a5b7ebeb5bc6f209a8653db3dc9f9614f57ad28f7d"
+          },
+          "metrics": {
+            "important_storage_rate": 0.9921875,
+            "distractor_storage_rate": 0.0027901785714285715,
+            "search_size_ratio": 0.12646484375,
+            "stored": 1036,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 0.96875,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 0.9921875,
+              "1": 0.9921875,
+              "2": 1.0,
+              "3": 0.984375,
+              "4": 1.0,
+              "5": 0.984375,
+              "6": 0.9921875,
+              "7": 0.9921875
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.01953125,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.8827951731752204,
+                "q25": 0.959868002415804,
+                "median": 0.9832170802156811,
+                "q75": 1.0011996586947283,
+                "maximum": 1.0497762261721768,
+                "mean": 0.9816222505088983
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.4844695887230599,
+                "q25": 0.5420394815492248,
+                "median": 0.5572254614057166,
+                "q75": 0.5763431680985043,
+                "maximum": 0.6606223110277254,
+                "mean": 0.5585373391401628
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.6895563484995055,
+                "q25": 0.7579803377954826,
+                "median": 0.7819933951882954,
+                "q75": 0.807154687788344,
+                "maximum": 0.8776261376463994,
+                "mean": 0.7827572796117541
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.7449653295806979,
+                "q25": 0.8010606497904372,
+                "median": 0.828086162919969,
+                "q75": 0.8519169915506122,
+                "maximum": 0.9010566319639182,
+                "mean": 0.8257743458827771
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.00812712207584998,
+              "q25": 0.0987437579618788,
+              "median": 0.17635490152728722,
+              "q75": 0.37977607700405225,
+              "maximum": 0.5283314556520002,
+              "mean": 0.2299530481556667
+            },
+            "selection_sha256": "7fd4e2bc7f9b298d9841f7e1962399ecf6e1a7d1926a5b430a7787a5ea11f098",
+            "scores_sha256": "c20dff80eb94c855b31270ad1502e799231e317fa262932bf042948263a64166"
+          }
+        },
+        "identifier_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 7331,
+              "identifier": 1337,
+              "layout": 7331
+            },
+            "source_sha256": {
+              "template": "83fcb81196da61ac360e43b87173b1c2d04c7c4ca1a162214d3240c3c46b33d4",
+              "identifier": "22b1004b03ecbe5fba3380bdbcdabac1e1f6523a317dc60b77e1ac0164265bda",
+              "layout": "8b0946b71fdc8b92eac87502b363ecb88fef03a19b664d692324146cbb0ae5b5"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "2bd0f176a3ba8bc7a70575b7ef592f48af1d93822accc94881d45567a2b87b8a",
+            "evaluation_sha256": "4c786a7f85fe6eb78489580e78269d40133bca8088fdbde87b5d2dcf7e64884c",
+            "calibration_labels_sha256": "ddc38443ea8104b35713b6fbc452868846849c8f6720c0f77081ea4b1d9622ab"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998362753938,
+              "sentence_norm_max": 1.000000151728089,
+              "features_sha256": "8644582d552d6634b0f0c95dfe4e9c707b7c1c5a986fe52c179cdc16bc3f1ca6"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998210569612,
+              "sentence_norm_max": 1.0000001720983611,
+              "features_sha256": "c8781007f23bff1ff9660275a0cd59c453f26081e51b85199f480e97605f530f"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9993924572047934,
+            "negative_score_mean": 0.0006075427952067637,
+            "threshold": 0.5000000000000001
+          },
+          "selection_threshold": 0.5000000000000001,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_7331_identifier_swap_write_gate.json",
+            "sha256": "42fa49631f6a1a9d79e862f13fb641e0c9cc07c40c69e174d46f49107be4886a"
+          },
+          "metrics": {
+            "important_storage_rate": 1.0,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.125,
+            "stored": 1024,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.7271448674514058,
+                "q25": 0.7518841124703883,
+                "median": 0.7703212993155284,
+                "q75": 0.7878647777316192,
+                "maximum": 0.8374205854467072,
+                "mean": 0.7702499084467693
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.5544352826293875,
+                "q25": 0.6618099843525116,
+                "median": 0.6900190946008271,
+                "q75": 0.7148750722352497,
+                "maximum": 0.7800613110825243,
+                "mean": 0.6871751245002788
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.9260559873472487,
+                "q25": 1.0270149533356294,
+                "median": 1.0467725800244527,
+                "q75": 1.0677132018236257,
+                "maximum": 1.1441086424836346,
+                "mean": 1.0458924839636765
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.8407597904035349,
+                "q25": 0.9108881141642801,
+                "median": 0.9251101893427989,
+                "q75": 0.9385489409608982,
+                "maximum": 1.0025672359035358,
+                "mean": 0.9226325960551673
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.1080740554190518,
+              "q25": 0.06802432056936522,
+              "median": 0.1538937640126099,
+              "q75": 0.29211616768789594,
+              "maximum": 0.49526093293364193,
+              "mean": 0.17269658080458564
+            },
+            "selection_sha256": "953b1824a9270067ae9e4254b7656829b02d37c3fd78c3b14d9820a6b2a3c563",
+            "scores_sha256": "3194fdb9268d24959c808cd4160ba76983c3d4408c36c0b879c43c5d19891573"
+          }
+        },
+        "layout_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 7331,
+              "identifier": 7331,
+              "layout": 1337
+            },
+            "source_sha256": {
+              "template": "83fcb81196da61ac360e43b87173b1c2d04c7c4ca1a162214d3240c3c46b33d4",
+              "identifier": "362babcecfdb7d7c9dd60a79dde2a9c03d27d2ddb07406c964a8cb3d8f9b4a93",
+              "layout": "736c0189e0b4b81b655d553b71b569d84a6fe3ce4170d5067f2e14f1123b296e"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "cff3c8718526b777e0dc34bb808db7650fe8f8d4e9030937bb787b04ec5773d2",
+            "evaluation_sha256": "38f2cbbe6651aabc12ab7681e94fc7ca30776b359b70211e950c8d34fe7bd19a",
+            "calibration_labels_sha256": "04304f824e60951503216856258652669aa036e112ae4457defa9d1976f3f1f1"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998369774812,
+              "sentence_norm_max": 1.0000001680803072,
+              "features_sha256": "7aca07d384d57d67f5633a12c6c2fb6c2b52d14c0a3dc8b7a212081a719493ea"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.999999813120954,
+              "sentence_norm_max": 1.000000180684566,
+              "features_sha256": "3a8b5f1b423aeab81fdddaba5ed5fa59691538e6bde6dc98819169529ba1a2f1"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9992550508787189,
+            "negative_score_mean": 0.0007449491212808393,
+            "threshold": 0.4999999999999999
+          },
+          "selection_threshold": 0.4999999999999999,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_7331_layout_swap_write_gate.json",
+            "sha256": "fd692e8536170f459e6f6e4ad9f65da34efaed086e177b927d68f24a44b1f633"
+          },
+          "metrics": {
+            "important_storage_rate": 1.0,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.125,
+            "stored": 1024,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.7113995638056921,
+                "q25": 0.7805497454242981,
+                "median": 0.8031492866773102,
+                "q75": 0.8282327709812085,
+                "maximum": 0.9570336212804542,
+                "mean": 0.8074249722123343
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.7161540685564196,
+                "q25": 0.8242732165568988,
+                "median": 0.8535919971365422,
+                "q75": 0.8872033823544894,
+                "maximum": 0.9960539808029958,
+                "mean": 0.8551076125621697
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.8672782227925131,
+                "q25": 0.9379477171684458,
+                "median": 0.9640764308157652,
+                "q75": 0.9948172170842058,
+                "maximum": 1.0685412049040146,
+                "mean": 0.9651575771611032
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.8661609537509325,
+                "q25": 0.9673947992810846,
+                "median": 1.0020176606185867,
+                "q75": 1.0271670576798457,
+                "maximum": 1.106244540442769,
+                "mean": 0.9939102676369029
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.23461345508221698,
+              "q25": -0.007450328252894878,
+              "median": 0.14329510579072618,
+              "q75": 0.21155798721398575,
+              "maximum": 0.44587548518909914,
+              "mean": 0.11946114601681979
+            },
+            "selection_sha256": "953b1824a9270067ae9e4254b7656829b02d37c3fd78c3b14d9820a6b2a3c563",
+            "scores_sha256": "6e9ee3898462e6d57babb13b0f9e5497c4b125011617695d579ef50f53a951dd"
+          }
+        },
+        "all_swap": {
+          "factor_audit": {
+            "sources": {
+              "template": 1337,
+              "identifier": 1337,
+              "layout": 1337
+            },
+            "source_sha256": {
+              "template": "3d75cdfdee570b7e70904e1f2e400667b02487ba818cbea35688e6165734a5db",
+              "identifier": "22b1004b03ecbe5fba3380bdbcdabac1e1f6523a317dc60b77e1ac0164265bda",
+              "layout": "736c0189e0b4b81b655d553b71b569d84a6fe3ce4170d5067f2e14f1123b296e"
+            }
+          },
+          "dataset_audit": {
+            "calibration_rows": 4096,
+            "calibration_unique": 4096,
+            "calibration_positive": 2048,
+            "calibration_negative": 2048,
+            "evaluation_episodes": 1024,
+            "evaluation_candidates": 8192,
+            "evaluation_unique": 8192,
+            "overlap": 0,
+            "fact_counts": {
+              "preference": 256,
+              "commitment": 256,
+              "goal": 256,
+              "profile": 256
+            },
+            "fact_position_counts": {
+              "0": 128,
+              "1": 128,
+              "2": 128,
+              "3": 128,
+              "4": 128,
+              "5": 128,
+              "6": 128,
+              "7": 128
+            },
+            "distractor_counts": {
+              "greeting": 1024,
+              "filler": 1024,
+              "observation": 1024,
+              "temporary_preference": 1024,
+              "tentative_plan": 1024,
+              "topic_question": 1024,
+              "assistant_ack": 1024
+            },
+            "topic_switch_counts": {
+              "3": 1024
+            },
+            "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+            "calibration_sha256": "00b154e621d0244106ff3a655b7afca889a3a2acdf449558b87748e672b7cf3c",
+            "evaluation_sha256": "d21fd40a1a51fb8974b59c0abd6837b5b7a47a5803ea9fe832397b11013b9074",
+            "calibration_labels_sha256": "04304f824e60951503216856258652669aa036e112ae4457defa9d1976f3f1f1"
+          },
+          "embedding_audit": {
+            "calibration": {
+              "rows": 4096,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998334698318,
+              "sentence_norm_max": 1.000000151728089,
+              "features_sha256": "7520e791d5c08e8e27940bd6795e849b793676e286163c0e67e32ced43ceee63"
+            },
+            "candidates": {
+              "rows": 8192,
+              "feature_dim": 386,
+              "sentence_norm_min": 0.9999998070140443,
+              "sentence_norm_max": 1.0000001941996357,
+              "features_sha256": "8456f920bcc69018f1e8d32e6997b798c520d6bbca25948f1f899150ec3497d7"
+            }
+          },
+          "fit_audit": {
+            "method": "canonical_ridge",
+            "examples": 4096,
+            "positives": 2048,
+            "negatives": 2048,
+            "feature_dim": 386,
+            "design_rank": 386,
+            "ridge": 0.001,
+            "positive_score_mean": 0.9994928767101808,
+            "negative_score_mean": 0.0005071232898189285,
+            "threshold": 0.4999999999999999
+          },
+          "selection_threshold": 0.4999999999999999,
+          "checkpoint": {
+            "path": "checkpoints/gate-write-mechanism1/seed_7331_all_swap_write_gate.json",
+            "sha256": "c3e574d1180531bac26806dd214c66cac58efacfcfc01fa14d9e7071a2d26b09"
+          },
+          "metrics": {
+            "important_storage_rate": 0.7626953125,
+            "distractor_storage_rate": 0.0,
+            "search_size_ratio": 0.0953369140625,
+            "stored": 781,
+            "per_kind_storage_rate": {
+              "preference": 1.0,
+              "commitment": 0.21484375,
+              "goal": 0.8359375,
+              "profile": 1.0
+            },
+            "per_position_storage_rate": {
+              "0": 0.7734375,
+              "1": 0.75,
+              "2": 0.7890625,
+              "3": 0.7578125,
+              "4": 0.7734375,
+              "5": 0.7421875,
+              "6": 0.734375,
+              "7": 0.78125
+            },
+            "per_distractor_storage_rate": {
+              "greeting": 0.0,
+              "filler": 0.0,
+              "observation": 0.0,
+              "temporary_preference": 0.0,
+              "tentative_plan": 0.0,
+              "topic_question": 0.0,
+              "assistant_ack": 0.0
+            },
+            "per_kind_score_summary": {
+              "preference": {
+                "count": 256,
+                "minimum": 0.8676113472653603,
+                "q25": 0.9339077263111057,
+                "median": 0.9468438781158881,
+                "q75": 0.9574958924584056,
+                "maximum": 0.9975913080616933,
+                "mean": 0.9439561646378629
+              },
+              "commitment": {
+                "count": 256,
+                "minimum": 0.37040374647081914,
+                "q25": 0.4622013733040699,
+                "median": 0.4806586964898892,
+                "q75": 0.4974058783587184,
+                "maximum": 0.5448006788566715,
+                "mean": 0.47791973066914806
+              },
+              "goal": {
+                "count": 256,
+                "minimum": 0.4442672152417767,
+                "q25": 0.5079064798464145,
+                "median": 0.5252434097609526,
+                "q75": 0.5449222753711983,
+                "maximum": 0.5992892696459698,
+                "mean": 0.5253313662006169
+              },
+              "profile": {
+                "count": 256,
+                "minimum": 0.6721821261925346,
+                "q25": 0.7090025341874204,
+                "median": 0.7229767578790066,
+                "q75": 0.7365875229572223,
+                "maximum": 0.7838203988247656,
+                "mean": 0.7230480539867317
+              }
+            },
+            "distractor_score_summary": {
+              "count": 7168,
+              "minimum": -0.010301374216878934,
+              "q25": 0.12152021907005403,
+              "median": 0.18767841575358424,
+              "q75": 0.2744898842226222,
+              "maximum": 0.4857287736691492,
+              "mean": 0.21015566083468168
+            },
+            "selection_sha256": "5029440e81289ee5a9794f3735a07c6f11d5fab158dd5da3a208f30f3b024f92",
+            "scores_sha256": "2623038b18f61b0465a80bd6cdad7e118afa2b0250118066391b60c872f0e19a"
+          }
+        }
+      }
+    }
+  ]
+}

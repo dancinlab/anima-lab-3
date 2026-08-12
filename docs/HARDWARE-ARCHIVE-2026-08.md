@@ -333,3 +333,10 @@ GATE-3 보관은 Hugging Face 커밋 `c27470d30491b7d93728cfe2b73bc33c3f9eb918`�
 임시 폴더로 다시 내려받아 manifest 6개 항목의 SHA-256을 전수 확인했다. manifest SHA-256은
 `0c3317a501599aa78c617768be21e1b4e44dd2937f46cf0921aa881014b5e95e`다. 로컬 CPU에서만
 실행했고 실제 대화 런타임은 변경하지 않았다.
+
+GATE-WRITE-MECHANISM-1 보관은 Hugging Face 커밋
+`fc1b3ecd8aa1afd995a7aaa42f18aec60ae11678`에 올렸다. 원격
+`gate-write-mechanism1-seed-factor` revision의 결과·판정·선택 체크포인트 10개·manifest를 새 임시
+폴더로 다시 내려받아 manifest 12개 항목의 SHA-256을 전수 확인했다. manifest SHA-256은
+`f27e20ee59beaf3e02cd300e0787243b16126966884ed4848128f9abc26319e1`이다. 로컬 CPU에서만
+실행했고 실제 대화 런타임은 변경하지 않았다.
