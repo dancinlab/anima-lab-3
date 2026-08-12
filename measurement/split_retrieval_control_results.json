@@ -1,0 +1,524 @@
+{
+  "experiment": "gate_retrieval_control2_split_topic_content",
+  "spec": {
+    "experiment": "gate_retrieval_control2_split_topic_content",
+    "preregistration_commit": "1c61f9e36",
+    "gate2_spec_sha256": "28442a09495702f5a5e943b155a41b01c6989f549e7d24d2088809e2b9ca1589",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "evaluation_episodes": 1024,
+    "candidates_per_episode": 8,
+    "fact_kinds": [
+      "preference",
+      "commitment",
+      "goal",
+      "profile"
+    ],
+    "fact_positions": [
+      0,
+      2,
+      4,
+      6
+    ],
+    "topic_switches_per_episode": 3,
+    "encoder": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "pooling": "attention_mask_mean",
+      "normalize": true,
+      "max_length": 128,
+      "embedding_dim": 384,
+      "role_dim": 2,
+      "feature_dim": 386,
+      "batch_size": 64,
+      "device": "cpu"
+    },
+    "runtime": {
+      "python": "3.13",
+      "torch": "2.8.0",
+      "transformers": "4.55.4"
+    },
+    "ridge": 0.001,
+    "retrieval": {
+      "address": "deterministic_character_trigram_vector",
+      "address_pool": 2,
+      "content": "registered_semantic_importance_ridge_score",
+      "content_only": "whole_sentence_cosine",
+      "top_k": 3,
+      "tie_break": "candidate_index_ascending",
+      "shuffled_topic": "cyclic_next_episode",
+      "shuffled_content": "cyclic_next_episode"
+    },
+    "arms": [
+      "split_topic_content",
+      "topic_only",
+      "content_only",
+      "shuffled_topic",
+      "shuffled_content",
+      "oracle_memory",
+      "no_memory"
+    ],
+    "thresholds": {
+      "split_recall_at_3": 0.95,
+      "split_recall_at_1": 0.9,
+      "minimum_per_kind_recall_at_1": 0.85,
+      "minimum_per_position_recall_at_1": 0.85,
+      "oracle_recall_at_3": 0.99,
+      "maximum_no_memory_recall_at_3": 0.05,
+      "maximum_shuffled_topic_recall_at_3": 0.35,
+      "maximum_shuffled_content_recall_at_1": 0.6,
+      "minimum_shuffled_content_gap": 0.3,
+      "maximum_topic_only_recall_at_1": 0.1,
+      "minimum_topic_only_recall_at_3": 0.95
+    }
+  },
+  "spec_sha256": "5964c9f066f0305aecef6d38d031d9d6c59782e5bcfb8cfe5e48dfb9000b2f20",
+  "runtime": {
+    "python": "3.13.13",
+    "torch": "2.8.0",
+    "transformers": "4.55.4",
+    "device": "cpu"
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "dataset_audit": {
+        "evaluation_episodes": 1024,
+        "evaluation_candidates": 8192,
+        "evaluation_unique": 8192,
+        "query_unique": 1024,
+        "query_candidate_overlap": 0,
+        "fact_counts": {
+          "preference": 256,
+          "commitment": 256,
+          "goal": 256,
+          "profile": 256
+        },
+        "fact_position_counts": {
+          "0": 256,
+          "2": 256,
+          "4": 256,
+          "6": 256
+        },
+        "topic_switch_counts": {
+          "3": 1024
+        },
+        "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+        "evaluation_sha256": "e4f8ee61bd9080f835d1f130819145ff0c439b84b522f2c4280eb1872deecde4",
+        "query_sha256": "e2818847347b19cd92887478431bdf6c85b1b7220c1c1459bd212d34815f4d49"
+      },
+      "encoder_audit": {
+        "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+        "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+        "embedding_dim": 384,
+        "pooling": "attention_mask_mean",
+        "normalize": true,
+        "max_length": 128
+      },
+      "embedding_audit": {
+        "calibration": {
+          "rows": 4096,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998334698318,
+          "sentence_norm_max": 1.000000151728089,
+          "features_sha256": "7520e791d5c08e8e27940bd6795e849b793676e286163c0e67e32ced43ceee63"
+        },
+        "queries": {
+          "rows": 1024,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998612251629,
+          "sentence_norm_max": 1.0000001442706858,
+          "features_sha256": "817fd21b2b268e9a5c17710ab0492ad227dc4088c8f5560ff82ae4879cb4f48c"
+        },
+        "candidates": {
+          "rows": 8192,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998070140443,
+          "sentence_norm_max": 1.0000001941996357,
+          "features_sha256": "68ff5362dcfc73ccca3468075ffe73f38a2746e79b439a457a8d5a20419b568a"
+        }
+      },
+      "fit_audit": {
+        "method": "canonical_ridge",
+        "examples": 4096,
+        "positives": 2048,
+        "negatives": 2048,
+        "feature_dim": 386,
+        "design_rank": 386,
+        "ridge": 0.001,
+        "positive_score_mean": 0.9994928767101808,
+        "negative_score_mean": 0.0005071232898189285,
+        "threshold": 0.4999999999999999
+      },
+      "address_audit": {
+        "query_topics": 1024,
+        "candidate_topics": 8192,
+        "candidate_topic_unique": 4096,
+        "query_address_sha256": "6d9eaa7eea95309ab18626b4105f96afebd67f72077950e059ef6aed6558a798",
+        "candidate_address_sha256": "1c3dfb82765c0b6d677032be72e007dba3cf52a8d44917d861bd6a9c2472b8d0"
+      },
+      "score_audit": {
+        "content_scores_sha256": "7ab0c53c0bb6a064916003607928062b872e0e0fbfa64baf1c3f1f5e109a13de",
+        "address_scores_sha256": "ad045952b0d6c9801277b58cf91bafecb06c1966c12652d843afc59d3893cdad",
+        "normal_pool_fact_coverage": 1.0
+      },
+      "arms": {
+        "split_topic_content": {
+          "recall_at_1": 0.9951171875,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 0.98046875,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.9921875,
+            "2": 0.99609375,
+            "4": 1.0,
+            "6": 0.9921875
+          },
+          "mean_fact_rank": 1.0048828125,
+          "mean_fact_margin": 0.4468783204003631,
+          "rankings_sha256": "d0dd12f60478516646ea5c85fb46fa166de79aa77cb2fafa7a0efc0defe7e13f"
+        },
+        "topic_only": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "8efcaded7ec74f11daeb0bdc31941335e47e85bee68e4a44bc012caeef0f1757"
+        },
+        "content_only": {
+          "recall_at_1": 0.056640625,
+          "recall_at_3": 0.19921875,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.08203125,
+            "goal": 0.0,
+            "profile": 0.14453125
+          },
+          "per_position_recall_at_1": {
+            "0": 0.0546875,
+            "2": 0.05859375,
+            "4": 0.0703125,
+            "6": 0.04296875
+          },
+          "mean_fact_rank": 6.0810546875,
+          "mean_fact_margin": -0.11614080165384723,
+          "rankings_sha256": "98fa7a31f30f0ef8359a14595bc9f419caeb9c55b1b3d9c029cfbd0ac412a3d2"
+        },
+        "shuffled_topic": {
+          "recall_at_1": 0.9951171875,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 0.98046875,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.9921875,
+            "2": 0.99609375,
+            "4": 1.0,
+            "6": 0.9921875
+          },
+          "mean_fact_rank": 1.0048828125,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "d0dd12f60478516646ea5c85fb46fa166de79aa77cb2fafa7a0efc0defe7e13f"
+        },
+        "shuffled_content": {
+          "recall_at_1": 0.84375,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 0.98046875,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 0.39453125
+          },
+          "per_position_recall_at_1": {
+            "0": 0.84375,
+            "2": 0.84765625,
+            "4": 0.85546875,
+            "6": 0.828125
+          },
+          "mean_fact_rank": 1.15625,
+          "mean_fact_margin": 0.2677094150323129,
+          "rankings_sha256": "37679b54ac499e31bbb56e8f4fe3a6084611d72861e884f1925f31b843d3ee9e"
+        },
+        "oracle_memory": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 1.0,
+          "rankings_sha256": "af3399c283ce7450d23d63ddff3c0390964674b10c632c8da84f7d299eccd34e"
+        },
+        "no_memory": {
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.0,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.0,
+            "goal": 0.0,
+            "profile": 0.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.0,
+            "2": 0.0,
+            "4": 0.0,
+            "6": 0.0
+          },
+          "mean_fact_rank": 0.0,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "cdfd2c0aee9ccfc4d52ed6a7e1f5d0090ca81985f3f73fcd11b0a5d7423fe6d3"
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "dataset_audit": {
+        "evaluation_episodes": 1024,
+        "evaluation_candidates": 8192,
+        "evaluation_unique": 8192,
+        "query_unique": 1024,
+        "query_candidate_overlap": 0,
+        "fact_counts": {
+          "preference": 256,
+          "commitment": 256,
+          "goal": 256,
+          "profile": 256
+        },
+        "fact_position_counts": {
+          "0": 256,
+          "2": 256,
+          "4": 256,
+          "6": 256
+        },
+        "topic_switch_counts": {
+          "3": 1024
+        },
+        "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+        "evaluation_sha256": "fff494a06747f668a932afc6e1a652ba77af38469a49c8af264af8f737a8037f",
+        "query_sha256": "d0ea2944ae21953fc0f862ecd7cd338ff9c3f8787e29e59c592835e2a92ae1a1"
+      },
+      "encoder_audit": {
+        "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+        "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+        "embedding_dim": 384,
+        "pooling": "attention_mask_mean",
+        "normalize": true,
+        "max_length": 128
+      },
+      "embedding_audit": {
+        "calibration": {
+          "rows": 4096,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998369774812,
+          "sentence_norm_max": 1.0000001680803072,
+          "features_sha256": "aaf1f20cc294d59a4bbe13e50edc1c0c0731ac8f4a1166adf9cdc3e781438ea3"
+        },
+        "queries": {
+          "rows": 1024,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998721838816,
+          "sentence_norm_max": 1.0000001337219173,
+          "features_sha256": "ebcd5de53d94a045a51fcc565ff602e3da7a95b8a59205724a33c64847d0e678"
+        },
+        "candidates": {
+          "rows": 8192,
+          "feature_dim": 386,
+          "sentence_norm_min": 0.9999998156859035,
+          "sentence_norm_max": 1.0000002047056047,
+          "features_sha256": "b5b6709565c4738d46e2bc6dfee7dd021459bdf89967d311d02ac63a5275e5dc"
+        }
+      },
+      "fit_audit": {
+        "method": "canonical_ridge",
+        "examples": 4096,
+        "positives": 2048,
+        "negatives": 2048,
+        "feature_dim": 386,
+        "design_rank": 386,
+        "ridge": 0.001,
+        "positive_score_mean": 0.9992550508929832,
+        "negative_score_mean": 0.0007449491070163256,
+        "threshold": 0.4999999999999997
+      },
+      "address_audit": {
+        "query_topics": 1024,
+        "candidate_topics": 8192,
+        "candidate_topic_unique": 4096,
+        "query_address_sha256": "8b511dfe17ca4a3e1fbf5da6a59ffdcec8d2ff514dab07467b92b9324b70e2d9",
+        "candidate_address_sha256": "b3669585758611562f28d4782343655a2d0a10ad015814e2515e6cf9fee532e0"
+      },
+      "score_audit": {
+        "content_scores_sha256": "c14ddbcd298ac835a849e9606bd7a2b9361249948100690b34bb13b58f121ffd",
+        "address_scores_sha256": "586e10ff6418807826d18e12149ec5cff8daef271fc22350036fe10f9be03e07",
+        "normal_pool_fact_coverage": 1.0
+      },
+      "arms": {
+        "split_topic_content": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 0.7845305013800704,
+          "rankings_sha256": "8efcaded7ec74f11daeb0bdc31941335e47e85bee68e4a44bc012caeef0f1757"
+        },
+        "topic_only": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "8efcaded7ec74f11daeb0bdc31941335e47e85bee68e4a44bc012caeef0f1757"
+        },
+        "content_only": {
+          "recall_at_1": 0.00390625,
+          "recall_at_3": 0.0234375,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.015625,
+            "goal": 0.0,
+            "profile": 0.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.0078125,
+            "2": 0.00390625,
+            "4": 0.00390625,
+            "6": 0.0
+          },
+          "mean_fact_rank": 7.55078125,
+          "mean_fact_margin": -0.1555327387608257,
+          "rankings_sha256": "b800621214fd901be30c4c85df61069af962e255bda7ec7a4a2232ed56625ee4"
+        },
+        "shuffled_topic": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "8efcaded7ec74f11daeb0bdc31941335e47e85bee68e4a44bc012caeef0f1757"
+        },
+        "shuffled_content": {
+          "recall_at_1": 0.8583984375,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 0.43359375
+          },
+          "per_position_recall_at_1": {
+            "0": 0.85546875,
+            "2": 0.86328125,
+            "4": 0.859375,
+            "6": 0.85546875
+          },
+          "mean_fact_rank": 1.1416015625,
+          "mean_fact_margin": 0.6117822252955507,
+          "rankings_sha256": "b2b8da6d6f596e63556905fb6c7ca9b2542e95f29165c667c58ee23cf6f3f0af"
+        },
+        "oracle_memory": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "2": 1.0,
+            "4": 1.0,
+            "6": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 1.0,
+          "rankings_sha256": "af3399c283ce7450d23d63ddff3c0390964674b10c632c8da84f7d299eccd34e"
+        },
+        "no_memory": {
+          "recall_at_1": 0.0,
+          "recall_at_3": 0.0,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.0,
+            "goal": 0.0,
+            "profile": 0.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.0,
+            "2": 0.0,
+            "4": 0.0,
+            "6": 0.0
+          },
+          "mean_fact_rank": 0.0,
+          "mean_fact_margin": 0.0,
+          "rankings_sha256": "cdfd2c0aee9ccfc4d52ed6a7e1f5d0090ca81985f3f73fcd11b0a5d7423fe6d3"
+        }
+      }
+    }
+  ]
+}

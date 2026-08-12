@@ -1,0 +1,6 @@
+{
+  "experiment": "gate_retrieval_control2_split_topic_content",
+  "verdict": "GRC2_0_INVALID",
+  "reason": "seed 1337 positive, no-memory, or content-necessity control failed",
+  "spec_sha256": "5964c9f066f0305aecef6d38d031d9d6c59782e5bcfb8cfe5e48dfb9000b2f20"
+}
