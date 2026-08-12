@@ -1556,6 +1556,16 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    `GRC3B_CONTENT_RANKING_LOSS`다. 실제 대화 기본값은 바꾸지 않았다. 다음은 회차 순서와
    사실 위치가 엮이지 않게 내용 가짜 비교 자체를 분리하는 검사다. 상세 사양과 판정은
    `docs/hypotheses/GATE-RETRIEVAL-CONTROL-3-balanced-episode-address-retrieval.md`가 정본이다.
+47-G. **GATE-RETRIEVAL-CONTROL-4 — 회차 순서 독립 내용 점수 교환 (사전등록):**
+   `GATE-RETRIEVAL-CONTROL-3`의 자료·고정 문장 의미 모델·결정형 맞춤·회차 주소·후보 둘과 기준은
+   그대로 둔다. 다음 회차의 점수 전체를 가져오는 대신, 주소가 고른 같은 후보 둘의 내용 점수 자리만
+   정답 표찰과 회차 순서를 보지 않고 서로 바꾼다. 정상 상위 1개는 90% 이상, 교환 뒤에는 10%
+   이하이고 차이는 80%p 이상이어야 한다. 같은 교환을 두 번 적용하면 정상 점수·순위·측정 지문이
+   정확히 복구돼야 한다. 점수 다중집합, 주소 후보, 두 후보 밖의 점수가 하나라도 달라지면 무효다.
+   주소·양성·정보 없음과 종류별·8개 위치별 기준도 직전 등록과 같이 유지한다. 통과해도 이는 내용
+   점수와 후보 연결의 일반 검색 통제이며 Anima 고유 기능이나 의식 증거가 아니다. 실제 대화
+   기본값도 바꾸지 않는다. 상세 사양과 판정은
+   `docs/hypotheses/GATE-RETRIEVAL-CONTROL-4-within-pool-content-swap.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
