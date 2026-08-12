@@ -1,0 +1,50 @@
+{
+  "experiment": "gate_write_control1_balanced_natural_language",
+  "verdict": "GWC1_BALANCED_NATURAL_WRITE_VALID",
+  "reason": "balanced templates and held-out natural words passed every registered write-selection threshold",
+  "spec_sha256": "055e3a2cfd8379f9409214e2f7f0e2bae1e380d0dadfaacdd24fcd13050c3f0f",
+  "seeds": [
+    {
+      "seed": 1337,
+      "replicates": {
+        "daily": {
+          "passed": true,
+          "important_storage_rate": 1.0,
+          "minimum_kind_storage_rate": 1.0,
+          "minimum_template_storage_rate": 1.0,
+          "distractor_storage_rate": 0.0,
+          "maximum_fake_important_storage_rate": 0.2939453125
+        },
+        "work": {
+          "passed": true,
+          "important_storage_rate": 1.0,
+          "minimum_kind_storage_rate": 1.0,
+          "minimum_template_storage_rate": 1.0,
+          "distractor_storage_rate": 0.030552455357142856,
+          "maximum_fake_important_storage_rate": 0.4404296875
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "replicates": {
+        "daily": {
+          "passed": true,
+          "important_storage_rate": 1.0,
+          "minimum_kind_storage_rate": 1.0,
+          "minimum_template_storage_rate": 1.0,
+          "distractor_storage_rate": 0.0,
+          "maximum_fake_important_storage_rate": 0.431640625
+        },
+        "work": {
+          "passed": true,
+          "important_storage_rate": 1.0,
+          "minimum_kind_storage_rate": 1.0,
+          "minimum_template_storage_rate": 1.0,
+          "distractor_storage_rate": 0.030552455357142856,
+          "maximum_fake_important_storage_rate": 0.2861328125
+        }
+      }
+    }
+  ]
+}
