@@ -145,6 +145,20 @@ def test_search_topk_exceeds(tmp_path):
     store.close()
 
 
+def test_search_rejects_invalid_query_and_top_k(tmp_path):
+    store = MemoryStore(tmp_path / "m.db", tmp_path / "m.faiss", dim=16)
+    store.add("user", "valid", vector=np.ones(16, dtype=np.float32))
+    with pytest.raises(ValueError, match="top_k"):
+        store.search(np.ones(16, dtype=np.float32), top_k=0)
+    invalid = np.ones(16, dtype=np.float32)
+    invalid[0] = np.nan
+    with pytest.raises(ValueError, match="finite"):
+        store.search(invalid)
+    with pytest.raises(ValueError, match="non-zero"):
+        store.search(np.zeros(16, dtype=np.float32))
+    store.close()
+
+
 # ── 9. FAISS persistence round-trip ───────────────────────────
 
 def test_faiss_persistence(tmp_path):

@@ -17,6 +17,7 @@ import hashlib
 import json
 import shutil
 import sqlite3
+import sys
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
@@ -121,8 +122,12 @@ class MemoryStore:
         assert vec.shape[1] == self.dim, (
             f"Vector dim {vec.shape[1]} != store dim {self.dim}"
         )
-        # L2 normalize for cosine similarity via inner product
-        faiss.normalize_L2(vec)
+        if not np.isfinite(vec).all():
+            raise ValueError("memory vector must contain only finite values")
+        norm = np.linalg.norm(vec.astype(np.float64), axis=1, keepdims=True)
+        if np.any(norm == 0):
+            raise ValueError("memory vector must be non-zero")
+        vec /= norm.astype(np.float32)
         self._ensure_index()
         self._index.add(vec)
         self._idmap.append(memory_id)
@@ -217,14 +222,35 @@ class MemoryStore:
             if self._index is None or self._index.ntotal == 0:
                 return []
 
+            if isinstance(top_k, bool) or not isinstance(top_k, int) or top_k <= 0:
+                raise ValueError("top_k must be a positive integer")
+
             vec = np.asarray(query_vec, dtype=np.float32).reshape(1, -1)
             assert vec.shape[1] == self.dim, (
                 f"Query dim {vec.shape[1]} != store dim {self.dim}"
             )
-            faiss.normalize_L2(vec)
+            if not np.isfinite(vec).all():
+                raise ValueError("query vector must contain only finite values")
+            norm = np.linalg.norm(vec.astype(np.float64), axis=1, keepdims=True)
+            if np.any(norm == 0):
+                raise ValueError("query vector must be non-zero")
+            vec /= norm.astype(np.float32)
 
             k = min(top_k, self._index.ntotal)
-            distances, indices = self._index.search(vec, k)
+            if sys.platform == "darwin":
+                # faiss-cpu's Apple wheel can abort the interpreter in
+                # IndexFlatIP.search(). The flat index can be reconstructed
+                # exactly and ranked with the same inner product in NumPy.
+                stored = np.asarray(
+                    self._index.reconstruct_n(0, self._index.ntotal),
+                    dtype=np.float32,
+                )
+                scores = stored @ vec[0]
+                selected = np.argsort(-scores, kind="stable")[:k]
+                distances = scores[selected].reshape(1, -1)
+                indices = selected.reshape(1, -1)
+            else:
+                distances, indices = self._index.search(vec, k)
 
             results = []
             for dist, idx in zip(distances[0], indices[0]):

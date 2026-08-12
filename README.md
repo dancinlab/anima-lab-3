@@ -1658,6 +1658,18 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    계속 기본값이 꺼져 있고 실제 저장·검색·답변을 제한하지 않는다. 다음은 그림자 모드로 최소
    7일·3세션·사용자 발화 100개를 수집하는 `GATE-RUNTIME-3`이다. 상세 기준과 결과는
    `docs/hypotheses/GATE-RUNTIME-2-real-dialogue-shadow-review.md`가 정본이다.
+47-N. **GATE-RUNTIME-3 — 실제 대화 그림자 자료 수집 (사전등록, 진행 예정):**
+   `GATE-RUNTIME-2`의 13개·1일 자료로 선택 성능을 해석하지 않고, 새 전용 실제 대화 DB에서
+   사용자 발화 100개·고유 90개·활동일 7일·30분 간격 세션 3개를 먼저 모은다. 원문 DB와
+   그림자 기록은 `.local/gate-runtime3`에 격리해 Git·HF에 올리지 않는다. 별도 수집기는 15분마다
+   읽기 전용으로 기존 행이 바뀌거나 삭제되지 않았는지 확인하고, 원문 대신 지문과 건수만 남긴다.
+   공용 실행기에 선택형 `--data-root`를 추가하고 대화·자율 학습 기록도 모델별 자료 경로에 두어,
+   상시 실행 자료가 저장소의 연구 기록이나 다른 인스턴스와 섞이지 않게 한다. 네 자료 기준을 모두
+   채우기 전 판정은 `GR31_COLLECTING`이며 선택 점수·사람 검토·실제 저장 필터는 시작하지 않는다.
+   이후 순서는 `GATE-RUNTIME-4 사람 검토 → GATE-RUNTIME-5 제한 적용 → SWITCH-1 주제 전환 →
+   REPLAY-1 경험 재처리 → WORLD-1 다음 상황 예측 → AGENCY-1 목표 유지·계획 수정 → PCI-1 반응
+   복잡성`으로 고정한다. 각 단계는 앞 관문을 통과해야만 시작한다. 상세 기준은
+   `docs/hypotheses/GATE-RUNTIME-3-live-dialogue-collection.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는

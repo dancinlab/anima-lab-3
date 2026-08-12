@@ -179,6 +179,7 @@ class AutonomousLearner:
         rag=None,
         interval: float = 300.0,
         max_cycles: int = 0,
+        log_file: Path | None = None,
     ):
         """
         Args:
@@ -188,6 +189,7 @@ class AutonomousLearner:
             max_cycles: 0 = infinite
         """
         self.interval = interval
+        self.log_file = Path(log_file) if log_file is not None else LOG_FILE
         self.max_cycles = max_cycles
         self.cycle_count = 0
         self._running = False
@@ -539,7 +541,7 @@ class AutonomousLearner:
     def log_cycle(self, result: LearningResult):
         """Append cycle result to JSONL log."""
         try:
-            LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+            self.log_file.parent.mkdir(parents=True, exist_ok=True)
             entry = {
                 'cycle': result.cycle,
                 'strategy': result.strategy,
@@ -555,7 +557,7 @@ class AutonomousLearner:
                 'findings': [f['title'] for f in result.findings],
                 'timestamp': result.timestamp,
             }
-            with open(LOG_FILE, 'a', encoding='utf-8') as f:
+            with self.log_file.open('a', encoding='utf-8') as f:
                 f.write(json.dumps(entry, ensure_ascii=False) + '\n')
         except Exception as e:
             logger.warning(f"Log write failed: {e}")
@@ -737,7 +739,7 @@ class AutonomousLearner:
 
         if self.rag:
             print(f"\n  Memory size: {self.rag.size}")
-        print(f"  Log file: {LOG_FILE}")
+        print(f"  Log file: {self.log_file}")
         print(f"{'='*60}\n")
 
 

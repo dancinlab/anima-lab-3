@@ -38,6 +38,7 @@ RUNTIME_CELL_GROWTH_PER_TURN = 2  # divisions allowed per turn (rate, never a ce
 # ─── Paths & constants ───
 ANIMA_DIR = Path(__file__).parent
 _INSTANCE_ID = None  # set by --instance flag
+_DATA_ROOT = ANIMA_DIR / "data"
 
 def _model_paths(model_name: str):
     """Return state/memory file paths per model. Each model grows independently.
@@ -45,15 +46,16 @@ def _model_paths(model_name: str):
     """
     slug = model_name.replace('/', '-').replace('.', '-')
     if _INSTANCE_ID:
-        data_dir = ANIMA_DIR / "data" / f"{slug}_{_INSTANCE_ID}"
+        data_dir = _DATA_ROOT / f"{slug}_{_INSTANCE_ID}"
     else:
-        data_dir = ANIMA_DIR / "data" / slug
+        data_dir = _DATA_ROOT / slug
     data_dir.mkdir(parents=True, exist_ok=True)
     return {
         'memory': data_dir / "memory.json",
         'state': data_dir / "state.pt",
         'growth': data_dir / "growth.json",
         'web_memories': data_dir / "web_memories.json",
+        'data': data_dir,
     }
 
 # Legacy compatibility (defaults)
@@ -2429,6 +2431,7 @@ class AnimaUnified:
                             engine=self.mitosis,
                             rag=self.memory_rag if self.mods.get('memory_rag') else None,
                             interval=300,  # 5분마다
+                            log_file=self.paths['data'] / 'autonomous_learning' / 'learning_log.jsonl',
                         )
                         self._auto_learner.start()
                         _log('self_learn', 'Autonomous learner started (5min interval)')
@@ -3597,6 +3600,8 @@ def main():
     p.add_argument('--port', type=int, default=8765, help='WebSocket port')
     p.add_argument('--instance', type=str, default=None,
                    help='Instance ID for multi-instance on same machine (separate data dirs)')
+    p.add_argument('--data-root', type=str, default=None,
+                   help='Runtime data root; defaults to the repository data directory')
     p.add_argument('--no-camera', action='store_true', help='Disable camera')
     p.add_argument('--no-vision', action='store_true', help='Disable vision encoder (use basic sensors only)')
     p.add_argument('--no-telepathy', action='store_true', help='Disable telepathy')
@@ -3622,9 +3627,14 @@ def main():
     args = p.parse_args()
 
     # --instance: multi-instance isolation
-    global _INSTANCE_ID
+    global _INSTANCE_ID, _DATA_ROOT
     if args.instance:
         _INSTANCE_ID = args.instance
+    if args.data_root:
+        _DATA_ROOT = Path(args.data_root).expanduser().resolve()
+        if _DATA_ROOT.exists() and not _DATA_ROOT.is_dir():
+            p.error('--data-root must resolve to a directory')
+        _DATA_ROOT.mkdir(parents=True, exist_ok=True)
 
     # --list-models: print list and exit
     if args.list_models and 'list_available_models' in globals():
