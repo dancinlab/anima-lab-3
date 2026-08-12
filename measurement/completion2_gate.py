@@ -249,7 +249,8 @@ def adjudicate(payload: dict, spec: dict = COMPLETION2_SPEC,
     return {
         "experiment": spec["experiment"], "verdict": verdict, "reason": reason,
         "spec_sha256": spec_sha256(spec), "common_boundary_percent": common_boundary,
-        "component_boundaries_percent": boundaries, "profiles": status,
+        "component_boundaries_percent": boundaries,
+        "profiles": {str(level): profile for level, profile in status.items()},
         "evaluations": judged,
     }
 

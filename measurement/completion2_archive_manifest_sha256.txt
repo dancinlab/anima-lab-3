@@ -1,0 +1,2 @@
+a4f8eedb135b20857cf29a9f65a2d364c5b645fb2b8f190eb305d05dabcc021c  measurement/completion2_results.json
+e439af9f430b6e1bf27a5d6b9a913bef46eb15e88bccb9c257cf9545a431f3e4  measurement/completion2_verdict.json
