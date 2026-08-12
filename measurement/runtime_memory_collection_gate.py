@@ -50,11 +50,14 @@ def adjudicate(payload: dict, spec: dict = RUNTIME_MEMORY_COLLECTION_SPEC) -> di
 
     audit = payload.get("audit", {})
     counts = audit.get("counts", {})
+    source = payload.get("source")
     required_counts = (
         "total_rows", "eligible_user_turns", "unique_user_turns", "active_days", "sessions"
     )
     if (
-        audit.get("format") != spec["audit"]["format"]
+        not isinstance(source, str)
+        or Path(source).resolve() != Path(spec["source_database"]).resolve()
+        or audit.get("format") != spec["audit"]["format"]
         or audit.get("source_read_only") is not True
         or audit.get("source_append_only") is not True
         or audit.get("baseline_prefix_sha256") != spec["baseline"]["source_manifest_sha256"]

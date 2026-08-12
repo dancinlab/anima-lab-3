@@ -92,6 +92,9 @@ def test_collection_gate_closes_on_mutation_and_opens_on_threshold(tmp_path):
     spec = _spec(path, [])
     payload = run(path, spec)
     assert adjudicate(payload, spec)["verdict"] == "GR32_READY_FOR_REVIEW"
+    wrong_source = copy.deepcopy(payload)
+    wrong_source["source"] = str(tmp_path / "other.db")
+    assert adjudicate(wrong_source, spec)["verdict"] == "GR30_INVALID"
     payload["audit"]["source_append_only"] = False
     assert adjudicate(payload, spec)["verdict"] == "GR30_INVALID"
 
