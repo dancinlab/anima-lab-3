@@ -1,0 +1,6 @@
+{
+  "experiment": "gate_retrieval_control3_balanced_episode_address",
+  "verdict": "GRC3_0_INVALID",
+  "reason": "seed 1337 dataset audit changed",
+  "spec_sha256": "5cb998bc82f735899d9b81492b008c31385b11619d8451c6632e32d5c4acdf6d"
+}

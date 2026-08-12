@@ -313,3 +313,10 @@ GATE-RETRIEVAL-CONTROL-2 보관은 Hugging Face 커밋
 폴더로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `3d23ee0cbdbc65791484757a6378af90ce644c449975366d4db7f8fa6911d1f1`이다. 로컬 CPU에서만
 실행했다.
+
+GATE-RETRIEVAL-CONTROL-3 보관은 Hugging Face 커밋
+`a1cfc2d636242d0324acbcc4eabc1dab58b36346`에 올렸다. 원격
+`gate-retrieval-control3-balanced-episode-address` revision의 최종·최초 무효 결과와 판정,
+manifest를 새 임시 폴더로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`569e724e2e82c57f9635da3abeb3ecee68f509aca118bedc1d5ea17bac1413b7`이다. 로컬 CPU에서만
+실행했다.

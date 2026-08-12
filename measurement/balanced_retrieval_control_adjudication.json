@@ -1,0 +1,74 @@
+{
+  "experiment": "gate_retrieval_control3_balanced_episode_address",
+  "verdict": "GRC3B_CONTENT_RANKING_LOSS",
+  "reason": "episode addressing passed but balanced content ranking missed a threshold",
+  "spec_sha256": "5cb998bc82f735899d9b81492b008c31385b11619d8451c6632e32d5c4acdf6d",
+  "seeds": [
+    {
+      "seed": 1337,
+      "verdict": "GRC3B_CONTENT_RANKING_LOSS",
+      "balanced_split": {
+        "recall_at_1": 0.99609375,
+        "recall_at_3": 1.0,
+        "per_kind_recall_at_1": {
+          "preference": 1.0,
+          "commitment": 0.984375,
+          "goal": 1.0,
+          "profile": 1.0
+        },
+        "per_position_recall_at_1": {
+          "0": 0.984375,
+          "1": 1.0,
+          "2": 1.0,
+          "3": 1.0,
+          "4": 1.0,
+          "5": 0.9921875,
+          "6": 1.0,
+          "7": 0.9921875
+        },
+        "mean_fact_rank": 1.00390625,
+        "mean_fact_margin": 0.45558613722107094,
+        "rankings_sha256": "43f8e1d3759a2b725d8911e674f8be39a98a9f03487d64b98e52a6689cbe29de"
+      },
+      "topic_only_recall_at_1": 0.5,
+      "topic_only_recall_at_3": 1.0,
+      "shuffled_episode_recall_at_3": 0.251953125,
+      "shuffled_content_recall_at_1": 0.822265625,
+      "oracle_recall_at_3": 1.0,
+      "no_memory_recall_at_3": 0.0
+    },
+    {
+      "seed": 7331,
+      "verdict": "GRC3B_CONTENT_RANKING_LOSS",
+      "balanced_split": {
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "per_kind_recall_at_1": {
+          "preference": 1.0,
+          "commitment": 1.0,
+          "goal": 1.0,
+          "profile": 1.0
+        },
+        "per_position_recall_at_1": {
+          "0": 1.0,
+          "1": 1.0,
+          "2": 1.0,
+          "3": 1.0,
+          "4": 1.0,
+          "5": 1.0,
+          "6": 1.0,
+          "7": 1.0
+        },
+        "mean_fact_rank": 1.0,
+        "mean_fact_margin": 0.7856670019470146,
+        "rankings_sha256": "a9417f8d6ee5d27ffa89699ebc7451b920c1c0bee39c4de7db91da3ec9e1d890"
+      },
+      "topic_only_recall_at_1": 0.5,
+      "topic_only_recall_at_3": 1.0,
+      "shuffled_episode_recall_at_3": 0.2490234375,
+      "shuffled_content_recall_at_1": 0.8154296875,
+      "oracle_recall_at_3": 1.0,
+      "no_memory_recall_at_3": 0.0
+    }
+  ]
+}

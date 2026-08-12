@@ -90,13 +90,22 @@ def _content_rankings(pools: list[list[int]], content_scores: torch.Tensor) -> l
     return [_rank(pool, scores) for pool, scores in zip(pools, content_scores)]
 
 
-def _metrics(episodes: list[dict], rankings: list[list[int]], scores: torch.Tensor) -> dict:
+def _metrics(
+    episodes: list[dict],
+    rankings: list[list[int]],
+    scores: torch.Tensor,
+    *,
+    fact_kinds: list[str] | None = None,
+    fact_positions: list[int] | None = None,
+) -> dict:
     if len(rankings) != len(episodes) or scores.shape[0] != len(episodes):
         raise ValueError("retrieval outputs must cover every episode")
+    fact_kinds = fact_kinds or REALISTIC_MEMORY_WRITE_SPEC["fact_kinds"]
+    fact_positions = fact_positions or REALISTIC_MEMORY_WRITE_SPEC["fact_positions"]
     top1 = top3 = 0
-    kinds = {kind: [0, 0] for kind in REALISTIC_MEMORY_WRITE_SPEC["fact_kinds"]}
+    kinds = {kind: [0, 0] for kind in fact_kinds}
     positions = {
-        str(position): [0, 0] for position in REALISTIC_MEMORY_WRITE_SPEC["fact_positions"]
+        str(position): [0, 0] for position in fact_positions
     }
     ranks = []
     margins = []
