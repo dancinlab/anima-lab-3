@@ -16,6 +16,7 @@ from measurement.runtime_memory_collection_registry import (
     RUNTIME_MEMORY_COLLECTION_SPEC,
     spec_sha256,
 )
+from measurement.runtime_memory_collection_gate import adjudicate
 
 
 FORBIDDEN_RAW_KEYS = {"text", "query", "response", "content", "raw_text"}
@@ -160,12 +161,28 @@ def run(source: Path, spec: dict = RUNTIME_MEMORY_COLLECTION_SPEC) -> dict:
     return payload
 
 
+def write_receipts(
+    source: Path,
+    output: Path,
+    verdict_output: Path,
+    spec: dict = RUNTIME_MEMORY_COLLECTION_SPEC,
+) -> tuple[dict, dict]:
+    """Refresh the collection and fail-closed verdict receipts together."""
+    payload = run(source, spec)
+    verdict = adjudicate(payload, spec)
+    _atomic_json(output, payload)
+    _atomic_json(verdict_output, verdict)
+    return payload, verdict
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, default=Path(RUNTIME_MEMORY_COLLECTION_SPEC["source_database"]))
     parser.add_argument("--output", type=Path, default=Path(".local/gate-runtime3/status.json"))
+    parser.add_argument("--verdict", type=Path, default=None)
     args = parser.parse_args()
-    _atomic_json(args.output, run(args.source))
+    verdict_output = args.verdict or args.output.with_name("verdict.json")
+    write_receipts(args.source, args.output, verdict_output)
 
 
 if __name__ == "__main__":

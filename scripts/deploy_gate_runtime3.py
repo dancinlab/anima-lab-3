@@ -67,6 +67,7 @@ def _collector_payload() -> dict[str, object]:
             str(PYTHON), str(COLLECTOR),
             "--source", str(DATA_ROOT / "conscious-lm" / "memory.db"),
             "--output", str(STATE_ROOT / "status.json"),
+            "--verdict", str(STATE_ROOT / "verdict.json"),
         ],
         "WorkingDirectory": str(ROOT),
         "RunAtLoad": True,
@@ -148,16 +149,24 @@ def status() -> int:
     healthy = _healthy(timeout=1.0)
     status_path = STATE_ROOT / "status.json"
     counts = {}
+    verdict = None
     if status_path.is_file():
         counts = json.loads(status_path.read_text()).get("audit", {}).get("counts", {})
+    verdict_path = STATE_ROOT / "verdict.json"
+    if verdict_path.is_file():
+        verdict = json.loads(verdict_path.read_text()).get("verdict")
     print(json.dumps({
         "runtime_loaded": runtime_loaded,
         "collector_loaded": collector_loaded,
         "healthy": healthy,
         "counts": counts,
+        "verdict": verdict,
         "raw_text_in_status": False,
     }, ensure_ascii=False, sort_keys=True))
-    return 0 if runtime_loaded and collector_loaded and healthy and status_path.is_file() else 1
+    return 0 if (
+        runtime_loaded and collector_loaded and healthy
+        and status_path.is_file() and verdict_path.is_file()
+    ) else 1
 
 
 def main(argv: list[str]) -> int:

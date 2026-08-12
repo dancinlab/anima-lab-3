@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from gate_runtime3 import _manifest_sha256, run, scan_collection_source
+from gate_runtime3 import _manifest_sha256, run, scan_collection_source, write_receipts
 from measurement.runtime_memory_collection_gate import adjudicate
 from measurement.runtime_memory_collection_registry import (
     RUNTIME_MEMORY_COLLECTION_SPEC,
@@ -106,6 +106,32 @@ def test_collection_registration_is_preregistered_after_pin():
     assert spec["audit"]["source_append_only"] is True
     assert spec["runtime"]["data_root"].startswith(".local/")
     assert len(spec_sha256()) == 64
+
+
+def test_collector_refreshes_status_and_verdict_together(tmp_path):
+    path = tmp_path / "memory.db"
+    initial_rows = [
+        (1, "user", "하나", "2026-08-01T00:00:00+00:00"),
+        (2, "user", "둘", "2026-08-02T00:00:00+00:00"),
+    ]
+    _database(path, initial_rows)
+    spec = _spec(path, [])
+    status_path = tmp_path / "status.json"
+    verdict_path = tmp_path / "verdict.json"
+
+    _, collecting = write_receipts(path, status_path, verdict_path, spec)
+    assert collecting["verdict"] == "GR31_COLLECTING"
+
+    with sqlite3.connect(path) as connection:
+        connection.execute(
+            "INSERT INTO memories(id, role, text, timestamp) VALUES (?, ?, ?, ?)",
+            (3, "user", "셋", "2026-08-02T00:31:00+00:00"),
+        )
+    payload, verdict = write_receipts(path, status_path, verdict_path, spec)
+
+    assert json.loads(status_path.read_text()) == payload
+    assert json.loads(verdict_path.read_text()) == verdict
+    assert verdict["verdict"] == "GR32_READY_FOR_REVIEW"
 
 
 def test_collection_rejects_empty_dialogue(tmp_path):
