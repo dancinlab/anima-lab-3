@@ -1592,7 +1592,8 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    문장 틀, 임시 주제·값 식별 문자열, 방해 문장 순서로 분리하고, seed 1337과 7331 사이에서
    `baseline / template_swap / identifier_swap / layout_swap / all_swap`을 비교한다. 한 요인만
    맞바꾼 팔은 그 요인의 자료 지문만 상대 기준과 같아야 한다. 기준 팔은 `GATE-3` 결과를 정확히
-   재현해야 하며, 결과를 본 뒤 문턱이나 문장 틀을 조정하지 않는다. 실제 대화 원문 보관과 장기
+   재현해야 한다. 단독 원인은 상대 기준까지 남은 전체·약속 저장률 차이의 80% 이상을 양방향으로
+   설명해야 하며, 결과를 본 뒤 문턱이나 문장 틀을 조정하지 않는다. 실제 대화 원문 보관과 장기
    검색 기본값은 변경하지 않는다. 상세 기준은
    `docs/hypotheses/GATE-WRITE-MECHANISM-1-seed-factor-decomposition.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
