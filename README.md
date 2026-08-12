@@ -1488,6 +1488,13 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    적용하지 않아 실제 대화는 계속 전부 보존·검색한다. 다음은 문장 의미를 읽는 표준 양성 비교를
    먼저 세우는 `GATE-CONTROL-1`이다. 통제된 문장 자료의 일반 기억 검사이며 의식 증거가 아니다. 상세 사양은
    `docs/hypotheses/GATE-1-dialogue-memory-write-selection.md`가 정본이다.
+47-A. **GATE-CONTROL-1 — 문장 의미 기반 저장 선택 양성 비교 (사전등록):** `GATE-1`의 자료·
+   결정형 맞춤·검색·판정 기준을 그대로 두고, 글자 3개 묶음 벡터만 고정된 표준 다국어 문장 의미
+   벡터로 바꾼다. 두 독립 자료 모두 중요 사실 저장률과 후속 질문 정답률 90% 이상, 방해 문장
+   등록률 25% 이하, 검색 목록 50% 이하를 만족하고 무작위·뒤섞기보다 25%p 이상 높아야 양성
+   비교가 성립한다. 실제 대화 저장 경로는 바꾸지 않으며 통과해도 일반 문장 분류 결과이지 의식
+   증거가 아니다. 상세 사양은
+   `docs/hypotheses/GATE-CONTROL-1-semantic-write-positive-control.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
