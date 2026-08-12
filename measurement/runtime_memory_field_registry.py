@@ -10,7 +10,7 @@ from measurement.runtime_memory_shadow_registry import RUNTIME_MEMORY_SHADOW_SPE
 
 RUNTIME_MEMORY_FIELD_SPEC = {
     "experiment": "gate_runtime2_real_dialogue_shadow_review",
-    "preregistration_commit": "__PREREGISTRATION_COMMIT__",
+    "preregistration_commit": "edb9f36e2",
     "source_experiment": RUNTIME_MEMORY_SHADOW_SPEC["experiment"],
     "source_database": "data/conscious-lm/memory.db",
     "source_database_sha256": "7866dacdadbc542efb09fc9d51818de6635ff810306fa978ae1674a9b43b2ad6",

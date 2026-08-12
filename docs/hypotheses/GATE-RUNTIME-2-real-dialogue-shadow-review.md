@@ -2,7 +2,7 @@
 
 상태: 사전등록 — 실행 전
 
-사전등록 커밋: `__PREREGISTRATION_COMMIT__`
+사전등록 커밋: `edb9f36e2`
 
 ## 질문
 
