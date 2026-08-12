@@ -37,9 +37,37 @@ class ModelWrapper:
             return self._generate_gguf(prompt, max_tokens, temperature)
         elif self.model_type == "conscious-lm":
             return self._generate_clm(prompt, max_tokens, temperature)
+        elif self.model_type == "native-dialogue":
+            return self.generate_dialogue(prompt, "", [], max_tokens, temperature)
         elif self.model_type in ("animalm", "golden-moe"):
             return self._generate_hf(prompt, max_tokens, temperature)
         return None
+
+    def generate_dialogue(self, text, state, history, max_tokens=None, temperature=None):
+        """Generate through the native tokenizer without inventing a text template."""
+        if self.model_type != "native-dialogue":
+            kwargs = {}
+            if max_tokens is not None:
+                kwargs["max_tokens"] = max_tokens
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+            return self.generate(text, **kwargs)
+        from conscious_lm import generate as clm_generate
+        from measurement.native_dialogue_registry import NATIVE_DIALOGUE_SPEC
+
+        tokenizer = self.tokenizer
+        generation = NATIVE_DIALOGUE_SPEC["generation"]
+        max_tokens = generation["max_new_tokens"] if max_tokens is None else int(max_tokens)
+        temperature = generation["temperature"] if temperature is None else float(temperature)
+        budget = min(int(max_tokens), self.model.block_size // 2)
+        prompt = tokenizer.format_prompt(text, state, history, self.model.block_size - budget)
+        output, _ = clm_generate(
+            self.model, prompt, max_new=budget, temperature=temperature,
+            device=str(next(self.model.parameters()).device),
+            eos_token_id=tokenizer.ids["<eos>"], top_p=generation["top_p"],
+            repetition_penalty=generation["repetition_penalty"],
+        )
+        return tokenizer.trim_response(output[len(prompt):]) or None
 
     def _generate_gguf(self, prompt, max_tokens, temperature):
         result = self.model(
@@ -158,6 +186,9 @@ def load_model(model_name="conscious-lm"):
     if model_name == "conscious-lm":
         return _load_conscious_lm()
 
+    if model_name == "anima-native":
+        return _load_native_dialogue()
+
     # 2) 직접 경로 (.gguf)
     if model_name.endswith(".gguf") and os.path.exists(model_name):
         return _load_gguf(model_name, Path(model_name).stem)
@@ -188,7 +219,19 @@ def load_model(model_name="conscious-lm"):
         return _load_animalm_v4(savant=savant)
 
     raise ValueError(f"알 수 없는 모델: {model_name}\n"
-                     f"사용 가능: {', '.join(['conscious-lm', 'animalm-v1', 'animalm-v4-savant', 'golden-moe-v1'] + list(GGUF_REGISTRY.keys()))}")
+                     f"사용 가능: {', '.join(['anima-native', 'conscious-lm', 'animalm-v1', 'animalm-v4-savant', 'golden-moe-v1'] + list(GGUF_REGISTRY.keys()))}")
+
+
+def _load_native_dialogue():
+    from native_dialogue_lm import load_native_model
+
+    model_dir = MODELS_DIR / "anima-native"
+    model, tokenizer, payload = load_native_model(model_dir)
+    wrapper = ModelWrapper("native-dialogue", model, "anima-native")
+    wrapper.tokenizer = tokenizer
+    wrapper.checkpoint_step = int(payload["step"])
+    print(f"  [model] Anima native dialogue loaded: step={wrapper.checkpoint_step}")
+    return wrapper
 
 
 def _load_gguf(path, name):
@@ -466,6 +509,10 @@ def _find_gguf_elsewhere(filename):
 def list_available_models():
     """사용 가능한 모델 목록."""
     models = []
+
+    native_dir = MODELS_DIR / "anima-native"
+    native_ready = (native_dir / "final.pt").is_file() and (native_dir / "tokenizer.json").is_file()
+    models.append(("anima-native", "Anima self-trained dialogue model", native_ready))
 
     # ConsciousLM
     ckpt = ANIMA_DIR / "data" / "conscious_lm.pt"

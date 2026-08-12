@@ -505,8 +505,9 @@ class ConsciousLM(nn.Module):
                 # 방식 3: 텐션 변동성 (층간 텐션이 균일할수록 높음)
                 t_stack = torch.stack(tensions)
                 t_per_layer = t_stack.mean(dim=(1, 2))  # [L]
-                if t_per_layer.std() > 0:
-                    t_cv = t_per_layer.std() / (t_per_layer.mean() + 1e-8)
+                t_layer_std = t_per_layer.std(unbiased=False)
+                if t_layer_std > 0:
+                    t_cv = t_layer_std / (t_per_layer.mean() + 1e-8)
                     psi_tension = max(0.0, 1.0 - t_cv.item())  # CV 낮을수록 균일
                 else:
                     psi_tension = 1.0
@@ -554,13 +555,15 @@ class ConsciousLM(nn.Module):
 def model_kwargs_from_config(config, *, dropout=None):
     """Resolve checkpoint model configuration through one canonical path."""
     values = {
-        "vocab_size": 256,
+        "vocab_size": int(config.get("vocab_size", 256)),
         "d_model": int(config["dim"]),
         "n_head": int(config["heads"]),
         "n_layer": int(config["layers"]),
         "block_size": int(config.get("block_size", 256)),
         "dropout": float(config.get("dropout", 0.0) if dropout is None else dropout),
         "ffn_type": config.get("ffn_type", "pure_field"),
+        "gate_strength": float(config.get("gate_strength", 0.001)),
+        "n_ca_rules": int(config.get("n_ca_rules", 8)),
     }
     return values
 
@@ -751,7 +754,8 @@ def train_model(
 
 @torch.no_grad()
 def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
-             tension_guided=False, curiosity_beta=0.1):
+             tension_guided=False, curiosity_beta=0.1, eos_token_id=None,
+             top_p=1.0, repetition_penalty=1.0):
     """Autoregressive byte generation using logits_a (forward head).
 
     Args:
@@ -775,6 +779,17 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
         lightweight pattern), with no external setpoint: the reference is the
         sequence's own running mean.
     """
+    if max_new < 0:
+        raise ValueError("max_new must be non-negative")
+    if temperature <= 0:
+        raise ValueError("temperature must be positive")
+    if not 0 < top_p <= 1:
+        raise ValueError("top_p must be in (0, 1]")
+    if repetition_penalty < 1:
+        raise ValueError("repetition_penalty must be at least 1")
+    if eos_token_id is not None and not 0 <= eos_token_id < model.vocab_size:
+        raise ValueError("eos_token_id is outside the model vocabulary")
+
     model.eval()
     model = model.to(device)
 
@@ -805,11 +820,31 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
             t_now = per_token_tension[-1]
             t_avg = sum(per_token_tension) / len(per_token_tension)
             temp = temperature * (1.0 + curiosity_beta * math.tanh(t_now / (t_avg + 1e-8) - 1.0))
-        logits_last = logits_a[:, -1, :] / temp
+        logits_last = logits_a[:, -1, :].clone()
+        if repetition_penalty > 1.0:
+            for token_id in set(idx[0].tolist()):
+                value = logits_last[0, token_id]
+                logits_last[0, token_id] = (
+                    value / repetition_penalty if value >= 0
+                    else value * repetition_penalty
+                )
+        logits_last = logits_last / temp
+        if top_p < 1.0:
+            sorted_logits, sorted_indices = torch.sort(logits_last, descending=True)
+            cumulative = torch.softmax(sorted_logits, dim=-1).cumsum(dim=-1)
+            remove = cumulative > top_p
+            remove[..., 1:] = remove[..., :-1].clone()
+            remove[..., 0] = False
+            sorted_logits = sorted_logits.masked_fill(remove, float("-inf"))
+            filtered = torch.full_like(logits_last, float("-inf"))
+            filtered.scatter_(1, sorted_indices, sorted_logits)
+            logits_last = filtered
         probs = F.softmax(logits_last, dim=-1)
 
         next_byte = torch.multinomial(probs, num_samples=1)
         idx = torch.cat([idx, next_byte], dim=1)
+        if eos_token_id is not None and next_byte.item() == eos_token_id:
+            break
 
     generated = idx[0].cpu().tolist()
     return generated, per_token_tension

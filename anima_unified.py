@@ -1092,6 +1092,9 @@ class AnimaUnified:
             response = ask_claude(text, state, self.history[:-1])
             return response or pure_answer
         if backend == 'model' and self.model is not None:
+            if self.model.model_type == 'native-dialogue':
+                response = self.model.generate_dialogue(text, state, self.history[:-1])
+                return response or pure_answer
             response = self._ask_model(text, state)
             return response or pure_answer
         return pure_answer
@@ -3649,7 +3652,7 @@ def main():
                    help='Disable chat-triggered agent tools')
     p.add_argument('--no-conscious-lm', action='store_true', help='Disable ConsciousLM (Claude only)')
     p.add_argument('--model', type=str, default=None,
-                   help='Model selection: conscious-lm, mistral-7b, llama-8b, or .gguf path')
+                   help='Model selection: anima-native, conscious-lm, mistral-7b, llama-8b, or .gguf path')
     p.add_argument('--models', type=str, default=None,
                    help='Comma-separated list of models for multi-model chat (e.g. conscious-lm,mistral-7b)')
     p.add_argument('--transplant-from', type=str, default=None,

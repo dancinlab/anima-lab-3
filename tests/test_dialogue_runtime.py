@@ -72,6 +72,28 @@ def test_runtime_defaults_to_existing_pure_path():
     assert runtime._generate_dialogue_answer("질문", "상태", "순수 발화") == "순수 발화"
 
 
+def test_native_dialogue_backend_receives_state_and_prior_history():
+    calls = []
+
+    class Native:
+        model_type = "native-dialogue"
+
+        def generate_dialogue(self, text, state, history):
+            calls.append((text, state, history))
+            return "자체 답변"
+
+    runtime = AnimaUnified.__new__(AnimaUnified)
+    runtime.args = SimpleNamespace(dialogue_backend="model")
+    runtime.model = Native()
+    runtime.history = [
+        {"role": "user", "content": "이전 질문"},
+        {"role": "assistant", "content": "이전 답"},
+        {"role": "user", "content": "현재 질문"},
+    ]
+    assert runtime._generate_dialogue_answer("현재 질문", "현재 상태", "순수 발화") == "자체 답변"
+    assert calls == [("현재 질문", "현재 상태", runtime.history[:-1])]
+
+
 def test_field_runtime_disables_all_execution_paths():
     payload = __import__("scripts.deploy_gate_runtime3", fromlist=["_runtime_payload"])._runtime_payload()
     arguments = payload["ProgramArguments"]
