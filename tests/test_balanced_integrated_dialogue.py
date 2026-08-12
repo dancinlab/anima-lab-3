@@ -3,8 +3,6 @@ import json
 from pathlib import Path
 
 import pytest
-import torch
-
 from gate4 import _text_digest
 from measurement.balanced_integrated_dialogue_gate import adjudicate
 from measurement.balanced_integrated_dialogue_registry import (
@@ -54,3 +52,16 @@ def test_recorded_result_replays_registered_verdict():
         "G4B_WRITE_SELECTION_LOSS",
         "G4C_RETRIEVAL_LOSS",
     }
+
+
+def test_adjudicator_rejects_raw_transcript_mutation():
+    path = Path("measurement/balanced_integrated_dialogue_results.json")
+    if not path.exists():
+        pytest.skip("recorded result is created only after the preregistered run")
+    payload = json.loads(path.read_text())
+    payload["seeds"][0]["replicates"][0]["preservation_audit"][
+        "raw_text_sha256_after"
+    ] = "0" * 64
+    verdict = adjudicate(payload)
+    assert verdict["verdict"] == "G4_0_INVALID"
+    assert "preservation" in verdict["reason"]

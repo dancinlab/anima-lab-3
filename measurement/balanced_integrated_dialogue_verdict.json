@@ -1,0 +1,70 @@
+{
+  "experiment": "gate4_balanced_natural_integrated_dialogue_memory",
+  "verdict": "G4A_BALANCED_INTEGRATED_MEMORY_VALID_NOT_UNIQUE",
+  "reason": "balanced natural write selection and stored-candidate retrieval passed every registered control",
+  "spec_sha256": "d7161ed4840304b3d0e63991773b3df76bc5b3c820e459bb916d041ab7ebf64c",
+  "seeds": [
+    {
+      "seed": 1337,
+      "replicates": {
+        "daily": {
+          "verdict": "G4A_BALANCED_INTEGRATED_MEMORY_VALID_NOT_UNIQUE",
+          "important_storage_rate": 1.0,
+          "distractor_storage_rate": 0.0,
+          "search_size_ratio": 0.125,
+          "recall_at_1": 1.0,
+          "stored_fact_recall_at_1": 1.0,
+          "minimum_kind_recall_at_1": 1.0,
+          "minimum_template_recall_at_1": 1.0,
+          "store_all_recall_at_1": 1.0,
+          "matched_random_recall_at_1": 0.126953125,
+          "matched_shuffled_recall_at_1": 0.2939453125
+        },
+        "work": {
+          "verdict": "G4A_BALANCED_INTEGRATED_MEMORY_VALID_NOT_UNIQUE",
+          "important_storage_rate": 1.0,
+          "distractor_storage_rate": 0.030552455357142856,
+          "search_size_ratio": 0.1517333984375,
+          "recall_at_1": 1.0,
+          "stored_fact_recall_at_1": 1.0,
+          "minimum_kind_recall_at_1": 1.0,
+          "minimum_template_recall_at_1": 1.0,
+          "store_all_recall_at_1": 1.0,
+          "matched_random_recall_at_1": 0.138671875,
+          "matched_shuffled_recall_at_1": 0.4404296875
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "replicates": {
+        "daily": {
+          "verdict": "G4A_BALANCED_INTEGRATED_MEMORY_VALID_NOT_UNIQUE",
+          "important_storage_rate": 1.0,
+          "distractor_storage_rate": 0.0,
+          "search_size_ratio": 0.125,
+          "recall_at_1": 1.0,
+          "stored_fact_recall_at_1": 1.0,
+          "minimum_kind_recall_at_1": 1.0,
+          "minimum_template_recall_at_1": 1.0,
+          "store_all_recall_at_1": 1.0,
+          "matched_random_recall_at_1": 0.1357421875,
+          "matched_shuffled_recall_at_1": 0.431640625
+        },
+        "work": {
+          "verdict": "G4A_BALANCED_INTEGRATED_MEMORY_VALID_NOT_UNIQUE",
+          "important_storage_rate": 1.0,
+          "distractor_storage_rate": 0.030552455357142856,
+          "search_size_ratio": 0.1517333984375,
+          "recall_at_1": 1.0,
+          "stored_fact_recall_at_1": 1.0,
+          "minimum_kind_recall_at_1": 1.0,
+          "minimum_template_recall_at_1": 1.0,
+          "store_all_recall_at_1": 1.0,
+          "matched_random_recall_at_1": 0.1650390625,
+          "matched_shuffled_recall_at_1": 0.2861328125
+        }
+      }
+    }
+  ]
+}

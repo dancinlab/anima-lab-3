@@ -347,3 +347,9 @@ GATE-WRITE-CONTROL-1 보관은 Hugging Face 커밋
 새 임시 폴더로 다시 내려받아 manifest 6개 항목의 SHA-256을 전수 확인했다. manifest SHA-256은
 `bd81faf2f41b0a44ba4a5a8f591e299b74e6a7eea963199c2aaf3a7f1f0bec12`다. Python 3.13.13,
 torch 2.8.0, transformers 4.55.4의 로컬 CPU에서 실행했고 실제 대화 런타임은 변경하지 않았다.
+
+GATE-4 보관은 Hugging Face 커밋 `fe9e5a5aec8ef2450748416cece446b8a2abd266`에 올렸다.
+원격 `gate4-balanced-natural-integrated` revision의 결과·판정·선택 체크포인트 4개·manifest를
+새 임시 폴더로 다시 내려받아 manifest 6개 항목의 SHA-256을 전수 확인했다. manifest SHA-256은
+`6d7123bb8178c0df1b0e1f5e5275cf4c0c28f6370cf449118da026a3c3871dca`다. Python 3.13.13,
+torch 2.8.0, transformers 4.55.4의 로컬 CPU에서 실행했고 실제 대화 런타임은 변경하지 않았다.
