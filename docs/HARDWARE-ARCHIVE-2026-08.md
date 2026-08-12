@@ -284,3 +284,10 @@ revision의 결과·판정·정상/가짜 체크포인트 네 개와 manifest를
 SHA-256을 전수 확인했다. manifest SHA-256은
 `177c0090fb0b1c52f3a9b79c74c2cf463730f4f8f07749a0f2d648a242379302`다. 로컬 CPU에서만
 실행했다.
+
+GATE-CONTROL-2 보관은 Hugging Face 커밋
+`2fca2466a773bb9a6710562a571a4bc601e2e655`에 올렸다. 원격
+`gate-control2-matched-semantic-write` revision의 결과·판정·정상/가짜 체크포인트 네 개와
+manifest를 새 임시 디렉토리로 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`d94bdf96539d3d27bc336877aae6154aa5236c0f5d58d623f5bd2a06d2a7560c`다. 로컬 CPU에서만
+실행했다.
