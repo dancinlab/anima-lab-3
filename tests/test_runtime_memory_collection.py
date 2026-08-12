@@ -98,6 +98,7 @@ def test_collection_gate_closes_on_mutation_and_opens_on_threshold(tmp_path):
 
 def test_collection_registration_is_preregistered_after_pin():
     spec = RUNTIME_MEMORY_COLLECTION_SPEC
+    assert spec["preregistration_commit"] == "55fc9dfd50155435c060ed542820e0a6a386092d"
     assert spec["audit"]["raw_text_allowed"] is False
     assert spec["audit"]["source_append_only"] is True
     assert spec["runtime"]["data_root"].startswith(".local/")

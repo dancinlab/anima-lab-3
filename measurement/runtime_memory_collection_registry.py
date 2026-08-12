@@ -10,7 +10,7 @@ from measurement.runtime_memory_field_registry import RUNTIME_MEMORY_FIELD_SPEC
 
 RUNTIME_MEMORY_COLLECTION_SPEC = {
     "experiment": "gate_runtime3_live_dialogue_collection",
-    "preregistration_commit": "__PREREGISTRATION_COMMIT__",
+    "preregistration_commit": "55fc9dfd50155435c060ed542820e0a6a386092d",
     "source_experiment": RUNTIME_MEMORY_FIELD_SPEC["experiment"],
     "source_database": ".local/gate-runtime3/data/conscious-lm/memory.db",
     "source_table": RUNTIME_MEMORY_FIELD_SPEC["source_table"],
