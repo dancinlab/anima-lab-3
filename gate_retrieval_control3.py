@@ -92,8 +92,8 @@ def _topic_features(episodes: list[dict], seed: int, spec: dict) -> tuple[torch.
     }
 
 
-def run_seed(seed: int, encoder: FrozenSentenceEncoder,
-             spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC) -> dict:
+def _seed_measurements(seed: int, encoder: FrozenSentenceEncoder,
+                       spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC) -> tuple[dict, dict]:
     episodes = build_balanced_evaluation(seed, spec)
     calibration = build_calibration(seed, REALISTIC_MEMORY_WRITE_SPEC)
     candidate_rows = [row for episode in episodes for row in episode["candidates"]]
@@ -138,7 +138,7 @@ def run_seed(seed: int, encoder: FrozenSentenceEncoder,
         ),
         "no_memory": ([[] for _ in episodes], torch.zeros_like(content_scores)),
     }
-    return {
+    result = {
         "seed": seed,
         "dataset_audit": dataset_audit(episodes, spec),
         "balance_audit": {
@@ -180,6 +180,18 @@ def run_seed(seed: int, encoder: FrozenSentenceEncoder,
             for name, (rankings, scores) in arms.items()
         },
     }
+    state = {
+        "episodes": episodes,
+        "content_scores": content_scores,
+        "normal_pools": normal_pools,
+    }
+    return result, state
+
+
+def run_seed(seed: int, encoder: FrozenSentenceEncoder,
+             spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC) -> dict:
+    result, _state = _seed_measurements(seed, encoder, spec)
+    return result
 
 
 def run(spec: dict = BALANCED_RETRIEVAL_CONTROL_SPEC) -> dict:

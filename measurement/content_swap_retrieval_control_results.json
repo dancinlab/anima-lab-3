@@ -1,0 +1,760 @@
+{
+  "experiment": "gate_retrieval_control4_within_pool_content_swap",
+  "spec": {
+    "experiment": "gate_retrieval_control4_within_pool_content_swap",
+    "preregistration_commit": "bde992d00",
+    "balanced_spec_sha256": "5cb998bc82f735899d9b81492b008c31385b11619d8451c6632e32d5c4acdf6d",
+    "seeds": [
+      1337,
+      7331
+    ],
+    "runtime": {
+      "python": "3.13",
+      "torch": "2.8.0",
+      "transformers": "4.55.4"
+    },
+    "encoder": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "pooling": "attention_mask_mean",
+      "normalize": true,
+      "max_length": 128,
+      "embedding_dim": 384,
+      "role_dim": 2,
+      "feature_dim": 386,
+      "batch_size": 64,
+      "device": "cpu"
+    },
+    "evaluation_episodes": 1024,
+    "candidates_per_episode": 8,
+    "fact_kinds": [
+      "preference",
+      "commitment",
+      "goal",
+      "profile"
+    ],
+    "fact_positions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "retrieval": {
+      "address_pool": 2,
+      "intervention": "swap_two_scores_within_normal_address_pool",
+      "uses_labels": false,
+      "uses_episode_order": false,
+      "recovery": "apply_identical_swap_twice"
+    },
+    "arms": [
+      "within_pool_content_swap",
+      "restored_content"
+    ],
+    "thresholds": {
+      "normal_recall_at_3": 0.95,
+      "normal_recall_at_1": 0.9,
+      "minimum_per_kind_recall_at_1": 0.85,
+      "minimum_per_position_recall_at_1": 0.85,
+      "minimum_topic_only_recall_at_1": 0.45,
+      "maximum_topic_only_recall_at_1": 0.55,
+      "minimum_topic_only_recall_at_3": 0.95,
+      "maximum_shuffled_episode_recall_at_3": 0.35,
+      "maximum_swapped_recall_at_1": 0.1,
+      "minimum_swap_gap": 0.8,
+      "oracle_recall_at_3": 0.99,
+      "maximum_no_memory_recall_at_3": 0.05,
+      "minimum_normal_pool_fact_coverage": 0.99
+    }
+  },
+  "spec_sha256": "444ff877ec30fe0ce7ebd2210d9ac2a22319734b99788ac36d2a854d5fc06ded",
+  "runtime": {
+    "python": "3.13.13",
+    "torch": "2.8.0",
+    "transformers": "4.55.4",
+    "device": "cpu"
+  },
+  "seeds": [
+    {
+      "seed": 1337,
+      "baseline": {
+        "seed": 1337,
+        "dataset_audit": {
+          "evaluation_episodes": 1024,
+          "evaluation_candidates": 8192,
+          "evaluation_unique": 8192,
+          "query_unique": 1024,
+          "query_candidate_overlap": 0,
+          "fact_counts": {
+            "preference": 256,
+            "commitment": 256,
+            "goal": 256,
+            "profile": 256
+          },
+          "fact_position_counts": {
+            "0": 128,
+            "1": 128,
+            "2": 128,
+            "3": 128,
+            "4": 128,
+            "5": 128,
+            "6": 128,
+            "7": 128
+          },
+          "topic_switch_counts": {
+            "3": 1024
+          },
+          "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+          "evaluation_sha256": "d21fd40a1a51fb8974b59c0abd6837b5b7a47a5803ea9fe832397b11013b9074",
+          "query_sha256": "e2818847347b19cd92887478431bdf6c85b1b7220c1c1459bd212d34815f4d49"
+        },
+        "balance_audit": {
+          "fact_kind_side_counts": {
+            "preference": {
+              "0": 128,
+              "1": 128
+            },
+            "commitment": {
+              "0": 128,
+              "1": 128
+            },
+            "goal": {
+              "0": 128,
+              "1": 128
+            },
+            "profile": {
+              "0": 128,
+              "1": 128
+            }
+          }
+        },
+        "encoder_audit": {
+          "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+          "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+          "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+          "embedding_dim": 384,
+          "pooling": "attention_mask_mean",
+          "normalize": true,
+          "max_length": 128
+        },
+        "embedding_audit": {
+          "calibration": {
+            "rows": 4096,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998334698318,
+            "sentence_norm_max": 1.000000151728089,
+            "features_sha256": "7520e791d5c08e8e27940bd6795e849b793676e286163c0e67e32ced43ceee63"
+          },
+          "queries": {
+            "rows": 1024,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998612251629,
+            "sentence_norm_max": 1.0000001442706858,
+            "features_sha256": "817fd21b2b268e9a5c17710ab0492ad227dc4088c8f5560ff82ae4879cb4f48c"
+          },
+          "candidates": {
+            "rows": 8192,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998070140443,
+            "sentence_norm_max": 1.0000001941996357,
+            "features_sha256": "8456f920bcc69018f1e8d32e6997b798c520d6bbca25948f1f899150ec3497d7"
+          }
+        },
+        "fit_audit": {
+          "method": "canonical_ridge",
+          "examples": 4096,
+          "positives": 2048,
+          "negatives": 2048,
+          "feature_dim": 386,
+          "design_rank": 386,
+          "ridge": 0.001,
+          "positive_score_mean": 0.9994928767101808,
+          "negative_score_mean": 0.0005071232898189285,
+          "threshold": 0.4999999999999999
+        },
+        "address_audit": {
+          "query_topics": 1024,
+          "candidate_topics": 8192,
+          "episode_segment_addresses": 4096,
+          "unique_episode_segment_addresses": 4096,
+          "query_address_sha256": "f9906e85bd97d2fd2242256ed59878bf8d2a24ff095196ae45a550f87ab49ec0",
+          "candidate_address_sha256": "76f4ef292a27fd0b5d4f22ef3d01e384869396744e05f48173fed2e1fb1c0850"
+        },
+        "score_audit": {
+          "content_scores_sha256": "2623038b18f61b0465a80bd6cdad7e118afa2b0250118066391b60c872f0e19a",
+          "address_scores_sha256": "67e6fbdeab992cbc282c92b306e3cf7d65a91bb6822320b559f827dee170cbf0",
+          "normal_pool_fact_coverage": 1.0
+        },
+        "arms": {
+          "balanced_split": {
+            "recall_at_1": 0.99609375,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 1.0,
+              "commitment": 0.984375,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_recall_at_1": {
+              "0": 0.984375,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 0.9921875,
+              "6": 1.0,
+              "7": 0.9921875
+            },
+            "mean_fact_rank": 1.00390625,
+            "mean_fact_margin": 0.45558613722107094,
+            "rankings_sha256": "43f8e1d3759a2b725d8911e674f8be39a98a9f03487d64b98e52a6689cbe29de"
+          },
+          "topic_only": {
+            "recall_at_1": 0.5,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 0.5,
+              "commitment": 0.5,
+              "goal": 0.5,
+              "profile": 0.5
+            },
+            "per_position_recall_at_1": {
+              "0": 1.0,
+              "1": 0.0,
+              "2": 1.0,
+              "3": 0.0,
+              "4": 1.0,
+              "5": 0.0,
+              "6": 1.0,
+              "7": 0.0
+            },
+            "mean_fact_rank": 1.5,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "094f3501978c1176d40f3e60d8c09172b2f7865c19ef1b5685acf3645b408147"
+          },
+          "content_only": {
+            "recall_at_1": 0.056640625,
+            "recall_at_3": 0.19921875,
+            "per_kind_recall_at_1": {
+              "preference": 0.0,
+              "commitment": 0.08203125,
+              "goal": 0.0,
+              "profile": 0.14453125
+            },
+            "per_position_recall_at_1": {
+              "0": 0.0703125,
+              "1": 0.0625,
+              "2": 0.0703125,
+              "3": 0.0546875,
+              "4": 0.0390625,
+              "5": 0.0546875,
+              "6": 0.0703125,
+              "7": 0.03125
+            },
+            "mean_fact_rank": 6.0810546875,
+            "mean_fact_margin": -0.11614080165384723,
+            "rankings_sha256": "cfac66b355b19652d4f5a6a7cf6b1b6466da1603dce0e2dca619a1085b25317a"
+          },
+          "shuffled_episode_address": {
+            "recall_at_1": 0.2509765625,
+            "recall_at_3": 0.251953125,
+            "per_kind_recall_at_1": {
+              "preference": 0.2421875,
+              "commitment": 0.25,
+              "goal": 0.23828125,
+              "profile": 0.2734375
+            },
+            "per_position_recall_at_1": {
+              "0": 0.25,
+              "1": 0.2421875,
+              "2": 0.203125,
+              "3": 0.28125,
+              "4": 0.1796875,
+              "5": 0.296875,
+              "6": 0.25,
+              "7": 0.3046875
+            },
+            "mean_fact_rank": 1.003875968992248,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "3b6d5217bdd96847ec81a86c78c19bff9942a702f495350d6f484ddf0d0d764f"
+          },
+          "shuffled_content": {
+            "recall_at_1": 0.822265625,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 0.984375,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 0.3046875
+            },
+            "per_position_recall_at_1": {
+              "0": 0.734375,
+              "1": 0.90625,
+              "2": 0.75,
+              "3": 0.921875,
+              "4": 0.75,
+              "5": 0.859375,
+              "6": 0.75,
+              "7": 0.90625
+            },
+            "mean_fact_rank": 1.177734375,
+            "mean_fact_margin": 0.18195511492381836,
+            "rankings_sha256": "31e40afc42c1d306dc6aa3408eac17fd0e687d54ad46407dccbc1d211767c3d2"
+          },
+          "oracle_memory": {
+            "recall_at_1": 1.0,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_recall_at_1": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "mean_fact_rank": 1.0,
+            "mean_fact_margin": 1.0,
+            "rankings_sha256": "a870699d3b3479f10a2bcc7dae9fd23c4457112bc4993d72ffb6ae0105cb5ac4"
+          },
+          "no_memory": {
+            "recall_at_1": 0.0,
+            "recall_at_3": 0.0,
+            "per_kind_recall_at_1": {
+              "preference": 0.0,
+              "commitment": 0.0,
+              "goal": 0.0,
+              "profile": 0.0
+            },
+            "per_position_recall_at_1": {
+              "0": 0.0,
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0,
+              "7": 0.0
+            },
+            "mean_fact_rank": 0.0,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "cdfd2c0aee9ccfc4d52ed6a7e1f5d0090ca81985f3f73fcd11b0a5d7423fe6d3"
+          }
+        }
+      },
+      "swap_audit": {
+        "pool_rows": 1024,
+        "pool_size": 2,
+        "swapped_pairs": 1024,
+        "uses_labels": false,
+        "uses_episode_order": false,
+        "outside_pool_unchanged": true,
+        "pair_exchange_exact": true,
+        "score_multisets_preserved": true,
+        "restored_scores_exact": true,
+        "normal_pool_sha256": "9717e509d1b78cefc2c2e8e97cb87fea431cb2666f98d6816285fc6a3f3b3aa6",
+        "normal_scores_sha256": "2623038b18f61b0465a80bd6cdad7e118afa2b0250118066391b60c872f0e19a",
+        "swapped_scores_sha256": "3f6d0ef8eb5899d510ef1052ddf1aebbe3c3dd676cb45a4afd9e941303de7170",
+        "restored_scores_sha256": "2623038b18f61b0465a80bd6cdad7e118afa2b0250118066391b60c872f0e19a",
+        "restored_rankings_exact": true
+      },
+      "arms": {
+        "within_pool_content_swap": {
+          "recall_at_1": 0.00390625,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.015625,
+            "goal": 0.0,
+            "profile": 0.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.015625,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0078125,
+            "6": 0.0,
+            "7": 0.0078125
+          },
+          "mean_fact_rank": 1.99609375,
+          "mean_fact_margin": -0.45558613722107094,
+          "rankings_sha256": "ac68f153b9c24f7affee7dd6e4b9126e43fbc50a02953cee914d40fa4f07bfc4"
+        },
+        "restored_content": {
+          "recall_at_1": 0.99609375,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 0.984375,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.984375,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 0.9921875,
+            "6": 1.0,
+            "7": 0.9921875
+          },
+          "mean_fact_rank": 1.00390625,
+          "mean_fact_margin": 0.45558613722107094,
+          "rankings_sha256": "43f8e1d3759a2b725d8911e674f8be39a98a9f03487d64b98e52a6689cbe29de"
+        }
+      }
+    },
+    {
+      "seed": 7331,
+      "baseline": {
+        "seed": 7331,
+        "dataset_audit": {
+          "evaluation_episodes": 1024,
+          "evaluation_candidates": 8192,
+          "evaluation_unique": 8192,
+          "query_unique": 1024,
+          "query_candidate_overlap": 0,
+          "fact_counts": {
+            "preference": 256,
+            "commitment": 256,
+            "goal": 256,
+            "profile": 256
+          },
+          "fact_position_counts": {
+            "0": 128,
+            "1": 128,
+            "2": 128,
+            "3": 128,
+            "4": 128,
+            "5": 128,
+            "6": 128,
+            "7": 128
+          },
+          "topic_switch_counts": {
+            "3": 1024
+          },
+          "template_sha256": "94ff8a19fc8a5a061e01be8b0e0438351f390703c8628a38537e3eec2dfee61c",
+          "evaluation_sha256": "338caae3ad911acfe4cd74e28fc7d38999deb2474c9fe05a4c80f062d12dc401",
+          "query_sha256": "d0ea2944ae21953fc0f862ecd7cd338ff9c3f8787e29e59c592835e2a92ae1a1"
+        },
+        "balance_audit": {
+          "fact_kind_side_counts": {
+            "preference": {
+              "0": 128,
+              "1": 128
+            },
+            "commitment": {
+              "0": 128,
+              "1": 128
+            },
+            "goal": {
+              "0": 128,
+              "1": 128
+            },
+            "profile": {
+              "0": 128,
+              "1": 128
+            }
+          }
+        },
+        "encoder_audit": {
+          "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+          "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+          "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+          "embedding_dim": 384,
+          "pooling": "attention_mask_mean",
+          "normalize": true,
+          "max_length": 128
+        },
+        "embedding_audit": {
+          "calibration": {
+            "rows": 4096,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998369774812,
+            "sentence_norm_max": 1.0000001680803072,
+            "features_sha256": "aaf1f20cc294d59a4bbe13e50edc1c0c0731ac8f4a1166adf9cdc3e781438ea3"
+          },
+          "queries": {
+            "rows": 1024,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998721838816,
+            "sentence_norm_max": 1.0000001337219173,
+            "features_sha256": "ebcd5de53d94a045a51fcc565ff602e3da7a95b8a59205724a33c64847d0e678"
+          },
+          "candidates": {
+            "rows": 8192,
+            "feature_dim": 386,
+            "sentence_norm_min": 0.9999998156859035,
+            "sentence_norm_max": 1.0000002047056047,
+            "features_sha256": "6dde1c78240769f88d9faf4f00103656cd6ccb3ed45fced486fac3430dd5e284"
+          }
+        },
+        "fit_audit": {
+          "method": "canonical_ridge",
+          "examples": 4096,
+          "positives": 2048,
+          "negatives": 2048,
+          "feature_dim": 386,
+          "design_rank": 386,
+          "ridge": 0.001,
+          "positive_score_mean": 0.9992550508929832,
+          "negative_score_mean": 0.0007449491070163256,
+          "threshold": 0.4999999999999997
+        },
+        "address_audit": {
+          "query_topics": 1024,
+          "candidate_topics": 8192,
+          "episode_segment_addresses": 4096,
+          "unique_episode_segment_addresses": 4096,
+          "query_address_sha256": "d3544a92c23b2259348102da695d4b2accbd1b5e57e710274e78e88752e062c2",
+          "candidate_address_sha256": "c3e92b9188fca44d885a0db4ef21b83dafc3ae3dccac1775330216de7db770fd"
+        },
+        "score_audit": {
+          "content_scores_sha256": "cbc5e144a6449001537b24e1997a59e9eaccaeaace126ceb00681dbaff3a7fc3",
+          "address_scores_sha256": "fbc465d68c0c9591ee81b34cc705c7920217cb692ec7de60866f2721a2a2c896",
+          "normal_pool_fact_coverage": 1.0
+        },
+        "arms": {
+          "balanced_split": {
+            "recall_at_1": 1.0,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_recall_at_1": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "mean_fact_rank": 1.0,
+            "mean_fact_margin": 0.7856670019470146,
+            "rankings_sha256": "a9417f8d6ee5d27ffa89699ebc7451b920c1c0bee39c4de7db91da3ec9e1d890"
+          },
+          "topic_only": {
+            "recall_at_1": 0.5,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 0.5,
+              "commitment": 0.5,
+              "goal": 0.5,
+              "profile": 0.5
+            },
+            "per_position_recall_at_1": {
+              "0": 1.0,
+              "1": 0.0,
+              "2": 1.0,
+              "3": 0.0,
+              "4": 1.0,
+              "5": 0.0,
+              "6": 1.0,
+              "7": 0.0
+            },
+            "mean_fact_rank": 1.5,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "094f3501978c1176d40f3e60d8c09172b2f7865c19ef1b5685acf3645b408147"
+          },
+          "content_only": {
+            "recall_at_1": 0.00390625,
+            "recall_at_3": 0.0234375,
+            "per_kind_recall_at_1": {
+              "preference": 0.0,
+              "commitment": 0.015625,
+              "goal": 0.0,
+              "profile": 0.0
+            },
+            "per_position_recall_at_1": {
+              "0": 0.0078125,
+              "1": 0.0078125,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0078125,
+              "5": 0.0,
+              "6": 0.0078125,
+              "7": 0.0
+            },
+            "mean_fact_rank": 7.55078125,
+            "mean_fact_margin": -0.1555327387608257,
+            "rankings_sha256": "cc7a937133cb05a8773169f68ebb9aff5aca0c21d20acb8f951a427c619c2b47"
+          },
+          "shuffled_episode_address": {
+            "recall_at_1": 0.2490234375,
+            "recall_at_3": 0.2490234375,
+            "per_kind_recall_at_1": {
+              "preference": 0.2109375,
+              "commitment": 0.28125,
+              "goal": 0.23046875,
+              "profile": 0.2734375
+            },
+            "per_position_recall_at_1": {
+              "0": 0.265625,
+              "1": 0.2421875,
+              "2": 0.25,
+              "3": 0.2109375,
+              "4": 0.2578125,
+              "5": 0.265625,
+              "6": 0.234375,
+              "7": 0.265625
+            },
+            "mean_fact_rank": 1.0,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "efb0c7a73e21a9132791baa2c1ae93967fe837c485accae43be77693bbe6b2f5"
+          },
+          "shuffled_content": {
+            "recall_at_1": 0.8154296875,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 0.26171875
+            },
+            "per_position_recall_at_1": {
+              "0": 0.75,
+              "1": 0.890625,
+              "2": 0.75,
+              "3": 0.8984375,
+              "4": 0.75,
+              "5": 0.8515625,
+              "6": 0.75,
+              "7": 0.8828125
+            },
+            "mean_fact_rank": 1.1845703125,
+            "mean_fact_margin": 0.5262368920870534,
+            "rankings_sha256": "6b09ef3e616ae33a02c565a3ea87293fba2fe95b4e38152815e6eff9492eb7a4"
+          },
+          "oracle_memory": {
+            "recall_at_1": 1.0,
+            "recall_at_3": 1.0,
+            "per_kind_recall_at_1": {
+              "preference": 1.0,
+              "commitment": 1.0,
+              "goal": 1.0,
+              "profile": 1.0
+            },
+            "per_position_recall_at_1": {
+              "0": 1.0,
+              "1": 1.0,
+              "2": 1.0,
+              "3": 1.0,
+              "4": 1.0,
+              "5": 1.0,
+              "6": 1.0,
+              "7": 1.0
+            },
+            "mean_fact_rank": 1.0,
+            "mean_fact_margin": 1.0,
+            "rankings_sha256": "a870699d3b3479f10a2bcc7dae9fd23c4457112bc4993d72ffb6ae0105cb5ac4"
+          },
+          "no_memory": {
+            "recall_at_1": 0.0,
+            "recall_at_3": 0.0,
+            "per_kind_recall_at_1": {
+              "preference": 0.0,
+              "commitment": 0.0,
+              "goal": 0.0,
+              "profile": 0.0
+            },
+            "per_position_recall_at_1": {
+              "0": 0.0,
+              "1": 0.0,
+              "2": 0.0,
+              "3": 0.0,
+              "4": 0.0,
+              "5": 0.0,
+              "6": 0.0,
+              "7": 0.0
+            },
+            "mean_fact_rank": 0.0,
+            "mean_fact_margin": 0.0,
+            "rankings_sha256": "cdfd2c0aee9ccfc4d52ed6a7e1f5d0090ca81985f3f73fcd11b0a5d7423fe6d3"
+          }
+        }
+      },
+      "swap_audit": {
+        "pool_rows": 1024,
+        "pool_size": 2,
+        "swapped_pairs": 1024,
+        "uses_labels": false,
+        "uses_episode_order": false,
+        "outside_pool_unchanged": true,
+        "pair_exchange_exact": true,
+        "score_multisets_preserved": true,
+        "restored_scores_exact": true,
+        "normal_pool_sha256": "9717e509d1b78cefc2c2e8e97cb87fea431cb2666f98d6816285fc6a3f3b3aa6",
+        "normal_scores_sha256": "cbc5e144a6449001537b24e1997a59e9eaccaeaace126ceb00681dbaff3a7fc3",
+        "swapped_scores_sha256": "c5f43492f3e88ec2fe6f55c2b4389bd522423c2d886aa4ef71c7854cda414558",
+        "restored_scores_sha256": "cbc5e144a6449001537b24e1997a59e9eaccaeaace126ceb00681dbaff3a7fc3",
+        "restored_rankings_exact": true
+      },
+      "arms": {
+        "within_pool_content_swap": {
+          "recall_at_1": 0.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 0.0,
+            "commitment": 0.0,
+            "goal": 0.0,
+            "profile": 0.0
+          },
+          "per_position_recall_at_1": {
+            "0": 0.0,
+            "1": 0.0,
+            "2": 0.0,
+            "3": 0.0,
+            "4": 0.0,
+            "5": 0.0,
+            "6": 0.0,
+            "7": 0.0
+          },
+          "mean_fact_rank": 2.0,
+          "mean_fact_margin": -0.7856670019470146,
+          "rankings_sha256": "9574b04fe11baba585dd7ce5be8269983c343d5954fd72fef05c905351fdd9f9"
+        },
+        "restored_content": {
+          "recall_at_1": 1.0,
+          "recall_at_3": 1.0,
+          "per_kind_recall_at_1": {
+            "preference": 1.0,
+            "commitment": 1.0,
+            "goal": 1.0,
+            "profile": 1.0
+          },
+          "per_position_recall_at_1": {
+            "0": 1.0,
+            "1": 1.0,
+            "2": 1.0,
+            "3": 1.0,
+            "4": 1.0,
+            "5": 1.0,
+            "6": 1.0,
+            "7": 1.0
+          },
+          "mean_fact_rank": 1.0,
+          "mean_fact_margin": 0.7856670019470146,
+          "rankings_sha256": "a9417f8d6ee5d27ffa89699ebc7451b920c1c0bee39c4de7db91da3ec9e1d890"
+        }
+      }
+    }
+  ]
+}

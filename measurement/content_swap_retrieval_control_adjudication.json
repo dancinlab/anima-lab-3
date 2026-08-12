@@ -1,0 +1,30 @@
+{
+  "experiment": "gate_retrieval_control4_within_pool_content_swap",
+  "verdict": "GRC4A_CONTENT_ALIGNMENT_CAUSAL",
+  "reason": "candidate-aligned content scores caused selection and exact restoration recovered it",
+  "spec_sha256": "444ff877ec30fe0ce7ebd2210d9ac2a22319734b99788ac36d2a854d5fc06ded",
+  "seeds": [
+    {
+      "seed": 1337,
+      "verdict": "GRC4A_CONTENT_ALIGNMENT_CAUSAL",
+      "normal_recall_at_1": 0.99609375,
+      "normal_recall_at_3": 1.0,
+      "swapped_recall_at_1": 0.00390625,
+      "swap_gap": 0.9921875,
+      "restored_recall_at_1": 0.99609375,
+      "topic_only_recall_at_1": 0.5,
+      "shuffled_episode_recall_at_3": 0.251953125
+    },
+    {
+      "seed": 7331,
+      "verdict": "GRC4A_CONTENT_ALIGNMENT_CAUSAL",
+      "normal_recall_at_1": 1.0,
+      "normal_recall_at_3": 1.0,
+      "swapped_recall_at_1": 0.0,
+      "swap_gap": 1.0,
+      "restored_recall_at_1": 1.0,
+      "topic_only_recall_at_1": 0.5,
+      "shuffled_episode_recall_at_3": 0.2490234375
+    }
+  ]
+}
