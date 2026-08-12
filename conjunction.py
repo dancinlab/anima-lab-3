@@ -264,6 +264,10 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
             spec.get("context_sense_steps", EPISODE_SPEC["sense_steps"]),
         ),
         "key": spec.get("key_sense_steps", EPISODE_SPEC["sense_steps"]),
+        "query_key": spec.get(
+            "query_key_sense_steps",
+            spec.get("key_sense_steps", EPISODE_SPEC["sense_steps"]),
+        ),
         "value": spec.get("value_sense_steps", EPISODE_SPEC["sense_steps"]),
         "distractor": spec.get(
             "distractor_sense_steps", EPISODE_SPEC["distractor_sense_steps"]
@@ -309,7 +313,7 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
     )
     query_key = _sense_separation_token(
         c, encoder, EPISODE_SPEC["key_words"][episode.query_key],
-        sense_steps["key"], spec,
+        sense_steps["query_key"], spec,
     )
     cell_counts.extend((query_context.shape[0], query_key.shape[0]))
     return {
@@ -325,7 +329,9 @@ def trace_episode(episode: ConjunctionEpisode, trial_seed: int,
                 len(episode.contexts) * sense_steps["context"]
                 + sense_steps["query_context"]
             ),
-            "key_step_calls": (len(episode.keys) + 1) * sense_steps["key"],
+            "key_step_calls": (
+                len(episode.keys) * sense_steps["key"] + sense_steps["query_key"]
+            ),
             "value_step_calls": len(episode.values) * sense_steps["value"],
             "distractor_step_calls": len(episode.distractors) * sense_steps["distractor"],
         },

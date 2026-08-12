@@ -256,3 +256,10 @@ QUERY-REFRESH-2 보관은 Hugging Face 커밋
 다시 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `121d8579cc8ef779c841b874e53b8268191b96a05881526362e6b297afaaf975`다. 로컬 CPU에서만
 실행했다.
+
+KEY-REFRESH-1 보관은 Hugging Face 커밋
+`451dbf1691ea81963380199de6c51c356c1560ab`에 올렸다. 원격
+`key-refresh1-query-key-refresh` revision의 결과·판정·manifest를 새 임시 디렉토리로 다시
+내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
+`a10fce3ea84982c9977d3230852a5d123e9c8bb9841cdb987cf4369fd26d2830`이다. 로컬 CPU에서만
+실행했다.
