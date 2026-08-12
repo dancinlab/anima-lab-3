@@ -1587,6 +1587,14 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    분해하는 `GATE-WRITE-MECHANISM-1`이다. 이는 일반 대화 기억 기능 검사이며 Anima 고유 기능이나 의식
    증거가 아니다. 상세 사양과 판정은 `docs/hypotheses/GATE-3-integrated-dialogue-memory.md`가
    정본이다.
+47-I. **GATE-WRITE-MECHANISM-1 — 저장 선택 seed 요인 분해 (사전등록, 미실행):** `GATE-3`의
+   문장 의미 모델·결정형 맞춤·0.5 선택 문턱·검색은 고정한다. 자료 생성에 함께 쓰이던 seed를
+   문장 틀, 임시 주제·값 식별 문자열, 방해 문장 순서로 분리하고, seed 1337과 7331 사이에서
+   `baseline / template_swap / identifier_swap / layout_swap / all_swap`을 비교한다. 한 요인만
+   맞바꾼 팔은 그 요인의 자료 지문만 상대 기준과 같아야 한다. 기준 팔은 `GATE-3` 결과를 정확히
+   재현해야 하며, 결과를 본 뒤 문턱이나 문장 틀을 조정하지 않는다. 실제 대화 원문 보관과 장기
+   검색 기본값은 변경하지 않는다. 상세 기준은
+   `docs/hypotheses/GATE-WRITE-MECHANISM-1-seed-factor-decomposition.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
