@@ -17,7 +17,7 @@ from measurement.content_swap_retrieval_control_registry import (
 
 BALANCED_INTEGRATED_DIALOGUE_SPEC = {
     "experiment": "gate4_balanced_natural_integrated_dialogue_memory",
-    "preregistration_commit": "__PREREGISTRATION_COMMIT__",
+    "preregistration_commit": "e52b419c5",
     "write_spec_sha256": write_spec_sha256(),
     "retrieval_spec_sha256": retrieval_spec_sha256(),
     "seeds": copy.deepcopy(BALANCED_NATURAL_WRITE_SPEC["seeds"]),
