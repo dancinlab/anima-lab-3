@@ -123,7 +123,7 @@ NATURAL_LEXICONS = {
 
 BALANCED_NATURAL_WRITE_SPEC = {
     "experiment": "gate_write_control1_balanced_natural_language",
-    "preregistration_commit": "__PREREGISTRATION_COMMIT__",
+    "preregistration_commit": "e8ae4f593",
     "seeds": copy.deepcopy(INTEGRATED_DIALOGUE_MEMORY_SPEC["seeds"]),
     "replicates": ["daily", "work"],
     "calibration_rows": INTEGRATED_DIALOGUE_MEMORY_SPEC["calibration_rows"],
