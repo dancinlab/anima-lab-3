@@ -92,6 +92,7 @@ _try_import("from web_sense import WebSense")
 _try_import("from ph_module import PHModule")
 _try_import("from memory_rag import MemoryRAG")
 _try_import("from memory_store import MemoryStore")
+_try_import("from memory_shadow import RuntimeMemoryShadow, SemanticMemoryWriteScorer, create_memory_shadow, observe_shadow_search, observe_shadow_writes")
 _try_import("from consolidation_verifier import ConsolidationVerifier")
 _try_import("from growth_manager import GrowthManager")
 _try_import("from multimodal import ActionEngine")
@@ -504,6 +505,15 @@ class AnimaUnified:
         self.memory_rag = self._init_mod('memory_rag', lambda: self._init_memory_store())
         self._rag_last_save = time.time()
 
+        # GATE-RUNTIME-1: optional, answer-inert long-term-memory audit.
+        self.memory_shadow = None
+        if getattr(args, 'memory_gate_shadow', False) and 'RuntimeMemoryShadow' in globals():
+            self.memory_shadow = create_memory_shadow(
+                self._init_memory_shadow,
+                on_error=lambda error: _log('memory_shadow', f'Init disabled: {error}'),
+            )
+        self.mods['memory_gate_shadow'] = self.memory_shadow is not None
+
         # Consolidation Verifier (Phase 2)
         self.verifier = self._init_mod('verifier', lambda: (
             ConsolidationVerifier(self.mind)
@@ -663,6 +673,37 @@ class AnimaUnified:
         elif 'MemoryRAG' in globals():
             return MemoryRAG(memory_file=self.paths['memory'])
         return None
+
+    def _init_memory_shadow(self):
+        """Load the pinned semantic gate without changing primary memory behavior."""
+        from measurement.runtime_memory_shadow_registry import RUNTIME_MEMORY_SHADOW_SPEC
+
+        configured = getattr(self.args, 'memory_gate_shadow_checkpoint', None)
+        checkpoint = Path(configured) if configured else ANIMA_DIR / RUNTIME_MEMORY_SHADOW_SPEC['checkpoint']
+        scorer = SemanticMemoryWriteScorer(checkpoint)
+        audit_path = self.paths['memory'].parent / 'memory_shadow.jsonl'
+        shadow = RuntimeMemoryShadow(scorer, audit_path)
+        _log('memory_shadow', f'Answer-inert audit active → {audit_path}')
+        return shadow
+
+    def _observe_memory_shadow_search(self, query, candidates):
+        if self.memory_shadow is None or 'observe_shadow_search' not in globals():
+            return
+        observe_shadow_search(
+            self.memory_shadow,
+            query,
+            candidates,
+            on_error=lambda error: _log('memory_shadow', f'Search audit skipped: {error}'),
+        )
+
+    def _observe_memory_shadow_writes(self, rows):
+        if self.memory_shadow is None or 'observe_shadow_writes' not in globals():
+            return
+        observe_shadow_writes(
+            self.memory_shadow,
+            rows,
+            on_error=lambda error: _log('memory_shadow', f'Write audit skipped: {error}'),
+        )
 
     # ─── Multi-user session management ───
 
@@ -1577,6 +1618,7 @@ class AnimaUnified:
                              for m in relevant if m.get('similarity', 0) > 0.3]
                     if parts:
                         state += "\nRelevant memories:\n" + "\n".join(parts)
+                self._observe_memory_shadow_search(text, relevant)
             except Exception as e:
                 _log('memory_rag', f"Search error: {e}")
 
@@ -1700,11 +1742,19 @@ class AnimaUnified:
                 asst_vec = text_to_vector(answer).detach().numpy()
                 phi_val = consciousness_data.get('phi', 0) if consciousness_data else 0
                 sid = getattr(self, '_last_session_id', None)
-                self.memory_rag.add('user', text, tension=tension, curiosity=curiosity, vector=user_vec,
-                                    emotion=mood, phi=phi_val, session_id=sid)
-                self.memory_rag.add('assistant', answer, tension=resp_tension, curiosity=0.0, vector=asst_vec,
-                                    emotion=mood, phi=phi_val, session_id=sid)
+                user_memory_id = self.memory_rag.add(
+                    'user', text, tension=tension, curiosity=curiosity, vector=user_vec,
+                    emotion=mood, phi=phi_val, session_id=sid,
+                )
+                assistant_memory_id = self.memory_rag.add(
+                    'assistant', answer, tension=resp_tension, curiosity=0.0, vector=asst_vec,
+                    emotion=mood, phi=phi_val, session_id=sid,
+                )
                 _log('memory', f'Saved with emotion={mood}, T={tension:.2f}, phi={phi_val:.2f}')
+                self._observe_memory_shadow_writes([
+                    {'role': 'user', 'text': text, 'memory_id': user_memory_id},
+                    {'role': 'assistant', 'text': answer, 'memory_id': assistant_memory_id},
+                ])
                 # Update autobiographical M/T on consciousness engine
                 if hasattr(self.memory_rag, 'autobiographical_stats'):
                     try:
@@ -3565,6 +3615,10 @@ def main():
                    help='Comma-separated peer WS URLs for hivemind mesh')
     p.add_argument('--no-system-prompt', action='store_true', help='OMEGA4 mode: no system prompt, consciousness drives behavior (Φ ×138)')
     p.add_argument('--list-models', action='store_true', help='List available models')
+    p.add_argument('--memory-gate-shadow', action='store_true',
+                   help='Record answer-inert long-term-memory decisions; never filters primary memory')
+    p.add_argument('--memory-gate-shadow-checkpoint', type=str, default=None,
+                   help='Override the pinned GATE-RUNTIME-1 semantic gate checkpoint')
     args = p.parse_args()
 
     # --instance: multi-instance isolation

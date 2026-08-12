@@ -1,0 +1,238 @@
+{
+  "experiment": "gate_runtime1_answer_inert_memory_shadow",
+  "spec": {
+    "experiment": "gate_runtime1_answer_inert_memory_shadow",
+    "preregistration_commit": "94dba1566",
+    "source_experiment": "gate4_balanced_natural_integrated_dialogue_memory",
+    "replicates": [
+      "daily",
+      "work"
+    ],
+    "evaluation_seed": 20260812,
+    "calibration_seed": 20260811,
+    "calibration_rows": 4096,
+    "evaluation_episodes": 1024,
+    "candidates_per_episode": 8,
+    "fact_kinds": [
+      "preference",
+      "commitment",
+      "goal",
+      "profile"
+    ],
+    "distractor_kinds": [
+      "greeting",
+      "filler",
+      "observation",
+      "temporary_preference",
+      "tentative_plan",
+      "topic_question",
+      "assistant_ack"
+    ],
+    "encoder": {
+      "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "pooling": "attention_mask_mean",
+      "normalize": true,
+      "max_length": 128,
+      "embedding_dim": 384,
+      "role_dim": 2,
+      "feature_dim": 386,
+      "batch_size": 64,
+      "device": "cpu"
+    },
+    "runtime": {
+      "python": "3.13",
+      "torch": "2.8.0",
+      "transformers": "4.55.4"
+    },
+    "fit_method": "canonical_ridge_sorted_calibration",
+    "ridge": 0.001,
+    "checkpoint": "checkpoints/gate-runtime1/canonical_semantic_memory_gate.json",
+    "audit": {
+      "format": "runtime_memory_shadow_v1",
+      "path": "per_model_data/memory_shadow.jsonl",
+      "raw_text_allowed": false,
+      "write_after_primary_store": true,
+      "search_after_primary_context": true,
+      "filters_primary_memory": false,
+      "changes_answer_context": false,
+      "default_enabled": false
+    },
+    "faults": [
+      "initialization",
+      "search_audit",
+      "write_audit"
+    ],
+    "thresholds": {
+      "minimum_important_selection_rate": 0.9,
+      "maximum_distractor_selection_rate": 0.25,
+      "maximum_selection_ratio": 0.5,
+      "minimum_per_kind_selection_rate": 0.9,
+      "maximum_answer_digest_mismatches": 0,
+      "maximum_primary_store_digest_mismatches": 0,
+      "maximum_primary_search_digest_mismatches": 0,
+      "maximum_raw_text_leaks": 0,
+      "maximum_missing_write_audits": 0,
+      "maximum_missing_search_audits": 0
+    }
+  },
+  "spec_sha256": "5d43ff40e52c21b8d6a545c11641b6e46d53d01d6d2bdecfae027a02767189bb",
+  "runtime": {
+    "python": "3.13.13",
+    "torch": "2.8.0",
+    "transformers": "4.55.4",
+    "device": "cpu"
+  },
+  "checkpoint": {
+    "path": "checkpoints/gate-runtime1/canonical_semantic_memory_gate.json",
+    "sha256": "afdcef5fa0a64ee946151ec49b3f43c841910f4f9ec908748ee4082537098943",
+    "format": "semantic_dialogue_memory_gate_control_v1",
+    "calibration_sha256": "31f2bc90b3d19fb0f31047a71bb724c5135237372fa6515bbeb220b9329f1be7",
+    "feature_audit": {
+      "rows": 4096,
+      "feature_dim": 386,
+      "sentence_norm_min": 0.9999998497892703,
+      "sentence_norm_max": 1.000000145180535,
+      "features_sha256": "c46f2f430bfef1d3744e9422fbe51b4b5acdb732013e228653b50986460eb697"
+    },
+    "fit_audit": {
+      "method": "canonical_ridge",
+      "examples": 4096,
+      "positives": 2048,
+      "negatives": 2048,
+      "feature_dim": 386,
+      "design_rank": 386,
+      "ridge": 0.001,
+      "positive_score_mean": 0.9988437166223488,
+      "negative_score_mean": 0.0011562833776511783,
+      "threshold": 0.5
+    }
+  },
+  "encoder_audit": {
+    "model_id": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "requested_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "loaded_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "embedding_dim": 384,
+    "pooling": "attention_mask_mean",
+    "normalize": true,
+    "max_length": 128
+  },
+  "replicates": [
+    {
+      "name": "daily",
+      "dataset_audit": {
+        "episodes": 1024,
+        "candidates": 8192,
+        "unique_texts": 8192,
+        "raw_transcript_sha256": "dcb63a5857526bd46c322fac510fa611348fd508a1b9e3119eab41a80d024e6a"
+      },
+      "preservation": {
+        "answer_digest_mismatches": 0,
+        "primary_store_digest_mismatches": 0,
+        "primary_search_digest_mismatches": 0,
+        "answer_sha256": "f3619f9af339f02b4a18647e500794d74fde432c42daea57278f89d268adbb0f",
+        "primary_store_sha256": "dcb63a5857526bd46c322fac510fa611348fd508a1b9e3119eab41a80d024e6a",
+        "primary_search_sha256": "e1d5a69ea23e412048c8b4bb614c2953d6765579df7f0dba697b601cad688531"
+      },
+      "shadow_audit": {
+        "path": "measurement/runtime-memory-shadow/audit/daily.jsonl",
+        "write_events": 8192,
+        "search_events": 1024,
+        "missing_write_audits": 0,
+        "missing_search_audits": 0,
+        "raw_text_leaks": 0,
+        "audit_sha256": "3606227c9c9decddcc5b48202699f88ae99a8c1c57cfdb0e0e08d0c8079d19b7"
+      },
+      "selection": {
+        "important_selection_rate": 1.0,
+        "distractor_selection_rate": 0.0,
+        "selection_ratio": 0.125,
+        "per_kind_selection_rate": {
+          "preference": 1.0,
+          "commitment": 1.0,
+          "goal": 1.0,
+          "profile": 1.0
+        },
+        "selection_sha256": "ef49bd5b124ca62f7a85ecc5d029969c4c9c000bb23acc17cea355dbb6753f7a"
+      },
+      "faults": {
+        "initialization": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1
+        },
+        "search_audit": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1024
+        },
+        "write_audit": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1
+        }
+      }
+    },
+    {
+      "name": "work",
+      "dataset_audit": {
+        "episodes": 1024,
+        "candidates": 8192,
+        "unique_texts": 8192,
+        "raw_transcript_sha256": "73ebcad5552bd3f3e2a8368228106e5f08c74de3b95ebfcca56c867b3826b37b"
+      },
+      "preservation": {
+        "answer_digest_mismatches": 0,
+        "primary_store_digest_mismatches": 0,
+        "primary_search_digest_mismatches": 0,
+        "answer_sha256": "6ce291ea9df0a7eebd853740ea758834614e33086b05a7646a824df5aacbff6c",
+        "primary_store_sha256": "73ebcad5552bd3f3e2a8368228106e5f08c74de3b95ebfcca56c867b3826b37b",
+        "primary_search_sha256": "f3c5cec50780bc9001b08443b48c4cb53b652f4f89f3081ac654ec3daf24ac95"
+      },
+      "shadow_audit": {
+        "path": "measurement/runtime-memory-shadow/audit/work.jsonl",
+        "write_events": 8192,
+        "search_events": 1024,
+        "missing_write_audits": 0,
+        "missing_search_audits": 0,
+        "raw_text_leaks": 0,
+        "audit_sha256": "22ecd3d06e7906bb5ee6dd460facc60819532f0431f1447cd90812c50fd61519"
+      },
+      "selection": {
+        "important_selection_rate": 1.0,
+        "distractor_selection_rate": 0.030552455357142856,
+        "selection_ratio": 0.1517333984375,
+        "per_kind_selection_rate": {
+          "preference": 1.0,
+          "commitment": 1.0,
+          "goal": 1.0,
+          "profile": 1.0
+        },
+        "selection_sha256": "3c00e4cfa8056e6063cdc56d5dc085e1cc281ac13200102dafa627b154bf6959"
+      },
+      "faults": {
+        "initialization": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1
+        },
+        "search_audit": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1024
+        },
+        "write_audit": {
+          "answer_digest_mismatches": 0,
+          "primary_store_digest_mismatches": 0,
+          "primary_search_digest_mismatches": 0,
+          "caught_errors": 1
+        }
+      }
+    }
+  ]
+}

@@ -127,6 +127,14 @@ def test_search_empty(tmp_path):
     store.close()
 
 
+def test_search_by_vector_uses_shared_memory_interface(tmp_path):
+    store = MemoryStore(tmp_path / "m.db", tmp_path / "m.faiss", dim=16)
+    base = _vec("shared interface")
+    memory_id = store.add("user", "shared interface", vector=base)
+    assert store.search_by_vector(base, top_k=1)[0]["id"] == memory_id
+    store.close()
+
+
 # ── 8. search top_k > store size ──────────────────────────────
 
 def test_search_topk_exceeds(tmp_path):

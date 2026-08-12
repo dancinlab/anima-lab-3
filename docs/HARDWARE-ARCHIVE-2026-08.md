@@ -353,3 +353,11 @@ GATE-4 보관은 Hugging Face 커밋 `fe9e5a5aec8ef2450748416cece446b8a2abd266`�
 새 임시 폴더로 다시 내려받아 manifest 6개 항목의 SHA-256을 전수 확인했다. manifest SHA-256은
 `6d7123bb8178c0df1b0e1f5e5275cf4c0c28f6370cf449118da026a3c3871dca`다. Python 3.13.13,
 torch 2.8.0, transformers 4.55.4의 로컬 CPU에서 실행했고 실제 대화 런타임은 변경하지 않았다.
+
+GATE-RUNTIME-1 보관은 Hugging Face 커밋
+`af20af68413747e9a5afa8a91bc61a719938451d`에 올렸다. 원격
+`gate-runtime1-answer-inert-shadow` revision의 결과·판정·단일 선택 체크포인트·원문 없는 그림자
+감사 파일 둘·연구 원장·manifest를 새 임시 폴더로 다시 내려받아 manifest 6개 항목의 SHA-256을
+전수 확인했다. manifest SHA-256은
+`81cd989e41350dcb3346db2e0a522ad4d51976149178a00398bffc986492b90c`다. Python 3.13.13,
+torch 2.8.0, transformers 4.55.4의 로컬 CPU에서 실행했으며 GPU를 대여하지 않았다.

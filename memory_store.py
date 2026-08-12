@@ -242,6 +242,10 @@ class MemoryStore:
         # Already sorted by FAISS (descending similarity for IP)
         return results
 
+    def search_by_vector(self, query_vec: np.ndarray, top_k: int = 5) -> list[dict]:
+        """Canonical vector-search name shared with the MemoryRAG fallback."""
+        return self.search(query_vec, top_k=top_k)
+
     # ── Autobiographical recall ─────────────────────────────────
 
     def recall_by_time(self, days_ago: float | None = None, emotion: str | None = None, limit: int = 5) -> list[dict]:

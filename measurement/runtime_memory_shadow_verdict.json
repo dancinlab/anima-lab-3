@@ -1,0 +1,20 @@
+{
+  "experiment": "gate_runtime1_answer_inert_memory_shadow",
+  "verdict": "GR1_SHADOW_RUNTIME_SAFE",
+  "reason": "the opt-in shadow recorded validated choices without changing answers or primary memory",
+  "spec_sha256": "5d43ff40e52c21b8d6a545c11641b6e46d53d01d6d2bdecfae027a02767189bb",
+  "replicates": {
+    "daily": {
+      "important_selection_rate": 1.0,
+      "distractor_selection_rate": 0.0,
+      "selection_ratio": 0.125,
+      "minimum_kind_selection_rate": 1.0
+    },
+    "work": {
+      "important_selection_rate": 1.0,
+      "distractor_selection_rate": 0.030552455357142856,
+      "selection_ratio": 0.1517333984375,
+      "minimum_kind_selection_rate": 1.0
+    }
+  }
+}

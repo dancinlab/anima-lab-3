@@ -1630,14 +1630,21 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    고유 기능이나 의식 증거는 아니다. 실제 대화 기본값은 아직 바꾸지 않았으며, 다음은 답변에
    영향을 주지 않는 그림자 모드로 실제 대화 호출에 연결하는 `GATE-RUNTIME-1`이다. 상세 기준은
    `docs/hypotheses/GATE-4-balanced-natural-integrated-dialogue-memory.md`가 정본이다.
-47-L. **GATE-RUNTIME-1 — 답변 비개입 대화 기억 그림자 모드 (사전등록):**
+47-L. **GATE-RUNTIME-1 — 답변 비개입 대화 기억 그림자 모드 (완료,
+   `GR1_SHADOW_RUNTIME_SAFE`):**
    실제 `AnimaUnified`는 답변 전에 기존 장기 기억 상위 3개를 문맥에 넣고, 답변 뒤 사용자·답변
    원문을 모두 저장한다. 검증된 의미 선택기를 이 호출에 연결하되 기본값은 끄고, 명시적으로 켰을
    때도 답변 문맥과 원문 저장·검색을 전혀 바꾸지 않는 그림자 기록만 추가한다. 기록은 원문 대신
    SHA-256, 점수, 선택 여부와 기존 기억 식별값만 별도 JSONL에 남긴다. `daily`·`work` 전체 재생과
    초기화·검색 기록·저장 기록 고장 주입에서 답변·기본 저장·기본 검색 지문이 그림자 꺼짐과 완전히
-   같아야 한다. 실제 선택으로 삭제하거나 검색을 거르는 변경은 이 단계에 포함하지 않는다. 상세
-   기준은 `docs/hypotheses/GATE-RUNTIME-1-answer-inert-memory-shadow.md`가 정본이다.
+   같아야 한다. 실행 결과 `daily`·`work` 모두 중요 사실과 종류별 최저 선택률 100%, 방해 선택
+   `0% / 3.06%`, 전체 선택 `12.50% / 15.17%`였다. 답변·기본 저장·기본 검색 변화, 감사 누락,
+   감사 파일 원문 노출은 모두 0건이었고 초기화·검색 기록·저장 기록을 강제로 실패시켜도 기존
+   결과는 같았다. 이 과정에서 기본 `MemoryStore`에 실제 호출부가 쓰던 `search_by_vector`가 없어
+   검색이 예외로 빠지던 공용 결함도 기존 `search`를 재사용하는 표준 호출로 수리했다. 그림자는
+   명시적 `--memory-gate-shadow`에서만 켜지며 실제 선택으로 삭제하거나 검색을 거르지 않는다.
+   상세 기준과 결과는
+   `docs/hypotheses/GATE-RUNTIME-1-answer-inert-memory-shadow.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
