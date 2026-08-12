@@ -10,7 +10,7 @@ from measurement.balanced_natural_write_registry import BALANCED_NATURAL_WRITE_S
 
 RUNTIME_MEMORY_SHADOW_SPEC = {
     "experiment": "gate_runtime1_answer_inert_memory_shadow",
-    "preregistration_commit": "__PREREGISTRATION_COMMIT__",
+    "preregistration_commit": "94dba1566",
     "source_experiment": "gate4_balanced_natural_integrated_dialogue_memory",
     "replicates": copy.deepcopy(BALANCED_NATURAL_WRITE_SPEC["replicates"]),
     "evaluation_seed": 20260812,
