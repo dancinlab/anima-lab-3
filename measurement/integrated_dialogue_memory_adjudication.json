@@ -1,0 +1,100 @@
+{
+  "experiment": "gate3_integrated_dialogue_memory",
+  "verdict": "G3B_WRITE_SELECTION_LOSS",
+  "reason": "retrieval recovered stored facts, but realistic semantic write selection missed a registered threshold",
+  "spec_sha256": "37a7cabbaf82ece356efaf5d5c5d1d827eba57a28204119634d81fc1f5cd76e0",
+  "seeds": [
+    {
+      "seed": 1337,
+      "verdict": "G3B_WRITE_SELECTION_LOSS",
+      "semantic": {
+        "important_storage_rate": 0.7626953125,
+        "distractor_storage_rate": 0.0,
+        "search_size_ratio": 0.0953369140625,
+        "stored": 781,
+        "recall_at_1": 0.7626953125,
+        "recall_at_3": 0.7626953125,
+        "stored_fact_recall_at_1": 1.0,
+        "per_kind_recall_at_1": {
+          "preference": 1.0,
+          "commitment": 0.21484375,
+          "goal": 0.8359375,
+          "profile": 1.0
+        },
+        "per_position_recall_at_1": {
+          "0": 0.7734375,
+          "1": 0.75,
+          "2": 0.7890625,
+          "3": 0.7578125,
+          "4": 0.7734375,
+          "5": 0.7421875,
+          "6": 0.734375,
+          "7": 0.78125
+        },
+        "per_distractor_storage_rate": {
+          "greeting": 0.0,
+          "filler": 0.0,
+          "observation": 0.0,
+          "temporary_preference": 0.0,
+          "tentative_plan": 0.0,
+          "topic_question": 0.0,
+          "assistant_ack": 0.0
+        },
+        "mean_fact_rank": 1.0,
+        "mean_fact_margin": 1.0,
+        "rankings_sha256": "4f06b9e1372af9014e4a8c7755b8bd35fd85c3bbda6286331fea223e9e40c4c5"
+      },
+      "store_all_recall_at_1": 0.99609375,
+      "oracle_recall_at_1": 1.0,
+      "matched_random_recall_at_1": 0.09375,
+      "matched_shuffled_recall_at_1": 0.05078125,
+      "no_memory_recall_at_1": 0.0
+    },
+    {
+      "seed": 7331,
+      "verdict": "G3A_INTEGRATED_DIALOGUE_MEMORY_VALID_NOT_UNIQUE",
+      "semantic": {
+        "important_storage_rate": 1.0,
+        "distractor_storage_rate": 0.0,
+        "search_size_ratio": 0.125,
+        "stored": 1024,
+        "recall_at_1": 1.0,
+        "recall_at_3": 1.0,
+        "stored_fact_recall_at_1": 1.0,
+        "per_kind_recall_at_1": {
+          "preference": 1.0,
+          "commitment": 1.0,
+          "goal": 1.0,
+          "profile": 1.0
+        },
+        "per_position_recall_at_1": {
+          "0": 1.0,
+          "1": 1.0,
+          "2": 1.0,
+          "3": 1.0,
+          "4": 1.0,
+          "5": 1.0,
+          "6": 1.0,
+          "7": 1.0
+        },
+        "per_distractor_storage_rate": {
+          "greeting": 0.0,
+          "filler": 0.0,
+          "observation": 0.0,
+          "temporary_preference": 0.0,
+          "tentative_plan": 0.0,
+          "topic_question": 0.0,
+          "assistant_ack": 0.0
+        },
+        "mean_fact_rank": 1.0,
+        "mean_fact_margin": 1.0,
+        "rankings_sha256": "a870699d3b3479f10a2bcc7dae9fd23c4457112bc4993d72ffb6ae0105cb5ac4"
+      },
+      "store_all_recall_at_1": 1.0,
+      "oracle_recall_at_1": 1.0,
+      "matched_random_recall_at_1": 0.1240234375,
+      "matched_shuffled_recall_at_1": 0.0126953125,
+      "no_memory_recall_at_1": 0.0
+    }
+  ]
+}
