@@ -1518,6 +1518,14 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    다음은 같은 고정 문장 의미 표현으로 검색 양성 비교만 분리하는 `GATE-RETRIEVAL-CONTROL-1`이다.
    원문과 명시적 기억은 어떤 결과에서도 보존한다. 상세 사양과 결과는
    `docs/hypotheses/GATE-2-realistic-dialogue-write-selection.md`가 정본이다.
+47-D. **GATE-RETRIEVAL-CONTROL-1 — 문장 의미 검색 양성 비교 (사전등록):** `GATE-2`의 같은
+   1,024회차·8개 후보·두 독립 자료를 유지하고 저장 선택은 수행하지 않는다. 고정된 표준 문장 의미
+   표현으로 질문과 모든 후보의 가까운 정도를 계산해 상위 3개 안에 사실이 있는지만 검사한다. 기존
+   글자 3개 묶음 검색, 정답만 남긴 비교, 질문을 다른 회차와 맞바꾼 가짜 비교, 기억 없음과 함께
+   측정한다. 두 자료 모두 전체·사실 종류별·위치별 기준을 통과해야 검색 양성 비교가 유효하다. 이
+   결과로 실제 대화 저장 기본값은 바꾸지 않으며, 유효할 때만 같은 검색 방식으로 `GATE-2` 선택
+   결과를 다시 판정한다. 상세 사양은
+   `docs/hypotheses/GATE-RETRIEVAL-CONTROL-1-semantic-retrieval.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
