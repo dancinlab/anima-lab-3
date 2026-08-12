@@ -1616,6 +1616,14 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    검사다.
    상세 사양과 판정은
    `docs/hypotheses/GATE-WRITE-CONTROL-1-balanced-natural-language.md`가 정본이다.
+47-K. **GATE-4 — 균형 자연 대화 기억 통합 회귀 (사전등록):**
+   `GATE-WRITE-CONTROL-1`에서 검증한 균형 문장 틀·자연 어휘 저장 선택과, 회차·주제 주소가 고른
+   후보 안에서 내용 점수로 순위를 정하는 검증된 검색을 다시 합친다. 두 seed와 `daily`·`work`
+   모두에서 중요한 사실 저장·최종 정답·종류별·문장 틀별 정답률 90% 이상, 저장된 사실 검색 95%
+   이상이어야 한다. 저장량을 맞춘 가짜·무작위 선택은 정상보다 25%p 이상 낮아야 한다. 실제 대화
+   원문은 수정하지 않고 장기 기억 후보 위치만 별도로 만들며, 검색 전후 원문 개수와 지문이 같아야
+   한다. 결과를 본 뒤 문턱·자료·검색 폭을 바꾸지 않는다. 상세 기준은
+   `docs/hypotheses/GATE-4-balanced-natural-integrated-dialogue-memory.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
