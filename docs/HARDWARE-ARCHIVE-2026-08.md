@@ -277,3 +277,10 @@ COMPLETION-2 보관은 Hugging Face 커밋
 내려받아 SHA-256을 전수 확인했다. manifest SHA-256은
 `0a027a6656f0ac77336182d13f8b1199878900b8ee4210698f07b299189ed593`이다. 로컬 CPU에서만
 실행했다.
+
+GATE-CONTROL-1 보관은 Hugging Face 커밋
+`a0be2a1aed635160820163252aefc4f0f241e146`에 올렸다. 원격 `gate-control1-semantic-write`
+revision의 결과·판정·정상/가짜 체크포인트 네 개와 manifest를 새 임시 디렉토리로 다시 내려받아
+SHA-256을 전수 확인했다. manifest SHA-256은
+`177c0090fb0b1c52f3a9b79c74c2cf463730f4f8f07749a0f2d648a242379302`다. 로컬 CPU에서만
+실행했다.

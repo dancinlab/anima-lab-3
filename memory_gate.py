@@ -14,6 +14,47 @@ from creativity_classifier import text_to_vector
 ROLE_ORDER = ("user", "assistant")
 
 
+def fit_canonical_ridge(features: torch.Tensor, labels: torch.Tensor, *,
+                        ridge: float = 1e-3) -> tuple[torch.Tensor, float, float, dict]:
+    """Fit the shared deterministic binary ridge readout to precomputed features."""
+    features = features.detach().to(dtype=torch.float64)
+    labels = labels.detach().to(dtype=torch.float64)
+    if features.dim() != 2 or not features.shape[0] or not features.shape[1]:
+        raise ValueError("canonical-ridge features must be a non-empty matrix")
+    if labels.dim() != 1 or labels.shape[0] != features.shape[0]:
+        raise ValueError("canonical-ridge labels must match the feature rows")
+    if set(labels.tolist()) != {0.0, 1.0}:
+        raise ValueError("canonical-ridge labels must contain both binary classes")
+    if not torch.isfinite(features).all() or not torch.isfinite(labels).all():
+        raise ValueError("canonical-ridge inputs must be finite")
+    if not float(ridge) > 0:
+        raise ValueError("canonical-ridge penalty must be positive")
+
+    design = torch.cat([features, torch.ones(len(features), 1, dtype=torch.float64)], dim=1)
+    penalty = torch.eye(design.shape[1], dtype=torch.float64)
+    penalty[-1, -1] = 0.0
+    solution = torch.linalg.solve(
+        design.T @ design + float(ridge) * penalty,
+        design.T @ labels,
+    )
+    scores = design @ solution
+    positive_mean = float(scores[labels == 1].mean())
+    negative_mean = float(scores[labels == 0].mean())
+    threshold = (positive_mean + negative_mean) / 2.0
+    return solution[:-1].detach().clone(), float(solution[-1]), threshold, {
+        "method": "canonical_ridge",
+        "examples": len(features),
+        "positives": int(labels.sum()),
+        "negatives": int((1 - labels).sum()),
+        "feature_dim": features.shape[1],
+        "design_rank": int(torch.linalg.matrix_rank(design)),
+        "ridge": float(ridge),
+        "positive_score_mean": positive_mean,
+        "negative_score_mean": negative_mean,
+        "threshold": threshold,
+    }
+
+
 def memory_gate_features(role: str, text: str, dim: int = 128) -> torch.Tensor:
     """Reuse the native trigram vector and append a fixed role indicator."""
     if role not in ROLE_ORDER:
@@ -93,32 +134,11 @@ def fit_canonical_memory_gate(rows: list[dict], *, vector_dim: int = 128,
     features = torch.stack([
         memory_gate_features(row["role"], row["text"], vector_dim) for row in rows
     ])
-    design = torch.cat([features, torch.ones(len(features), 1, dtype=torch.float64)], dim=1)
-    penalty = torch.eye(design.shape[1], dtype=torch.float64)
-    penalty[-1, -1] = 0.0
-    solution = torch.linalg.solve(
-        design.T @ design + float(ridge) * penalty,
-        design.T @ labels,
-    )
-    scores = design @ solution
-    positive_mean = float(scores[labels == 1].mean())
-    negative_mean = float(scores[labels == 0].mean())
-    threshold = (positive_mean + negative_mean) / 2.0
+    weight, bias, threshold, audit = fit_canonical_ridge(features, labels, ridge=ridge)
     gate = DialogueMemoryGate(
-        weight=solution[:-1].detach().clone(),
-        bias=float(solution[-1]),
+        weight=weight,
+        bias=bias,
         threshold=threshold,
         vector_dim=vector_dim,
     )
-    return gate, {
-        "method": "canonical_ridge",
-        "examples": len(rows),
-        "positives": int(labels.sum()),
-        "negatives": int((1 - labels).sum()),
-        "feature_dim": features.shape[1],
-        "design_rank": int(torch.linalg.matrix_rank(design)),
-        "ridge": float(ridge),
-        "positive_score_mean": positive_mean,
-        "negative_score_mean": negative_mean,
-        "threshold": threshold,
-    }
+    return gate, audit
