@@ -26,7 +26,7 @@ STEPS=$((PRETRAIN_STEPS + DIALOGUE_STEPS))
 GRAD_ACCUM=$((GLOBAL_BATCH / MICRO_BATCH))
 
 "$PYTHON_BIN" train_native_dialogue_lm.py \
-  --data-manifest data-conversation-target/manifest.json \
+  --data-manifest data-conversation/manifest.json \
   --output-dir target \
   --preset target \
   --steps "$STEPS" \
