@@ -24,6 +24,7 @@ def test_native_target_keeps_registered_303m_shape():
         training["global_batch"] % micro_batch == 0
         for micro_batch in training["micro_batch_profiles"].values()
     )
+    assert training["preprocessing_workers"] == 8
 
 
 def test_checkpoint_config_builds_registered_ffn_variant():

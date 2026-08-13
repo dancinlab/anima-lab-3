@@ -11,7 +11,9 @@ from train_native_dialogue_lm import (
     assert_registered_model_is_causal,
     BatchSource,
     dialogue_events,
+    load_corpus_files,
     load_dialogue_examples,
+    load_general_tokens,
     prepare_tokenizer,
     sha256_file,
     validation_loss,
@@ -98,6 +100,20 @@ def test_general_batch_has_causal_targets():
     source = BatchSource([stream], [], block_size=8, seed=3, dialogue_fraction=0.0)
     x, y = source.batch(2, response_only=False, device=torch.device("cpu"))
     assert torch.equal(x[:, 1:], y[:, :-1])
+
+
+def test_parallel_corpus_loading_preserves_serial_order_and_tokens(tmp_path: Path):
+    paths = [tmp_path / "a.txt", tmp_path / "b.txt"]
+    paths[0].write_text("first line\n둘째 줄", encoding="utf-8")
+    paths[1].write_text("second file\n마지막 줄", encoding="utf-8")
+    tokenizer = NativeDialogueTokenizer.train(paths, vocab_size=512)
+    tokenizer_path = tmp_path / "tokenizer.json"
+    tokenizer.save(tokenizer_path)
+    expected = [load_general_tokens(path, tokenizer) for path in paths]
+    actual = load_corpus_files(paths, tokenizer_path, load_general_tokens, workers=2)
+    assert all(np.array_equal(left, right) for left, right in zip(expected, actual))
+    with pytest.raises(ValueError, match="workers must be positive"):
+        load_corpus_files(paths, tokenizer_path, load_general_tokens, workers=0)
 
 
 def test_validation_replays_the_same_batches():

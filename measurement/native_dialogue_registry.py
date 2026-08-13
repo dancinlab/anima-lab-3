@@ -161,6 +161,7 @@ NATIVE_DIALOGUE_SPEC = {
             "h100_80gb": 32,
         },
         "context_tokens": 1_024,
+        "preprocessing_workers": 8,
         "external_pretrained_weights": 0,
         "quality_data_profile": "native_dialogue4",
     },

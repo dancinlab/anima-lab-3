@@ -11,6 +11,7 @@ import random
 import re
 import shutil
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -118,6 +119,28 @@ def load_general_tokens(path: Path, tokenizer: NativeDialogueTokenizer) -> np.nd
     if len(ids) < 3:
         raise ValueError(f"general corpus is empty: {path}")
     return np.asarray(ids, dtype=np.int32)
+
+
+def load_corpus_files(
+    paths: list[Path],
+    tokenizer_path: Path,
+    loader,
+    workers: int,
+) -> list:
+    """Load independent corpus shards concurrently while preserving order."""
+    if workers <= 0:
+        raise ValueError("preprocessing workers must be positive")
+    if not paths:
+        return []
+
+    def load_one(path: Path):
+        # A backend per worker avoids shared mutable tokenizer state while the
+        # Rust encoder releases Python's lock for the expensive work.
+        tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+        return loader(path, tokenizer)
+
+    with ThreadPoolExecutor(max_workers=min(workers, len(paths))) as executor:
+        return list(executor.map(load_one, paths))
 
 
 class BatchSource:
@@ -372,10 +395,19 @@ def main() -> None:
     )
     tokenizer_hash = sha256_file(tokenizer_path)
 
-    train_general = [load_general_tokens(path, tokenizer) for path in args.train_general]
-    train_dialogue = [load_dialogue_examples(path, tokenizer) for path in args.train_dialogue]
-    val_general = [load_general_tokens(path, tokenizer) for path in args.validation_general]
-    val_dialogue = [load_dialogue_examples(path, tokenizer) for path in args.validation_dialogue]
+    preprocessing_workers = NATIVE_DIALOGUE_SPEC["native_dialogue5"]["preprocessing_workers"]
+    train_general = load_corpus_files(
+        args.train_general, tokenizer_path, load_general_tokens, preprocessing_workers
+    )
+    train_dialogue = load_corpus_files(
+        args.train_dialogue, tokenizer_path, load_dialogue_examples, preprocessing_workers
+    )
+    val_general = load_corpus_files(
+        args.validation_general, tokenizer_path, load_general_tokens, preprocessing_workers
+    )
+    val_dialogue = load_corpus_files(
+        args.validation_dialogue, tokenizer_path, load_dialogue_examples, preprocessing_workers
+    )
     device = select_device(args.device)
     random.seed(NATIVE_DIALOGUE_SPEC["training"]["seed"])
     np.random.seed(NATIVE_DIALOGUE_SPEC["training"]["seed"])
