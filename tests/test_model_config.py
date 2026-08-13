@@ -87,6 +87,14 @@ def test_causal_zscore_uses_only_available_prefix():
     )
 
 
+def test_causal_zscore_has_finite_gradient_at_zero_variance_prefix():
+    values = torch.tensor([[2.0, 4.0, 8.0]], requires_grad=True)
+    normalized = conscious_lm.causal_zscore(values)
+    normalized.square().sum().backward()
+    assert torch.isfinite(normalized).all()
+    assert torch.isfinite(values.grad).all()
+
+
 def test_cached_forward_matches_full_causal_path():
     torch.manual_seed(17)
     model = conscious_lm.ConsciousLM(

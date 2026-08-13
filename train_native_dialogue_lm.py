@@ -468,6 +468,10 @@ def main() -> None:
             with context:
                 logits, _, _ = model(x)
                 loss = F.cross_entropy(logits.reshape(-1, model.vocab_size), y.reshape(-1))
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(
+                        f"non-finite training loss at step {step}; refusing to update weights"
+                    )
                 scaled = loss / args.grad_accum
             scaled.backward()
             accumulated += loss.item()
