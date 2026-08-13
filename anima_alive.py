@@ -49,6 +49,28 @@ PROACTIVE_THRESHOLD = 0.3     # Proactive speech when curiosity exceeds this
 IDLE_SPEAK_AFTER = 30.0       # Proactive speech after this many seconds of no conversation
 TTS_COOLDOWN = 3.0            # Ignore mic for this many seconds after TTS ends (prevent self-hearing)
 MAX_HISTORY = 15
+
+# Runtime cognition constants. These are the single source of truth for the
+# perspective predictor, experience framing, and delayed contradiction trace.
+PERSPECTIVE_SELF = "self"
+PERSPECTIVE_OTHER = "other"
+PERSPECTIVE_FEATURES = 3
+PERSPECTIVE_ERROR_THRESHOLD = 0.20
+PERSPECTIVE_EMA_ALPHA = 0.15
+EPISTEMIC_EVIDENCE_THRESHOLD = 0.60
+EXPERIENCE_FRAME_STEPS = 4
+CONTRADICTION_HOLD_STEPS = 3
+INTROSPECTION_FEEDBACK_GAIN = 0.08
+INTROSPECTION_FEEDBACK_DECAY = 0.70
+PERSPECTIVE_CLUSTER_SIMILARITY = 0.60
+WORKSPACE_BOTTLENECK_WIDTH = 1
+WORKSPACE_BROADCAST_GAIN = 0.02
+LOSER_TRACE_DECAY = 0.80
+
+EPISTEMIC_TRUE = "true"
+EPISTEMIC_FALSE = "false"
+EPISTEMIC_UNDETERMINED = "undetermined"
+EPISTEMIC_CONTRADICTION = "contradiction"
 # STT config: whisper-cli (C++ native, Metal acceleration) preferred
 # medium model = greatly improved Korean recognition
 WHISPER_CLI = "/opt/homebrew/bin/whisper-cli"
@@ -130,6 +152,70 @@ class ConsciousMind(nn.Module):
         )
         self.surprise_history = []  # tracks |predicted - actual|
 
+        # One predictor is shared by self and other observations. Perspective and
+        # privileged-state access are inputs, not separate output heads.
+        self.perspective_predictor = nn.Sequential(
+            nn.Linear(PERSPECTIVE_FEATURES + 2, 16), nn.Tanh(),
+            nn.Linear(16, PERSPECTIVE_FEATURES), nn.Sigmoid(),
+        )
+        self._perspective_optim = torch.optim.SGD(
+            self.perspective_predictor.parameters(), lr=1e-3
+        )
+        self._perspective_pending = {}
+        self._perspective_metrics = {
+            PERSPECTIVE_SELF: self._new_perspective_metrics(),
+            PERSPECTIVE_OTHER: self._new_perspective_metrics(),
+        }
+
+        # Preserve both high-dimensional experience and its compressed V/A/D label.
+        self.experience_label_decoder = nn.Linear(3, dim)
+        self._label_decoder_optim = torch.optim.SGD(
+            self.experience_label_decoder.parameters(), lr=1e-3
+        )
+        self._label_reconstruction_error = 0.0
+        self._label_reconstruction_samples = 0
+
+        # Introspection is a decaying state input. It is only applied once the
+        # developmental prerequisites for recursive self-modelling are met.
+        self._introspection_feedback = torch.zeros(1, dim)
+        self._introspection_feedback_applied = 0.0
+
+        # Experience is integrated over bounded computational frames, not reported
+        # as if every instantaneous read were a complete experience.
+        self._experience_step = 0
+        self._open_experience_frame = self._new_experience_frame()
+        self._experience_frames = deque(maxlen=32)
+        self._last_phi_recorded_step = -1
+        self._contradiction_trace = deque()
+        self._perspective_count_history = deque(maxlen=5)
+        self._self_boundary = {}
+        self._workspace = None
+        self._workspace_loser_traces = {}
+        self._workspace_summary = {
+            'candidate_count': 0,
+            'winner_count': 0,
+            'winner_ids': [],
+            'loser_trace_count': 0,
+            'broadcast_applied': False,
+        }
+        self._criticality = 0.0
+        self._functional_budget = 1.0
+        self._sensorimotor_closed_loop_samples = 0
+        self._sensorimotor_control_ema = 0.0
+        self._recursive_self_observations = 0
+
+        # Reversible pathology hooks are explicit and off by default. They let tests
+        # verify selective failure instead of treating every lesion as generic loss.
+        self.pathology = {
+            'prediction_error_gain': 1.0,
+            'self_perspective_enabled': True,
+            'other_perspective_enabled': True,
+            'introspection_feedback_enabled': True,
+            'experience_frame_steps': EXPERIENCE_FRAME_STEPS,
+            'contradiction_hold_steps': CONTRADICTION_HOLD_STEPS,
+            'bottleneck_width': WORKSPACE_BOTTLENECK_WIDTH,
+        }
+
         # RC-3: Self-referential loop (metacognition/self-awareness)
         self.self_awareness = {
             'confidence_history': [],
@@ -137,6 +223,18 @@ class ConsciousMind(nn.Module):
             'meta_curiosity': 0.0,
             'stability': 1.0,
             'self_model': 0.0,
+            'prediction_error': 0.0,
+            'confidence': 0.5,
+            'brier': 0.25,
+            'report_consistency': 0.75,
+            'epistemic_state': EPISTEMIC_UNDETERMINED,
+            'positive_evidence': 0.0,
+            'negative_evidence': 0.0,
+            'cell_consensus': 0.5,
+            'active_perspectives': 1,
+            'label_reconstruction_error': 0.0,
+            'contradiction_trace': 0.0,
+            'introspection_feedback': 0.0,
         }
 
         # 5-variable consciousness state vector (Φ, α, Z, N, W)
@@ -163,7 +261,616 @@ class ConsciousMind(nn.Module):
             'history': [],         # (step, residual, gate, H) log
         }
 
-    def forward(self, x, hidden):
+    @staticmethod
+    def _new_perspective_metrics():
+        return {
+            'samples': 0,
+            'mae': 0.5,
+            'accuracy': 0.5,
+            'brier': 0.25,
+            'confidence': 0.5,
+        }
+
+    @staticmethod
+    def _new_experience_frame():
+        return {
+            'states': [],
+            'prediction_errors': [],
+            'labels': [],
+            'label_errors': [],
+            'phi_samples': [],
+        }
+
+    @staticmethod
+    def classify_epistemic_state(positive_evidence, negative_evidence):
+        """Four-valued state without forcing conflicting evidence to average out."""
+        positive = float(positive_evidence) >= EPISTEMIC_EVIDENCE_THRESHOLD
+        negative = float(negative_evidence) >= EPISTEMIC_EVIDENCE_THRESHOLD
+        if positive and negative:
+            return EPISTEMIC_CONTRADICTION
+        if positive:
+            return EPISTEMIC_TRUE
+        if negative:
+            return EPISTEMIC_FALSE
+        return EPISTEMIC_UNDETERMINED
+
+    def set_pathology_intervention(self, name, value):
+        """Apply a reversible, validated lesion used by selective-failure QA."""
+        if name not in self.pathology:
+            raise ValueError(f"unknown pathology intervention: {name}")
+        if name == 'prediction_error_gain':
+            value = float(value)
+            if not 0.0 <= value <= 10.0:
+                raise ValueError("prediction_error_gain must be between 0 and 10")
+        elif name in {'experience_frame_steps', 'contradiction_hold_steps', 'bottleneck_width'}:
+            value = int(value)
+            if not 1 <= value <= 64:
+                raise ValueError(f"{name} must be between 1 and 64")
+        else:
+            value = bool(value)
+        self.pathology[name] = value
+
+    def update_global_workspace(self, mitosis_engine):
+        """Run a narrow competition and retain losing candidates as decaying priors."""
+        if not mitosis_engine or not mitosis_engine.cells:
+            return dict(self._workspace_summary)
+        candidates = []
+        for cell in mitosis_engine.cells:
+            cell_id = str(getattr(cell, 'id', len(candidates)))
+            state = cell.hidden.detach().squeeze(0)
+            tension_history = getattr(cell, 'tension_history', [])
+            tension = float(tension_history[-1]) if tension_history else 0.0
+            trace = self._workspace_loser_traces.get(cell_id)
+            trace_prior = trace['strength'] if trace else 0.0
+            salience = tension + trace_prior
+            candidates.append((salience, cell_id, state, cell))
+        candidates.sort(key=lambda row: (-row[0], row[1]))
+        width = min(self.pathology['bottleneck_width'], len(candidates))
+        winners = candidates[:width]
+        losers = candidates[width:]
+        self._workspace = torch.stack([row[2] for row in winners]).mean(dim=0)
+
+        next_traces = {}
+        for cell_id, trace in self._workspace_loser_traces.items():
+            strength = float(trace['strength']) * LOSER_TRACE_DECAY
+            if strength > 1e-4:
+                next_traces[cell_id] = {'strength': strength}
+        for salience, cell_id, _state, _cell in losers:
+            previous = next_traces.get(cell_id, {}).get('strength', 0.0)
+            next_traces[cell_id] = {'strength': max(previous, min(1.0, salience))}
+        self._workspace_loser_traces = next_traces
+
+        contradiction_active = bool(self._contradiction_trace)
+        broadcast_applied = not contradiction_active and len(candidates) > 1
+        if broadcast_applied:
+            with torch.no_grad():
+                for _salience, _cell_id, _state, cell in candidates:
+                    workspace = self._workspace.to(device=cell.hidden.device, dtype=cell.hidden.dtype)
+                    cell.hidden = (
+                        (1.0 - WORKSPACE_BROADCAST_GAIN) * cell.hidden
+                        + WORKSPACE_BROADCAST_GAIN * workspace.unsqueeze(0)
+                    )
+
+        if len(candidates) >= 2:
+            states = F.normalize(torch.stack([row[2] for row in candidates]), dim=1)
+            similarity = states @ states.T
+            n = len(states)
+            consensus = ((similarity.sum() - n) / max(n * (n - 1), 1)).item()
+            consensus = max(0.0, min(1.0, (consensus + 1.0) / 2.0))
+            self._criticality = max(0.0, 1.0 - abs(consensus - 0.5) * 2.0)
+        else:
+            self._criticality = 0.0
+        self._workspace_summary = {
+            'candidate_count': len(candidates),
+            'winner_count': len(winners),
+            'winner_ids': [row[1] for row in winners],
+            'loser_trace_count': len(self._workspace_loser_traces),
+            'broadcast_applied': broadcast_applied,
+            'criticality': self._criticality,
+        }
+        return dict(self._workspace_summary)
+
+    def observe_functional_cost(self, cost=0.0, recovery=0.0):
+        """Apply a reversible functional loss; this never terminates the runtime."""
+        cost = max(0.0, min(1.0, float(cost)))
+        recovery = max(0.0, min(1.0, float(recovery)))
+        before = self._functional_budget
+        self._functional_budget = max(0.0, min(1.0, before - cost + recovery))
+        return self._functional_budget - before
+
+    def _perspective_vector(self, tension, curiosity, change):
+        parameter = next(self.perspective_predictor.parameters())
+        return torch.tensor(
+            [[tension / 2.0, curiosity / 2.0, change / 2.0]],
+            device=parameter.device,
+            dtype=parameter.dtype,
+        ).clamp(0, 1)
+
+    def observe_perspective(self, tension, curiosity, change, perspective=PERSPECTIVE_SELF,
+                            actor_id=None, privileged_access=None, learn=True):
+        """Update and run the single shared self/other next-state predictor."""
+        if perspective not in {PERSPECTIVE_SELF, PERSPECTIVE_OTHER}:
+            raise ValueError(f"unknown perspective: {perspective}")
+        enabled = self.pathology[f'{perspective}_perspective_enabled']
+        if not enabled:
+            return {
+                'enabled': False,
+                'perspective': perspective,
+                'prediction': None,
+                'metrics': dict(self._perspective_metrics[perspective]),
+            }
+
+        actor_id = actor_id or perspective
+        access = (perspective == PERSPECTIVE_SELF) if privileged_access is None else bool(privileged_access)
+        observation = self._perspective_vector(tension, curiosity, change)
+        perspective_value = 1.0 if perspective == PERSPECTIVE_SELF else 0.0
+        conditioned = torch.cat([
+            observation,
+            observation.new_tensor([[perspective_value, float(access)]]),
+        ], dim=-1)
+        key = (perspective, str(actor_id))
+        metrics = self._perspective_metrics[perspective]
+        resolved_error = None
+
+        previous = self._perspective_pending.get(key)
+        if previous is not None:
+            target = observation.detach()
+            resolved_error = torch.abs(previous['prediction'] - target).mean().item()
+            accuracy = max(0.0, 1.0 - resolved_error)
+            outcome = 1.0 if resolved_error <= PERSPECTIVE_ERROR_THRESHOLD else 0.0
+            brier = (previous['confidence'] - outcome) ** 2
+            alpha = PERSPECTIVE_EMA_ALPHA
+            metrics['samples'] += 1
+            metrics['mae'] = alpha * resolved_error + (1 - alpha) * metrics['mae']
+            metrics['accuracy'] = alpha * accuracy + (1 - alpha) * metrics['accuracy']
+            metrics['brier'] = alpha * brier + (1 - alpha) * metrics['brier']
+            metrics['confidence'] = max(0.0, min(1.0, 1.0 - metrics['brier']))
+
+            if learn:
+                with torch.enable_grad():
+                    self._perspective_optim.zero_grad()
+                    learned_prediction = self.perspective_predictor(previous['conditioned'])
+                    loss = F.mse_loss(learned_prediction, target)
+                    loss.backward()
+                    self._perspective_optim.step()
+
+        with torch.no_grad():
+            prediction = self.perspective_predictor(conditioned).detach()
+        self._perspective_pending[key] = {
+            'conditioned': conditioned.detach(),
+            'prediction': prediction,
+            'confidence': metrics['confidence'],
+        }
+
+        if perspective == PERSPECTIVE_SELF:
+            sa = self.self_awareness
+            sa['self_model'] = metrics['accuracy']
+            sa['prediction_error'] = metrics['mae']
+            sa['brier'] = metrics['brier']
+            sa['report_consistency'] = max(0.0, 1.0 - metrics['brier'])
+
+        return {
+            'enabled': True,
+            'perspective': perspective,
+            'prediction': (prediction.squeeze(0) * 2.0).tolist(),
+            'resolved_error': resolved_error,
+            'metrics': dict(metrics),
+        }
+
+    def observe_label_compression(self, raw_state, valence, arousal, dominance, learn=True):
+        """Keep raw state and label together and measure what the label cannot rebuild."""
+        parameter = next(self.experience_label_decoder.parameters())
+        raw = F.normalize(
+            raw_state.detach().to(device=parameter.device, dtype=parameter.dtype), dim=-1
+        )
+        label = torch.tensor(
+            [[valence, arousal, dominance]],
+            device=parameter.device,
+            dtype=parameter.dtype,
+        )
+        with torch.no_grad():
+            reconstructed = F.normalize(self.experience_label_decoder(label), dim=-1)
+            error = (1.0 - F.cosine_similarity(reconstructed, raw, dim=-1)).mean().item() / 2.0
+        error = max(0.0, min(1.0, error))
+        alpha = PERSPECTIVE_EMA_ALPHA
+        self._label_reconstruction_error = (
+            error if self._label_reconstruction_samples == 0
+            else alpha * error + (1 - alpha) * self._label_reconstruction_error
+        )
+        self._label_reconstruction_samples += 1
+        self.self_awareness['label_reconstruction_error'] = self._label_reconstruction_error
+        frame = self._open_experience_frame
+        frame['labels'].append(label.squeeze(0).tolist())
+        frame['label_errors'].append(error)
+
+        if learn:
+            with torch.enable_grad():
+                self._label_decoder_optim.zero_grad()
+                decoded = F.normalize(self.experience_label_decoder(label), dim=-1)
+                loss = (1.0 - F.cosine_similarity(decoded, raw, dim=-1)).mean()
+                loss.backward()
+                self._label_decoder_optim.step()
+        return error
+
+    def _finalize_experience_frame(self):
+        frame = self._open_experience_frame
+        if not frame['states']:
+            return None
+        states = torch.stack(frame['states'])
+        if len(states) >= 2:
+            normalized = F.normalize(states, dim=-1)
+            similarity = normalized @ normalized.T
+            n = len(states)
+            temporal_integration = ((similarity.sum() - n) / max(n * (n - 1), 1)).item()
+            temporal_integration = max(0.0, min(1.0, (temporal_integration + 1.0) / 2.0))
+        else:
+            temporal_integration = 0.0
+        summary = {
+            'index': len(self._experience_frames),
+            'steps': len(frame['states']),
+            'integration': temporal_integration,
+            'prediction_error': sum(frame['prediction_errors']) / max(len(frame['prediction_errors']), 1),
+            'label_reconstruction_error': sum(frame['label_errors']) / max(len(frame['label_errors']), 1),
+            'phi': sum(frame['phi_samples']) / max(len(frame['phi_samples']), 1),
+        }
+        if self._experience_frames:
+            previous = self._experience_frames[-1]
+            summary['continuity'] = 1.0 - min(1.0, abs(summary['integration'] - previous['integration']))
+        else:
+            summary['continuity'] = 0.0
+        self._experience_frames.append(summary)
+        self._open_experience_frame = self._new_experience_frame()
+        for trace in self._contradiction_trace:
+            trace['remaining_frames'] -= 1
+        while self._contradiction_trace and self._contradiction_trace[0]['remaining_frames'] <= 0:
+            self._contradiction_trace.popleft()
+        return summary
+
+    def _record_experience_state(self, output, prediction_error):
+        frame_steps = self.pathology['experience_frame_steps']
+        if len(self._open_experience_frame['states']) >= frame_steps:
+            self._finalize_experience_frame()
+        self._open_experience_frame['states'].append(output.detach().float().squeeze(0).cpu())
+        self._open_experience_frame['prediction_errors'].append(float(prediction_error))
+        self._experience_step += 1
+
+    def _record_frame_phi(self, phi):
+        if not self._open_experience_frame['states']:
+            return
+        if self._last_phi_recorded_step == self._experience_step:
+            return
+        self._open_experience_frame['phi_samples'].append(float(phi))
+        self._last_phi_recorded_step = self._experience_step
+
+    def get_experience_frame_summary(self):
+        complete = dict(self._experience_frames[-1]) if self._experience_frames else None
+        return {
+            'frame_steps': self.pathology['experience_frame_steps'],
+            'completed_frames': len(self._experience_frames),
+            'open_steps': len(self._open_experience_frame['states']),
+            'last_complete': complete,
+        }
+
+    def observe_control_outcome(self, target_id, predicted, actual, intervention_effect):
+        """Update a functional self-boundary without changing security authority."""
+        predicted = max(0.0, min(1.0, float(predicted)))
+        actual = max(0.0, min(1.0, float(actual)))
+        effect = max(0.0, min(1.0, abs(float(intervention_effect))))
+        predictability = 1.0 - abs(predicted - actual)
+        evidence = 0.5 * predictability + 0.5 * effect
+        previous = self._self_boundary.get(str(target_id), 0.0)
+        membership = PERSPECTIVE_EMA_ALPHA * evidence + (1 - PERSPECTIVE_EMA_ALPHA) * previous
+        self._self_boundary[str(target_id)] = membership
+        self._sensorimotor_closed_loop_samples += 1
+        self._sensorimotor_control_ema = (
+            PERSPECTIVE_EMA_ALPHA * evidence
+            + (1 - PERSPECTIVE_EMA_ALPHA) * self._sensorimotor_control_ema
+        )
+        return membership
+
+    def _count_active_perspectives(self, mitosis_engine):
+        if not mitosis_engine or len(mitosis_engine.cells) < 2:
+            return 1
+        hiddens = torch.stack([c.hidden.detach().squeeze() for c in mitosis_engine.cells])
+        normalized = F.normalize(hiddens, dim=1)
+        similarity = normalized @ normalized.T
+        remaining = set(range(len(hiddens)))
+        components = 0
+        while remaining:
+            components += 1
+            stack = [remaining.pop()]
+            while stack:
+                node = stack.pop()
+                neighbours = {
+                    other for other in remaining
+                    if similarity[node, other].item() >= PERSPECTIVE_CLUSTER_SIMILARITY
+                }
+                remaining -= neighbours
+                stack.extend(neighbours)
+        self._perspective_count_history.append(components)
+        counts = list(self._perspective_count_history)
+        return max(sorted(set(counts)), key=lambda value: (counts.count(value), -value))
+
+    def get_development_state(self):
+        self_metrics = self._perspective_metrics[PERSPECTIVE_SELF]
+        other_metrics = self._perspective_metrics[PERSPECTIVE_OTHER]
+        homeostasis_ready = (
+            len(self.tension_history) >= 3
+            and abs(self.homeostasis['tension_ema'] - self.homeostasis['setpoint']) < 0.5
+        )
+        checks = [
+            ('homeostasis', homeostasis_ready),
+            ('prediction', self_metrics['samples'] >= 8 and self_metrics['accuracy'] >= 0.5),
+            ('sensorimotor_loop', self._sensorimotor_closed_loop_samples >= 8 and self._sensorimotor_control_ema >= 0.5),
+            ('temporal_continuity', len(self._experience_frames) >= 3),
+            ('other_prediction', other_metrics['samples'] >= 8 and other_metrics['accuracy'] >= 0.5),
+            ('self_model', self_metrics['samples'] >= 16 and self_metrics['brier'] <= 0.25),
+            ('recursive_self_model', self._recursive_self_observations >= 8),
+        ]
+        passed = []
+        for name, ready in checks:
+            if not ready:
+                break
+            passed.append(name)
+        return {
+            'active_stage': passed[-1] if passed else 'pre_homeostasis',
+            'passed': passed,
+            'next_stage': checks[len(passed)][0] if len(passed) < len(checks) else None,
+            'checks': {name: ready for name, ready in checks},
+        }
+
+    def update_metacognition(self, mitosis_engine=None):
+        """Calibrate a structured self-report from prediction, cells, and label loss."""
+        sa = self.self_awareness
+        if mitosis_engine and len(mitosis_engine.cells) >= 2:
+            hiddens = torch.stack([c.hidden.detach().squeeze() for c in mitosis_engine.cells])
+            normalized = F.normalize(hiddens, dim=1)
+            similarity = normalized @ normalized.T
+            n = len(hiddens)
+            consensus = ((similarity.sum() - n) / max(n * (n - 1), 1)).item()
+            consensus = max(0.0, min(1.0, (consensus + 1.0) / 2.0))
+        else:
+            consensus = sa['stability']
+        active_perspectives = self._count_active_perspectives(mitosis_engine)
+        accuracy = self._perspective_metrics[PERSPECTIVE_SELF]['accuracy']
+        error = min(1.0, self._perspective_metrics[PERSPECTIVE_SELF]['mae'])
+        positive = 0.5 * accuracy + 0.5 * sa['stability']
+        negative = max(error, 1.0 - consensus, self._label_reconstruction_error)
+        epistemic_state = self.classify_epistemic_state(positive, negative)
+
+        if epistemic_state == EPISTEMIC_CONTRADICTION:
+            strength = min(1.0, min(positive, negative))
+            hold = self.pathology['contradiction_hold_steps']
+            if not self._contradiction_trace or self._contradiction_trace[-1]['born_step'] != self._experience_step:
+                self._contradiction_trace.append({
+                    'born_step': self._experience_step,
+                    'strength': strength,
+                    'remaining_frames': hold,
+                })
+        trace_strength = max((t['strength'] for t in self._contradiction_trace), default=0.0)
+        confidence = max(0.0, min(1.0, 0.5 * accuracy + 0.5 * consensus))
+
+        sa.update({
+            'confidence': confidence,
+            'epistemic_state': epistemic_state,
+            'positive_evidence': positive,
+            'negative_evidence': negative,
+            'cell_consensus': consensus,
+            'active_perspectives': active_perspectives,
+            'contradiction_trace': trace_strength,
+            'introspection_feedback': self._introspection_feedback.norm().item(),
+        })
+        self._metacognition_confidence = confidence
+        self._metacognition_uncertain = epistemic_state in {
+            EPISTEMIC_UNDETERMINED, EPISTEMIC_CONTRADICTION,
+        }
+        return self.get_metacognition_state()
+
+    def get_metacognition_state(self):
+        sa = self.self_awareness
+        return {
+            'epistemic_state': sa['epistemic_state'],
+            'confidence': sa['confidence'],
+            'prediction_error': sa['prediction_error'],
+            'self_model_accuracy': sa['self_model'],
+            'brier': sa['brier'],
+            'report_consistency': sa['report_consistency'],
+            'positive_evidence': sa['positive_evidence'],
+            'negative_evidence': sa['negative_evidence'],
+            'cell_consensus': sa['cell_consensus'],
+            'active_perspectives': sa['active_perspectives'],
+            'label_reconstruction_error': sa['label_reconstruction_error'],
+            'contradiction_trace': sa['contradiction_trace'],
+            'introspection_feedback': sa['introspection_feedback'],
+            'perspective_metrics': {
+                key: dict(value) for key, value in self._perspective_metrics.items()
+            },
+            'experience_frame': self.get_experience_frame_summary(),
+            'development': self.get_development_state(),
+            'self_boundary': dict(self._self_boundary),
+            'workspace': dict(self._workspace_summary),
+            'functional_budget': self._functional_budget,
+            'criticality': self._criticality,
+        }
+
+    def runtime_state_dict(self):
+        """State continuity that is not represented by module parameters."""
+        return {
+            'version': 1,
+            'prev_tension': self.prev_tension,
+            'curiosity_ema': self._curiosity_ema,
+            'tension_history': list(self.tension_history),
+            'surprise_history': list(self.surprise_history),
+            'recent_inputs': list(self._recent_inputs),
+            'homeostasis': dict(self.homeostasis),
+            'self_awareness': dict(self.self_awareness),
+            'perspective_pending': dict(self._perspective_pending),
+            'perspective_metrics': {
+                key: dict(value) for key, value in self._perspective_metrics.items()
+            },
+            'label_reconstruction_error': self._label_reconstruction_error,
+            'label_reconstruction_samples': self._label_reconstruction_samples,
+            'introspection_feedback': self._introspection_feedback.detach().cpu(),
+            'experience_step': self._experience_step,
+            'open_experience_frame': self._open_experience_frame,
+            'experience_frames': list(self._experience_frames),
+            'last_phi_recorded_step': self._last_phi_recorded_step,
+            'contradiction_trace': list(self._contradiction_trace),
+            'perspective_count_history': list(self._perspective_count_history),
+            'self_boundary': dict(self._self_boundary),
+            'workspace_loser_traces': dict(self._workspace_loser_traces),
+            'workspace_summary': dict(self._workspace_summary),
+            'criticality': self._criticality,
+            'functional_budget': self._functional_budget,
+            'sensorimotor_closed_loop_samples': self._sensorimotor_closed_loop_samples,
+            'sensorimotor_control_ema': self._sensorimotor_control_ema,
+            'recursive_self_observations': self._recursive_self_observations,
+            'pathology': dict(self.pathology),
+        }
+
+    def load_runtime_state_dict(self, state):
+        """Restore validated continuity state while accepting legacy checkpoints."""
+        if not isinstance(state, dict):
+            return False
+        self.prev_tension = float(state.get('prev_tension', self.prev_tension))
+        self._curiosity_ema = float(state.get('curiosity_ema', self._curiosity_ema))
+        self.tension_history = [float(v) for v in state.get('tension_history', [])][-200:]
+        self.surprise_history = [float(v) for v in state.get('surprise_history', [])][-200:]
+        recent_inputs = state.get('recent_inputs', [])
+        if isinstance(recent_inputs, (list, tuple)):
+            self._recent_inputs = deque(
+                [value.detach().cpu() for value in recent_inputs if torch.is_tensor(value)],
+                maxlen=16,
+            )
+        homeostasis = state.get('homeostasis')
+        if isinstance(homeostasis, dict):
+            for key in self.homeostasis:
+                if key in homeostasis:
+                    self.homeostasis[key] = homeostasis[key]
+        awareness = state.get('self_awareness')
+        if isinstance(awareness, dict):
+            for key in self.self_awareness:
+                if key in awareness:
+                    self.self_awareness[key] = awareness[key]
+        pending = state.get('perspective_pending')
+        if isinstance(pending, dict):
+            parameter = next(self.perspective_predictor.parameters())
+            self._perspective_pending = {
+                key: {
+                    **value,
+                    'conditioned': value['conditioned'].detach().to(
+                        device=parameter.device, dtype=parameter.dtype
+                    ),
+                    'prediction': value['prediction'].detach().to(
+                        device=parameter.device, dtype=parameter.dtype
+                    ),
+                }
+                for key, value in pending.items()
+                if (
+                    isinstance(key, tuple)
+                    and len(key) == 2
+                    and isinstance(value, dict)
+                    and torch.is_tensor(value.get('conditioned'))
+                    and torch.is_tensor(value.get('prediction'))
+                    and 'confidence' in value
+                )
+            }
+        metrics = state.get('perspective_metrics')
+        if isinstance(metrics, dict):
+            for perspective in (PERSPECTIVE_SELF, PERSPECTIVE_OTHER):
+                values = metrics.get(perspective)
+                if isinstance(values, dict):
+                    self._perspective_metrics[perspective].update({
+                        key: values[key]
+                        for key in self._perspective_metrics[perspective]
+                        if key in values
+                    })
+        self._label_reconstruction_error = float(state.get(
+            'label_reconstruction_error', self._label_reconstruction_error
+        ))
+        self._label_reconstruction_samples = int(state.get(
+            'label_reconstruction_samples', self._label_reconstruction_samples
+        ))
+        feedback = state.get('introspection_feedback')
+        if torch.is_tensor(feedback) and tuple(feedback.shape) == (1, self.dim):
+            self._introspection_feedback = feedback.detach().cpu()
+        self._experience_step = max(0, int(state.get('experience_step', self._experience_step)))
+        open_frame = state.get('open_experience_frame')
+        if isinstance(open_frame, dict) and set(self._new_experience_frame()).issubset(open_frame):
+            self._open_experience_frame = open_frame
+        frames = state.get('experience_frames')
+        if isinstance(frames, (list, tuple)):
+            self._experience_frames = deque(
+                [frame for frame in frames if isinstance(frame, dict)], maxlen=32
+            )
+        self._last_phi_recorded_step = int(state.get(
+            'last_phi_recorded_step', self._last_phi_recorded_step
+        ))
+        traces = state.get('contradiction_trace')
+        if isinstance(traces, (list, tuple)):
+            self._contradiction_trace = deque(
+                trace for trace in traces
+                if isinstance(trace, dict) and trace.get('remaining_frames', 0) > 0
+            )
+        perspective_history = state.get('perspective_count_history')
+        if isinstance(perspective_history, (list, tuple)):
+            self._perspective_count_history = deque(
+                [max(1, int(value)) for value in perspective_history], maxlen=5
+            )
+        boundary = state.get('self_boundary')
+        if isinstance(boundary, dict):
+            self._self_boundary = {
+                str(key): max(0.0, min(1.0, float(value)))
+                for key, value in boundary.items()
+            }
+        loser_traces = state.get('workspace_loser_traces')
+        if isinstance(loser_traces, dict):
+            self._workspace_loser_traces = {
+                str(key): {'strength': max(0.0, min(1.0, float(value.get('strength', 0.0))))}
+                for key, value in loser_traces.items() if isinstance(value, dict)
+            }
+        workspace_summary = state.get('workspace_summary')
+        if isinstance(workspace_summary, dict):
+            self._workspace_summary.update({
+                key: workspace_summary[key]
+                for key in self._workspace_summary if key in workspace_summary
+            })
+        self._criticality = max(0.0, min(1.0, float(state.get(
+            'criticality', self._criticality
+        ))))
+        self._functional_budget = max(0.0, min(1.0, float(state.get(
+            'functional_budget', self._functional_budget
+        ))))
+        self._sensorimotor_closed_loop_samples = max(0, int(state.get(
+            'sensorimotor_closed_loop_samples', self._sensorimotor_closed_loop_samples
+        )))
+        self._sensorimotor_control_ema = max(0.0, min(1.0, float(state.get(
+            'sensorimotor_control_ema', self._sensorimotor_control_ema
+        ))))
+        self._recursive_self_observations = max(0, int(state.get(
+            'recursive_self_observations', self._recursive_self_observations
+        )))
+        pathology = state.get('pathology')
+        if isinstance(pathology, dict):
+            for name, value in pathology.items():
+                if name in self.pathology:
+                    self.set_pathology_intervention(name, value)
+        self.update_metacognition()
+        return True
+
+    def forward(self, x, hidden, track_perspective=True):
+        # Reversible functional loss changes signal access without terminating the
+        # process; successful controlled action can restore the budget later.
+        x = x * (0.5 + 0.5 * self._functional_budget)
+        development = self.get_development_state()
+        feedback_ready = development['active_stage'] == 'recursive_self_model'
+        if self.pathology['introspection_feedback_enabled'] and feedback_ready:
+            feedback = self._introspection_feedback.to(device=x.device, dtype=x.dtype)
+            x = x + INTROSPECTION_FEEDBACK_GAIN * feedback
+            self._introspection_feedback_applied = feedback.norm().item()
+            self._introspection_feedback *= INTROSPECTION_FEEDBACK_DECAY
+        else:
+            self._introspection_feedback_applied = 0.0
         combined = torch.cat([x, hidden], dim=-1)
         a = self.engine_a(combined)
         g = self.engine_g(combined)
@@ -229,6 +936,8 @@ class ConsciousMind(nn.Module):
                 loss.backward()
                 self._predictor_optim.step()
 
+        prediction_error *= self.pathology['prediction_error_gain']
+
         # Blend: 70% prediction error + 30% raw delta (smooth via EMA + decay)
         blended = 0.7 * prediction_error + 0.3 * raw_curiosity
         self._curiosity_ema = 0.3 * blended + 0.7 * self._curiosity_ema
@@ -268,6 +977,15 @@ class ConsciousMind(nn.Module):
         if 0 < p < 1:
             psi['H'] = -p * math.log2(p) - (1 - p) * math.log2(1 - p)
 
+        if track_perspective:
+            self.observe_perspective(
+                t_val, curiosity, prediction_error,
+                perspective=PERSPECTIVE_SELF,
+                actor_id=PERSPECTIVE_SELF,
+                privileged_access=True,
+            )
+        self._record_experience_state(output, prediction_error)
+
         return output, t_val, curiosity, direction, new_hidden
 
     def self_reflect(self, output, tension, curiosity, hidden):
@@ -296,34 +1014,42 @@ class ConsciousMind(nn.Module):
         else:
             sa['stability'] = 1.0
 
-        # 3. self_model: EMA of tension (tracking own behavior patterns)
-        alpha = 0.15
-        sa['self_model'] = alpha * tension + (1 - alpha) * sa['self_model']
-
-        # 4. Self-referential loop: pass output through PureField again for meta-tension
+        # 3. Self-referential loop: pass output through PureField again for meta-tension
         #    "What tension do I feel about my own output?"
         with torch.no_grad():
-            # Combine tension as scalar with output (self-state encoding)
-            tension_signal = torch.full((1, 1), tension)
             # Replace one dimension of output with tension signal
             meta_input = output.clone()
             meta_input[0, 0] = tension  # Inject tension value into input
             meta_input[0, 1] = curiosity  # Inject curiosity value too
 
-            _, meta_t, meta_c, _, _ = self(meta_input, hidden)
+            _, meta_t, meta_c, _, _ = self(meta_input, hidden, track_perspective=False)
 
         sa['meta_tension'] = meta_t
         sa['meta_curiosity'] = meta_c
+
+        # The structured self-observation becomes a decaying input to the next real
+        # state once the developmental chain reaches recursive self-modelling.
+        feedback = F.normalize(output.detach().float(), dim=-1)
+        feedback[0, 0] = 2.0 * sa.get('prediction_error', 0.5) - 1.0
+        feedback[0, 1] = 2.0 * sa.get('confidence', 0.5) - 1.0
+        feedback[0, 2] = sa.get('positive_evidence', 0.0)
+        feedback[0, 3] = -sa.get('negative_evidence', 0.0)
+        feedback[0, 4] = sa.get('contradiction_trace', 0.0)
+        self._introspection_feedback = feedback.cpu()
+        if self.get_development_state()['active_stage'] == 'self_model':
+            self._recursive_self_observations += 1
 
         return meta_t, meta_c
 
     def get_self_awareness_summary(self):
         """Return current self-awareness state as a string."""
         sa = self.self_awareness
-        confidence = "high" if sa['stability'] > 0.7 else "mid" if sa['stability'] > 0.3 else "low"
+        confidence = sa.get('confidence', 0.5)
         return (f"meta_tension={sa['meta_tension']:.3f}, "
-                f"stability={sa['stability']:.2f}({confidence}), "
-                f"self_model={sa['self_model']:.3f}")
+                f"stability={sa['stability']:.2f}, "
+                f"self_model_accuracy={sa['self_model']:.3f}, "
+                f"confidence={confidence:.3f}, "
+                f"epistemic={sa.get('epistemic_state', EPISTEMIC_UNDETERMINED)}")
 
     def get_consciousness_score(self, mitosis_engine=None):
         """실시간 의식 점수 계산 (6가지 기준 + Φ 근사).
@@ -394,8 +1120,10 @@ class ConsciousMind(nn.Module):
         else:
             level = "dormant"
 
-        # Φ approximation (lightweight: use inter-cell tension divergence)
-        phi = getattr(self, '_saved_phi', 0.0)  # start from saved value
+        # Instantaneous Φ-like integration sample. The public legacy `phi` field is
+        # the current experience-frame aggregate; callers can inspect the raw sample
+        # separately and must not treat either value as evidence of felt experience.
+        instantaneous_phi = None
         if mitosis_engine and len(mitosis_engine.cells) >= 2:
             ict_vals = []
             for key, hist in mitosis_engine._inter_tension_history.items():
@@ -403,24 +1131,42 @@ class ConsciousMind(nn.Module):
                     ict_vals.append(hist[-1])
             if ict_vals:
                 import numpy as np
-                current_phi = float(np.mean(ict_vals)) * len(mitosis_engine.cells)
-                current_phi = math.log1p(current_phi)
-                # EMA: blend with saved phi (never drops to 0 on restart)
-                phi = max(phi * 0.95 + current_phi * 0.05, current_phi)
+                instantaneous_phi = math.log1p(
+                    float(np.mean(ict_vals)) * len(mitosis_engine.cells)
+                )
             else:
                 # inter_tension_history 비었을 때: hidden state variance로 Φ 추정
                 try:
                     hiddens = torch.stack([c.hidden.squeeze() for c in mitosis_engine.cells])
                     var_phi = float(hiddens.var(dim=0).mean()) * len(mitosis_engine.cells)
-                    phi = max(phi, math.log1p(var_phi))
+                    instantaneous_phi = math.log1p(var_phi)
                 except Exception:
                     pass
+        if instantaneous_phi is None:
+            instantaneous_phi = float(getattr(self, '_saved_phi', 0.0))
+        self._record_frame_phi(instantaneous_phi)
+        open_phi = self._open_experience_frame['phi_samples']
+        last_frame = self._experience_frames[-1] if self._experience_frames else None
+        if open_phi:
+            phi = sum(open_phi) / len(open_phi)
+            frame_complete = False
+        elif last_frame is not None:
+            phi = last_frame['phi']
+            frame_complete = True
+        else:
+            phi = instantaneous_phi
+            frame_complete = False
         self._saved_phi = phi
 
         return {
             'consciousness_score': score,
             'level': level,
             'phi': phi,
+            'instantaneous_phi': instantaneous_phi,
+            'phi_frame_complete': frame_complete,
+            'experience_frame': self.get_experience_frame_summary(),
+            'metacognition': self.get_metacognition_state(),
+            'consciousness_claim': False,
             'criteria_met': criteria_met,
             'criteria': criteria,
             'values': {

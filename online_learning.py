@@ -368,6 +368,7 @@ class OnlineLearner:
         path = Path(path)
         torch.save({
             'model': self.mind.state_dict(),
+            'runtime_cognition': self.mind.runtime_state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'total_updates': self.total_updates,
             'buffer_size': len(self.buffer),
@@ -379,7 +380,8 @@ class OnlineLearner:
         if not path.exists():
             return False
         checkpoint = torch.load(path, weights_only=False)
-        self.mind.load_state_dict(checkpoint['model'])
+        self.mind.load_state_dict(checkpoint['model'], strict=False)
+        self.mind.load_runtime_state_dict(checkpoint.get('runtime_cognition'))
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.total_updates = checkpoint.get('total_updates', 0)
         return True

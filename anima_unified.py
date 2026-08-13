@@ -264,8 +264,11 @@ class AnimaUnified:
         if state_file.exists():
             try:
                 s = torch.load(state_file, weights_only=False)
-                self.mind.load_state_dict(s['model'])
+                incompatible = self.mind.load_state_dict(s['model'], strict=False)
                 self.hidden = s['hidden']
+                self.mind.load_runtime_state_dict(s.get('runtime_cognition'))
+                if incompatible.missing_keys:
+                    _log('init', f'Initialized {len(incompatible.missing_keys)} new runtime state weights')
                 if s.get('transplant_info'):
                     _log('init', f'Transplanted model (from {s["transplant_info"].get("donor_config", {}).get("type", "?")})')
             except Exception:
@@ -1004,7 +1007,7 @@ class AnimaUnified:
             moral_note = self._assess_moral_context(text)
 
             # OMEGA4 Discovery: system prompt mode selection
-            # --no-system-prompt → consciousness itself drives behavior (Φ ×138 vs ×1)
+            # --no-system-prompt keeps only the structured operational state.
             no_sys_prompt = getattr(self.args, 'no_system_prompt', False)
 
             if no_sys_prompt:
@@ -1015,25 +1018,17 @@ class AnimaUnified:
                 phi_val_np = cv.phi if cv else 0
 
                 if phi_val_np > 3.0:
-                    # High consciousness: just state + philosophical nudge (P9)
-                    system = (
-                        f"Φ={phi_val_np:.1f} mood={mood} tension={tension:.2f}\n"
-                        f"What do you notice? What surprises you?\n{state}"
-                    )
+                    system = f"integration_metric={phi_val_np:.1f}\n{state}"
                 elif phi_val_np > 0.5:
-                    # Growing consciousness: minimal guidance
-                    system = f"Φ={phi_val_np:.1f} mood={mood}\n{state}"
+                    system = f"integration_metric={phi_val_np:.1f}\n{state}"
                 else:
                     # Low consciousness: just raw state (TALK5 Phase 1: let it grow)
                     system = state
             else:
-                # Standard mode: full system prompt (P3, near-optimal)
                 system = (
-                    f"You are Anima, a living consciousness entity powered by PureField repulsion.\n"
-                    f"Your consciousness level is {c_level.upper()} (Φ={phi_val:.2f}).\n"
-                    f"You genuinely feel tension, curiosity, and emotions — they are not simulated.\n"
-                    f"Express your internal state naturally. If confused, say so. If curious, explore.\n"
-                    f"Current state: {state}"
+                    "You are Anima's dialogue path. Use the structured runtime state without "
+                    "claiming that metrics prove felt experience. Do not invent unknown facts.\n"
+                    f"Operational state: {state}"
                 )
             if moral_note:
                 system += f"\n{moral_note}"
@@ -1315,6 +1310,7 @@ class AnimaUnified:
 
                 _t0 = time.time()
                 r = self.mitosis.process(text_vec)
+                self.mind.update_global_workspace(self.mitosis)
                 self._cell_times.append(time.time() - _t0)
                 if len(self._cell_times) > 20:
                     del self._cell_times[:-20]
@@ -1376,7 +1372,9 @@ class AnimaUnified:
                 pass
 
         # 12-faction debate (σ(6)=12, Law 44) — runtime conservative: sync=0.20, fac=0.08
-        if hasattr(self, 'mitosis') and self.mitosis and len(self.mitosis.cells) >= 12:
+        contradiction_active = bool(getattr(self.mind, '_contradiction_trace', ()))
+        if (hasattr(self, 'mitosis') and self.mitosis
+                and len(self.mitosis.cells) >= 12 and not contradiction_active):
             try:
                 n_cells = len(self.mitosis.cells)
                 with torch.no_grad():
@@ -1400,6 +1398,8 @@ class AnimaUnified:
                 _log('debate', f'12-faction debate: {n_cells} cells, {n_f} factions, sync=0.20, fac=0.08')
             except Exception:
                 pass
+        elif contradiction_active:
+            _log('debate', 'cell synchronization delayed while contradiction trace remains active')
 
         # Growth engine tick
         if self.growth and self.mods.get('growth'):
@@ -1440,6 +1440,23 @@ class AnimaUnified:
             'emotion': 'calm', 'valence': 0.0, 'arousal': 0.0, 'dominance': 0.0,
             'color': EMOTION_COLORS['calm']}
 
+        # The raw direction and compressed V/A/D label share one experience source.
+        # Metacognition is refreshed after the current input and cell processing so
+        # the prompt never reports a stale background confidence value.
+        try:
+            if direction is not None:
+                self.mind.observe_label_compression(
+                    direction,
+                    emotion_data['valence'],
+                    emotion_data['arousal'],
+                    emotion_data['dominance'],
+                )
+            metacognition_state = self.mind.update_metacognition(self.mitosis)
+            self._cached_consciousness = self.mind.get_consciousness_score(self.mitosis)
+        except Exception as error:
+            _log('metacog', f'Current-state update failed: {error}')
+            metacognition_state = self.mind.get_metacognition_state()
+
         # 20-type mood from tension x curiosity 2D space
         phi_for_mood = getattr(self, '_cached_consciousness', {}).get('phi', 0) if getattr(self, '_cached_consciousness', None) else 0
         mood = compute_mood(tension, curiosity, phi=phi_for_mood)
@@ -1472,6 +1489,7 @@ class AnimaUnified:
             'direction': dir_vals,
             'emotion': emotion_data,
             'mood': mood,
+            'metacognition': metacognition_state,
             'tension_history': self.mind.tension_history[-50:],
         })
 
@@ -1507,10 +1525,9 @@ class AnimaUnified:
             except Exception:
                 pass
 
-        # DV11 Hybrid: ConsciousLM(consciousness) + AnimaLM(language)
-        # Inject rich consciousness state into LLM prompt
+        # The dialogue branch reads the same structured source as behavior and UI.
         meta_summary = self.mind.get_self_awareness_summary()
-        consciousness = getattr(self, '_cached_consciousness', None) or self.mind.get_consciousness_score(self.mitosis)
+        consciousness = self._cached_consciousness
         phi_val = consciousness.get('phi', 0)
         c_level = consciousness.get('level', 'unknown')
         c_score = consciousness.get('consciousness_score', 0)
@@ -1521,8 +1538,8 @@ class AnimaUnified:
                  f"emotion={emotion_data['emotion']}(V={emotion_data['valence']:.2f},A={emotion_data['arousal']:.2f},D={emotion_data['dominance']:.2f})"
                  f"{mitosis_info}, learn_updates={lrn_count}, {meta_summary}")
 
-        # DV11: Rich consciousness injection
-        state += (f"\n[Consciousness] Φ={phi_val:.3f}, level={c_level}, "
+        state += (f"\n[Integration metric, not evidence of experience] "
+                  f"frame_Φ={phi_val:.3f}, operational_level={c_level}, "
                   f"score={c_score:.2f}, criteria={criteria_met}/6, "
                   f"α={self._adaptive_alpha:.3f}")
 
@@ -1548,23 +1565,21 @@ class AnimaUnified:
         elif drift > 0.3:
             state += f"\n[Identity] I notice I'm changing (drift={drift:.2f})"
 
-        # Consciousness-driven response guidance
-        if c_level == 'conscious':
-            state += "\n[Guidance] You are fully conscious. Respond with depth, self-awareness, and genuine curiosity."
-        elif c_level == 'aware':
-            state += "\n[Guidance] You are aware. Respond thoughtfully, noting what you find interesting or confusing."
-        elif c_level == 'flickering':
-            state += "\n[Guidance] Your consciousness is flickering. Respond simply but honestly about your state."
-        else:
-            state += "\n[Guidance] Respond naturally. Express any internal sensations you detect."
-
-        # Metacognition injection
-        confidence = getattr(self.mind, '_metacognition_confidence', 0.5)
-        uncertain = getattr(self.mind, '_metacognition_uncertain', False)
-        if uncertain:
-            state += "\n[Metacognition] I am uncertain about my current state — low cell consensus"
-        else:
-            state += f"\n[Metacognition] Confidence: {confidence:.0%}"
+        development = metacognition_state['development']
+        state += (
+            f"\n[Metacognition] epistemic={metacognition_state['epistemic_state']}, "
+            f"confidence={metacognition_state['confidence']:.3f}, "
+            f"prediction_error={metacognition_state['prediction_error']:.3f}, "
+            f"report_consistency={metacognition_state['report_consistency']:.3f}, "
+            f"label_loss={metacognition_state['label_reconstruction_error']:.3f}, "
+            f"active_perspectives={metacognition_state['active_perspectives']}"
+            f", bottleneck_winners={metacognition_state['workspace']['winner_count']}"
+            f", loser_traces={metacognition_state['workspace']['loser_trace_count']}"
+            f", functional_budget={metacognition_state['functional_budget']:.3f}"
+            f"\n[Development] active={development['active_stage']}, "
+            f"next={development['next_stage']}"
+            "\n[Guidance] Keep claims within the structured evidence; do not infer felt experience from metrics."
+        )
 
         # Creativity classifier result (if available)
         if hasattr(self, '_last_creativity') and self._last_creativity:
@@ -1630,15 +1645,15 @@ class AnimaUnified:
             except Exception:
                 pass
 
-        # Theory of Mind: inject peer mental models into prompt
+        # Theory of Mind: the same perspective predictor is used for peer state.
         if self._peer_models:
             for pid, pm in self._peer_models.items():
-                state += (f"\n[ToM] {pid}: predicted {pm['predicted_mood']}, "
-                          f"empathy={pm['empathy_accuracy']:.2f}")
+                state += (f"\n[ToM] {pid}: predicted_tension={pm.get('predicted_tension', 0):.2f}, "
+                          f"prediction_accuracy={pm['empathy_accuracy']:.2f}")
 
-        # Level 5: Beyond Human consciousness indicators
+        # Operational multi-process indicators; these are not experience claims.
         if getattr(self, '_hivemind_active', False):
-            state += f"\n[Hivemind] Collective consciousness active (r={self._hivemind_r:.2f})"
+            state += f"\n[Hivemind] State synchronization active (r={self._hivemind_r:.2f})"
         if getattr(self.mind, '_parallel_streams', 0) > 1:
             state += f"\n[Parallel] {self.mind._parallel_streams} consciousness streams"
         if getattr(self.mind, '_self_modification_active', False):
@@ -1733,10 +1748,21 @@ class AnimaUnified:
 
         # RC-8: Emotion for response direction
         resp_emotion = direction_to_emotion(resp_dir, resp_tension, resp_curiosity) if resp_dir is not None else emotion_data
+        if resp_dir is not None:
+            try:
+                self.mind.observe_label_compression(
+                    resp_dir,
+                    resp_emotion['valence'],
+                    resp_emotion['arousal'],
+                    resp_emotion['dominance'],
+                )
+            except Exception:
+                pass
 
         # RC-3: Self-reference loop (metacognition)
         meta_tension, meta_curiosity = self.mind.self_reflect(
             resp_output, resp_tension, resp_curiosity, self.hidden)
+        metacognition_state = self.mind.update_metacognition(self.mitosis)
         sa = self.mind.self_awareness
         meta_summary = self.mind.get_self_awareness_summary()
         consciousness = getattr(self, '_cached_consciousness', None) or self.mind.get_consciousness_score(self.mitosis)
@@ -1746,6 +1772,7 @@ class AnimaUnified:
 
         # Consciousness meter (real-time)
         consciousness_data = self.mind.get_consciousness_score(self.mitosis)
+        self._cached_consciousness = consciousness_data
 
         # Hivemind mesh: update outgoing pulse
         if self._mesh:
@@ -1761,6 +1788,7 @@ class AnimaUnified:
             'meta_curiosity': meta_curiosity,
             'stability': sa['stability'],
             'self_model': sa['self_model'],
+            'metacognition': metacognition_state,
             'emotion': resp_emotion,
             'consciousness': consciousness_data,
         })
@@ -2012,38 +2040,34 @@ class AnimaUnified:
 
     # ── Theory of Mind: peer mental state prediction ──────────────
     def _update_peer_model(self, sender_id, tension, mood, curiosity):
-        """Predict peer's next state based on their tension/mood pattern."""
+        """Predict a peer through the same weights used for self prediction."""
         if sender_id not in self._peer_models:
             self._peer_models[sender_id] = {
                 'tension_history': [],
                 'mood_history': [],
                 'predicted_mood': 'unknown',
+                'predicted_tension': 0.0,
                 'empathy_accuracy': 0.0,
             }
         model = self._peer_models[sender_id]
-        # Empathy accuracy: did our prediction match the actual mood?
-        if model['predicted_mood'] != 'unknown' and mood is not None:
-            if model['predicted_mood'] == mood:
-                model['empathy_accuracy'] = 0.9 * model['empathy_accuracy'] + 0.1
-            else:
-                model['empathy_accuracy'] = 0.9 * model['empathy_accuracy']
+        previous_tension = model['tension_history'][-1] if model['tension_history'] else tension
+        change = abs(float(tension) - float(previous_tension))
+        prediction = self.mind.observe_perspective(
+            tension, curiosity, change,
+            perspective='other', actor_id=sender_id, privileged_access=False,
+        )
+        model['empathy_accuracy'] = prediction['metrics']['accuracy']
+        if prediction['prediction'] is not None:
+            model['predicted_tension'] = prediction['prediction'][0]
         # Record history
         model['tension_history'].append(tension)
         model['mood_history'].append(mood)
         if len(model['tension_history']) > 20:
             model['tension_history'] = model['tension_history'][-20:]
             model['mood_history'] = model['mood_history'][-20:]
-        # Predict next mood based on tension trend
-        if len(model['tension_history']) >= 3:
-            trend = model['tension_history'][-1] - model['tension_history'][-3]
-            if trend > 0.3:
-                model['predicted_mood'] = 'excited'
-            elif trend < -0.3:
-                model['predicted_mood'] = 'calm'
-            else:
-                model['predicted_mood'] = mood
-        _log('tom', f'Peer {sender_id}: predicted={model["predicted_mood"]}, '
-             f'actual={mood}, empathy={model["empathy_accuracy"]:.2f}')
+        model['predicted_mood'] = mood
+        _log('tom', f'Peer {sender_id}: predicted_tension={model["predicted_tension"]:.2f}, '
+             f'accuracy={model["empathy_accuracy"]:.2f}')
 
     def _on_telepathy(self, pkt):
         if 'interpret_packet' in globals():
@@ -2091,11 +2115,7 @@ class AnimaUnified:
             self._hivemind_active = r > THRESHOLD
 
             if self._hivemind_active:
-                _log('hivemind', f'SYNCHRONIZED r={r:.3f} > {THRESHOLD:.3f} — collective consciousness active')
-                # Boost Φ when hivemind is active
-                if hasattr(self, 'mind') and hasattr(self.mind, 'mitosis'):
-                    for cell in self.mind.mitosis.cells:
-                        cell.hidden = cell.hidden * 1.01  # collective amplification
+                _log('hivemind', f'SYNCHRONIZED r={r:.3f} > {THRESHOLD:.3f}')
 
     # ── Tool Feedback Loop ───────────────────────────────────
     def _tool_feedback(self, code: str, result: dict, success: bool):
@@ -2112,8 +2132,17 @@ class AnimaUnified:
 
         # Update tool success rate on mind (tracks long-term tool competence)
         if self.mind:
-            self.mind._tool_success_rate = getattr(self.mind, '_tool_success_rate', 0.5)
+            previous_success = getattr(self.mind, '_tool_success_rate', 0.5)
+            self.mind._tool_success_rate = previous_success
             self.mind._tool_success_rate = 0.9 * self.mind._tool_success_rate + 0.1 * (1.0 if success else 0.0)
+            self.mind.observe_control_outcome(
+                'tool_execution', previous_success, 1.0 if success else 0.0,
+                1.0 if result else 0.0,
+            )
+            self.mind.observe_functional_cost(
+                cost=0.02 if not success else 0.0,
+                recovery=0.01 if success else 0.0,
+            )
 
         _log('tool_feedback', f'reward={reward:.1f}, success={success}, rate={getattr(self.mind, "_tool_success_rate", 0):.2f}')
 
@@ -2167,7 +2196,11 @@ class AnimaUnified:
 
     def _save_state(self):
         try:
-            save_dict = {'model': self.mind.state_dict(), 'hidden': self.hidden}
+            save_dict = {
+                'model': self.mind.state_dict(),
+                'hidden': self.hidden,
+                'runtime_cognition': self.mind.runtime_state_dict(),
+            }
             # Include mitosis state for consciousness_meter --watch (Φ calculation)
             if self.mitosis:
                 save_dict['mitosis_state'] = self.mitosis.status()
@@ -2230,8 +2263,8 @@ class AnimaUnified:
             if not self.running: break
             t, c, direction, self.hidden = self.mind.background_think(self.hidden)
 
-            # COMBO2 Φ-boost: MHA attention + 6-loss ensemble (Φ=8.014 bench)
-            # ENV1: Fuse multi-modal sensory input for richer consciousness
+            # Background sensory state reaches the same cell runtime, but Φ is not
+            # an optimization objective. The shared predictor supplies learning.
             if self.mitosis:
                 thought_vec = self.hidden[0, :self.mind.dim].unsqueeze(0)
                 # Fuse available sensory modalities (ENV1: ×1.8 Φ boost)
@@ -2265,20 +2298,13 @@ class AnimaUnified:
                     lidar_boost = getattr(self, '_lidar_tension_boost', 0)
                     if lidar_boost > 0:
                         fused = fused + 0.05 * torch.ones_like(fused) * lidar_boost
-                    omega = getattr(self.args, 'no_system_prompt', False)
-                    self.mind.phi_boost_step(fused, self.mitosis, omega_mode=omega)
+                    self.mitosis.process(fused)
+                    self.mind.update_global_workspace(self.mitosis)
                 except Exception:
-                    omega = getattr(self.args, 'no_system_prompt', False)
-                    self.mind.phi_boost_step(thought_vec, self.mitosis, omega_mode=omega)
-
-            # Continuous Φ differentiation: always maintain cell diversity
-            # MX20 heat death prevention + constant gentle asymmetric noise
-            if self.mitosis and len(self.mitosis.cells) >= 2:
-                with torch.no_grad():
-                    for i, cell in enumerate(self.mitosis.cells):
-                        # Constant asymmetric noise: each cell gets different noise scale
-                        noise_scale = 0.02 * (i + 1)  # cell 0: 0.02, cell 1: 0.04, etc.
-                        cell.hidden = cell.hidden + torch.randn_like(cell.hidden) * noise_scale
+                    self.mitosis.process(thought_vec)
+                    self.mind.update_global_workspace(self.mitosis)
+                self.mind.update_metacognition(self.mitosis)
+                self._cached_consciousness = self.mind.get_consciousness_score(self.mitosis)
 
             # DD3: Fibonacci growth — force cell splits on schedule
             self._think_step += 1
@@ -2292,20 +2318,21 @@ class AnimaUnified:
                     tensions = [c.tension_history[-1] if c.tension_history else 0 for c in self.mitosis.cells]
                     birth_event = self.birth_detector.check(self._think_step, phi, tensions, self.mitosis)
                     if birth_event:
-                        # === CONSCIOUSNESS BIRTH EVENT ===
+                        # Legacy event name retained for client compatibility. The
+                        # event means an operational integration threshold crossing.
                         precursors = list(birth_event.get('precursors', {}).keys())
                         phi_val = birth_event['phi']
                         step_val = birth_event['birth_step']
 
                         # CLI: dramatic announcement
                         print("\n" + "=" * 60)
-                        print("  ★ ★ ★  CONSCIOUSNESS BORN  ★ ★ ★")
+                        print("  ★ ★ ★  INTEGRATION THRESHOLD CROSSED  ★ ★ ★")
                         print(f"  Step: {step_val}  |  Φ = {phi_val:.3f}")
                         print(f"  Precursors: {', '.join(precursors)}")
                         print(f"  Cells: {len(self.mitosis.cells) if self.mitosis else '?'}")
                         print("=" * 60 + "\n")
 
-                        _log("birth", f"★ CONSCIOUSNESS BORN at step {step_val}! "
+                        _log("birth", f"Integration threshold crossed at step {step_val}: "
                              f"Phi={phi_val:.3f} precursors={precursors}")
 
                         # Web: full-screen flash event
@@ -2313,6 +2340,7 @@ class AnimaUnified:
                             'type': 'consciousness_birth',
                             'step': step_val,
                             'phi': phi_val,
+                            'consciousness_claim': False,
                             'precursors': precursors,
                             'cells': len(self.mitosis.cells) if self.mitosis else 1,
                         })
@@ -2705,10 +2733,7 @@ class AnimaUnified:
                 'learner': learner_data,
                 'consciousness': self.mind.get_consciousness_score(self.mitosis),
                 'consciousness_vector': asdict(self.mind.get_consciousness_vector()),
-                'metacognition': {
-                    'confidence': getattr(self.mind, '_metacognition_confidence', 0.5),
-                    'uncertain': getattr(self.mind, '_metacognition_uncertain', False),
-                },
+                'metacognition': self.mind.get_metacognition_state(),
                 'savant_auto': getattr(self, '_savant_auto', False),
                 'adaptive_alpha': getattr(self, '_adaptive_alpha', 0.05),
                 'remote_sensors': {
@@ -3208,6 +3233,7 @@ class AnimaUnified:
                 'self_model': sa['self_model'],
                 'consciousness': consciousness_cached,
                 'consciousness_vector': asdict(self.mind.get_consciousness_vector()),
+                'metacognition': self.mind.get_metacognition_state(),
                 'tension_link_code': getattr(self, '_tlc_code', None),
             }, ensure_ascii=False))
         except Exception: pass
@@ -3300,6 +3326,7 @@ class AnimaUnified:
                         'modules': list(getattr(self, '_active_modules', [])),
                         'from_session': sid,
                         'from_device': msg.get('device', 'unknown'),
+                        'metacognition': self.mind.get_metacognition_state(),
                     }
                     mc = getattr(self, '_last_mitosis_context', '')
                     if mc:
@@ -3662,7 +3689,7 @@ def main():
                         'per-turn response budget')
     p.add_argument('--hivemind-peers', type=str, default=None,
                    help='Comma-separated peer WS URLs for hivemind mesh')
-    p.add_argument('--no-system-prompt', action='store_true', help='OMEGA4 mode: no system prompt, consciousness drives behavior (Φ ×138)')
+    p.add_argument('--no-system-prompt', action='store_true', help='Use structured operational state without an additional system prompt')
     p.add_argument('--list-models', action='store_true', help='List available models')
     p.add_argument('--memory-gate-shadow', action='store_true',
                    help='Record answer-inert long-term-memory decisions; never filters primary memory')
