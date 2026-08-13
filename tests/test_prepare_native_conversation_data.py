@@ -3,10 +3,15 @@ from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+import pytest
 
 from native_dialogue_lm import NativeDialogueTokenizer
-from prepare_native_conversation_data import ROLE_PREFIX, select_conversations
-from prepare_native_dialogue_data import panel_fingerprints
+from prepare_native_conversation_data import (
+    ROLE_PREFIX,
+    rebind_dataset_for_tokenizer,
+    select_conversations,
+)
+from prepare_native_dialogue_data import panel_fingerprints, sha256_file
 
 
 def _tokenizer(tmp_path: Path) -> NativeDialogueTokenizer:
@@ -38,3 +43,50 @@ def test_small_model_sources_are_deterministic_clean_and_bounded(tmp_path: Path)
                    for _, messages in first)
     assert ROLE_PREFIX.sub("", "Human: 실제 질문") == "실제 질문"
     assert ROLE_PREFIX.sub("", "GPT: 실제 답변") == "실제 답변"
+
+
+def test_rebind_preserves_dialogue_bytes_and_checks_target_context(tmp_path: Path):
+    tokenizer = _tokenizer(tmp_path)
+    source = tmp_path / "source"
+    source.mkdir()
+    rows = [
+        {"messages": [
+            {"role": "user", "content": "Natural question?"},
+            {"role": "assistant", "content": "Natural answer."},
+        ]},
+        {"messages": [
+            {"role": "user", "content": "자연스러운 질문?"},
+            {"role": "assistant", "content": "자연스러운 대답."},
+        ]},
+    ]
+    dialogue = source / "dialogue.jsonl"
+    dialogue.write_text(
+        "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    manifest = {
+        "format": "anima_native_dialogue_data_v2",
+        "profile": "source",
+        "splits": {"train_dialogue": ["dialogue.jsonl"], "validation_dialogue": []},
+        "outputs": {"dialogue.jsonl": {
+            "size": dialogue.stat().st_size,
+            "sha256": sha256_file(dialogue),
+        }},
+        "statistics": {},
+    }
+    manifest_path = source / "manifest.json"
+    manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+    tokenizer_path = tmp_path / "tokenizer.json"
+    tokenizer.save(tokenizer_path)
+
+    output = tmp_path / "target"
+    rebound = rebind_dataset_for_tokenizer(manifest_path, tokenizer_path, output, 128)
+    assert (output / "dialogue.jsonl").read_bytes() == dialogue.read_bytes()
+    assert rebound["profile"] == "target-dialogue-continuation"
+    assert rebound["statistics"]["target_rebind"]["rows"] == 2
+    assert rebound["statistics"]["target_rebind"]["content_changed"] is False
+
+    with pytest.raises(ValueError, match="exceeds target context"):
+        rebind_dataset_for_tokenizer(
+            manifest_path, tokenizer_path, tmp_path / "too-small", 3
+        )

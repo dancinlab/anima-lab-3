@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import heapq
 import json
 import os
 import re
+import shutil
 from pathlib import Path
 
 from measurement.native_dialogue_registry import NATIVE_DIALOGUE_SPEC, spec_sha256
@@ -24,6 +26,97 @@ from prepare_native_instruction_data import dialogue_token_count, memory_message
 
 
 ROLE_PREFIX = re.compile(r"^(?:human|gpt)\s*:\s*", re.IGNORECASE)
+
+
+def rebind_dataset_for_tokenizer(
+    input_manifest: Path,
+    tokenizer_path: Path,
+    output_dir: Path,
+    block_size: int,
+) -> dict:
+    """Bind frozen raw dialogue files to a continuation model's tokenizer.
+
+    Dialogue files contain text rather than token IDs, so their bytes remain
+    unchanged.  Every row is re-tokenized and must fit the target context before
+    a new manifest can point a continuation checkpoint at those same files.
+    """
+    if block_size < 3:
+        raise ValueError("target block size must be at least 3")
+    manifest = json.loads(input_manifest.read_text(encoding="utf-8"))
+    if manifest.get("format") != "anima_native_dialogue_data_v2":
+        raise ValueError("unsupported native dialogue data manifest")
+    if output_dir.resolve() == input_manifest.parent.resolve():
+        raise ValueError("rebound data must use a different output directory")
+    if (output_dir / "manifest.json").exists():
+        raise ValueError("refusing to overwrite an existing rebound manifest")
+
+    tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+    source_root = input_manifest.parent.resolve()
+    split_names = manifest.get("splits", {})
+    relative_paths = []
+    for split in ("train_dialogue", "validation_dialogue"):
+        relative_paths.extend(split_names.get(split, []))
+    if not relative_paths or len(relative_paths) != len(set(relative_paths)):
+        raise ValueError("dialogue split paths must be present and unique")
+
+    maximum_tokens = rows = 0
+    verified = {}
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for relative in relative_paths:
+        source = (source_root / relative).resolve()
+        if not source.is_relative_to(source_root) or not source.is_file():
+            raise ValueError(f"invalid dialogue split path: {relative}")
+        declared = manifest.get("outputs", {}).get(relative)
+        if not declared or source.stat().st_size != declared.get("size") or (
+            sha256_file(source) != declared.get("sha256")
+        ):
+            raise ValueError(f"dialogue source fingerprint mismatch: {relative}")
+        with source.open(encoding="utf-8") as handle:
+            for line_number, line in enumerate(handle, 1):
+                if not line.strip():
+                    continue
+                messages = json.loads(line).get("messages")
+                if not isinstance(messages, list) or not messages:
+                    raise ValueError(f"invalid dialogue row at {relative}:{line_number}")
+                if any(
+                    not isinstance(message, dict)
+                    or message.get("role") not in {"system", "user", "assistant"}
+                    or not isinstance(message.get("content"), str)
+                    for message in messages
+                ):
+                    raise ValueError(f"invalid dialogue message at {relative}:{line_number}")
+                token_count = dialogue_token_count(tokenizer, messages)
+                if token_count > block_size:
+                    raise ValueError(
+                        f"dialogue row exceeds target context at {relative}:{line_number}"
+                    )
+                maximum_tokens = max(maximum_tokens, token_count)
+                rows += 1
+        destination = output_dir / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(destination.suffix + ".tmp")
+        shutil.copyfile(source, temporary)
+        os.replace(temporary, destination)
+        verified[relative] = copy.deepcopy(declared)
+
+    rebound = copy.deepcopy(manifest)
+    rebound["profile"] = "target-dialogue-continuation"
+    rebound["spec_sha256"] = spec_sha256()
+    rebound["base_tokenizer_sha256"] = checkpoint_sha256(tokenizer_path)
+    rebound["source_manifest_sha256"] = sha256_file(input_manifest)
+    rebound["outputs"] = verified
+    rebound.setdefault("statistics", {})["target_rebind"] = {
+        "rows": rows,
+        "maximum_tokens": maximum_tokens,
+        "block_size": block_size,
+        "content_changed": False,
+    }
+    temporary_manifest = output_dir / "manifest.json.tmp"
+    temporary_manifest.write_text(
+        json.dumps(rebound, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary_manifest, output_dir / "manifest.json")
+    return rebound
 
 
 def download_sources(source_dir: Path) -> dict[str, list[Path]]:
@@ -189,10 +282,22 @@ def main() -> None:
     parser.add_argument("--tokenizer", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--source-dir", type=Path)
+    parser.add_argument("--input-manifest", type=Path)
     parser.add_argument("--panel", type=Path, default=PANEL_PATH)
     args = parser.parse_args()
     if not args.tokenizer.is_file():
         parser.error("screen tokenizer must exist")
+    if args.input_manifest:
+        if not args.input_manifest.is_file():
+            parser.error("input manifest must exist")
+        result = rebind_dataset_for_tokenizer(
+            args.input_manifest,
+            args.tokenizer,
+            args.output_dir,
+            NATIVE_DIALOGUE_SPEC["native_dialogue5"]["context_tokens"],
+        )
+        print(json.dumps(result["statistics"]["target_rebind"], sort_keys=True))
+        return
     args.output_dir.mkdir(parents=True, exist_ok=True)
     source_dir = args.source_dir or args.output_dir / ".source"
     source_dir.mkdir(parents=True, exist_ok=True)
