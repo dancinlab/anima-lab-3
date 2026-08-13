@@ -80,7 +80,7 @@ def rebind_dataset_for_tokenizer(
                     raise ValueError(f"invalid dialogue row at {relative}:{line_number}")
                 if any(
                     not isinstance(message, dict)
-                    or message.get("role") not in {"system", "user", "assistant"}
+                    or message.get("role") not in {"state", "system", "user", "assistant"}
                     or not isinstance(message.get("content"), str)
                     for message in messages
                 ):

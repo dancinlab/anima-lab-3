@@ -51,6 +51,7 @@ def test_rebind_preserves_dialogue_bytes_and_checks_target_context(tmp_path: Pat
     source.mkdir()
     rows = [
         {"messages": [
+            {"role": "state", "content": "Answer briefly."},
             {"role": "user", "content": "Natural question?"},
             {"role": "assistant", "content": "Natural answer."},
         ]},
