@@ -57,7 +57,10 @@ def causal_zscore(values, eps=1e-6):
     mean = work.cumsum(dim=-1) / count
     second_moment = work.square().cumsum(dim=-1) / count
     variance = (second_moment - mean.square()).clamp_min(0.0)
-    standardized = (work - mean) / (variance.sqrt() + float(eps))
+    # Epsilon must be inside sqrt. ``sqrt(0) + eps`` is finite in the forward
+    # pass but its derivative at zero is infinite and poisons the first token's
+    # gradient during training.
+    standardized = (work - mean) / (variance + float(eps)).sqrt()
     return standardized.to(values.dtype)
 
 
@@ -668,7 +671,7 @@ class ConsciousLM(nn.Module):
                 square_total = prior["square_sum"] + work.square()
                 mean = total / count
                 variance = (square_total / count - mean.square()).clamp_min(0.0)
-                normalized = ((work - mean) / (variance.sqrt() + 1e-6)).to(logged.dtype)
+                normalized = ((work - mean) / (variance + 1e-6).sqrt()).to(logged.dtype)
             consciousness_signal = self.tension_proj(normalized.unsqueeze(-1))
             consciousness_signal = self._intervene_consciousness(consciousness_signal)
             layer_caches.append({

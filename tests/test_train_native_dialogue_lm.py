@@ -7,6 +7,7 @@ import torch
 from native_dialogue_lm import NativeDialogueTokenizer
 import train_native_dialogue_lm
 from train_native_dialogue_lm import (
+    assert_registered_model_has_finite_gradients,
     assert_registered_model_is_causal,
     BatchSource,
     dialogue_events,
@@ -19,6 +20,15 @@ from train_native_dialogue_lm import (
 
 def test_registered_model_startup_guard_accepts_causal_engine():
     assert_registered_model_is_causal()
+    assert_registered_model_has_finite_gradients()
+
+
+def test_causal_prefix_normalization_has_finite_zero_variance_gradient():
+    from conscious_lm import causal_zscore
+
+    values = torch.ones((2, 8), requires_grad=True)
+    causal_zscore(values).square().sum().backward()
+    assert torch.isfinite(values.grad).all()
 
 
 def test_registered_model_startup_guard_rejects_future_signal(monkeypatch):

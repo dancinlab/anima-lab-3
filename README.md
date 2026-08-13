@@ -1783,7 +1783,9 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    반증을 공용 필수 검사로 넣었다. 과거 체크포인트는 기록된 기존 계산을 그대로 유지하며, 수정
    정본으로 35,000회를 처음부터 다시 실행한다. 최종 대화 생성은 이미 계산한 앞부분을 재사용하되,
    재사용을 끈 기준 경로와 다음 단어 점수·고정 난수 출력이 일치할 때만 상시 서버에 적용한다. 상세 기준은
-   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다.
+   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다. 첫 인과 수정 실행은 `sqrt(0)`의
+   무한 역전파 기울기로 100회 CE가 `NaN`이 되어 다시 무효 중단했다. epsilon을 제곱근 안으로 옮기고
+   시작 전 전체 기울기와 매 단계 gradient norm 유한성 검사를 통과한 정본으로 재실행한다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는

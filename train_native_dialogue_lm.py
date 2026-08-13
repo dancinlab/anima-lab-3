@@ -277,6 +277,28 @@ def assert_registered_model_is_causal() -> None:
         torch.random.set_rng_state(state)
 
 
+def assert_registered_model_has_finite_gradients() -> None:
+    """Fail before corpus loading when a registered forward path cannot train."""
+    state = torch.random.get_rng_state()
+    try:
+        torch.manual_seed(NATIVE_DIALOGUE_SPEC["training"]["seed"])
+        config = preset("micro")
+        config["block_size"] = 8
+        model = build_model_from_config(config, dropout=0.0).train()
+        tokens = torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8]], dtype=torch.long)
+        targets = torch.tensor([[2, 3, 4, 5, 6, 7, 8, 9]], dtype=torch.long)
+        logits = model(tokens)[0]
+        loss = F.cross_entropy(logits.reshape(-1, model.vocab_size), targets.reshape(-1))
+        loss.backward()
+        if not torch.isfinite(loss) or any(
+            parameter.grad is not None and not torch.isfinite(parameter.grad).all()
+            for parameter in model.parameters()
+        ):
+            raise RuntimeError("registered model produced non-finite training gradients")
+    finally:
+        torch.random.set_rng_state(state)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-general", type=Path, action="append", default=[])
@@ -307,6 +329,7 @@ def main() -> None:
         parser.error("resume and weights are mutually exclusive")
 
     assert_registered_model_is_causal()
+    assert_registered_model_has_finite_gradients()
 
     manifest = None
     if args.data_manifest:
@@ -448,7 +471,11 @@ def main() -> None:
                 scaled = loss / args.grad_accum
             scaled.backward()
             accumulated += loss.item()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        gradient_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        if not torch.isfinite(gradient_norm):
+            raise FloatingPointError(
+                f"non-finite gradient norm at step {step}: {gradient_norm.item()}"
+            )
         optimizer.step()
 
         if step % args.log_every == 0 or step == args.steps:
