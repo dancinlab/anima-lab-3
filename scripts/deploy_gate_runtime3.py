@@ -16,15 +16,22 @@ from pathlib import Path
 
 RUNTIME_LABEL = "com.dancinlab.anima-lab3-field"
 COLLECTOR_LABEL = "com.dancinlab.anima-lab3-field-collector"
+NATIVE_CHAT_LABEL = "com.dancinlab.anima-lab3-native-chat"
 HOST = "127.0.0.1"
 ROOT = Path(__file__).resolve().parents[1]
 PYTHON = ROOT / ".local" / "gate-runtime-venv" / "bin" / "python"
 ENTRYPOINT = ROOT / "anima_unified.py"
 COLLECTOR = ROOT / "gate_runtime3.py"
+NATIVE_CHAT = ROOT / "scripts" / "run_native_chat_participant.py"
 DATA_ROOT = ROOT / ".local" / "gate-runtime3" / "data"
 STATE_ROOT = ROOT / ".local" / "gate-runtime3"
 LOG_ROOT = STATE_ROOT / "logs"
 PORT = 8765
+NATIVE_CHAT_ROOT = ROOT / ".local" / "native-public-chat"
+NATIVE_CHAT_LOG_ROOT = NATIVE_CHAT_ROOT / "logs"
+NATIVE_CHAT_STATUS = NATIVE_CHAT_ROOT / "status.json"
+NATIVE_CHAT_BROKER_URL = "ws://127.0.0.1:8000/ws/anima"
+NATIVE_CHAT_HEALTH_URL = "http://127.0.0.1:8000/health"
 DOMAIN = f"gui/{os.getuid()}"
 PLIST_ROOT = Path.home() / "Library" / "LaunchAgents"
 
@@ -216,6 +223,84 @@ def install(dialogue_backend: str = "claude", data_root: Path = DATA_ROOT) -> in
     return status(data_root)
 
 
+def _native_chat_payload() -> dict[str, object]:
+    return {
+        "Label": NATIVE_CHAT_LABEL,
+        "ProgramArguments": [
+            str(PYTHON), "-u", "-m", "scripts.run_native_chat_participant",
+            "--broker-url", NATIVE_CHAT_BROKER_URL,
+            "--model-dir", str(ROOT / "models" / "anima-native"),
+            "--status-file", str(NATIVE_CHAT_STATUS),
+        ],
+        "EnvironmentVariables": {},
+        "WorkingDirectory": str(ROOT),
+        "RunAtLoad": True,
+        "KeepAlive": True,
+        "ProcessType": "Background",
+        "StandardOutPath": str(NATIVE_CHAT_LOG_ROOT / "participant.out.log"),
+        "StandardErrorPath": str(NATIVE_CHAT_LOG_ROOT / "participant.err.log"),
+    }
+
+
+def _native_chat_healthy(timeout: float = 20.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            with urllib.request.urlopen(NATIVE_CHAT_HEALTH_URL, timeout=2) as response:
+                broker = json.load(response)
+            status_payload = json.loads(NATIVE_CHAT_STATUS.read_text())
+            if (
+                broker.get("ok") is True
+                and broker.get("anima_alive") is True
+                and status_payload.get("connected") is True
+                and status_payload.get("backend") == "native-dialogue"
+                and status_payload.get("claude_fallback") is False
+                and status_payload.get("checkpoint_step") == 45_000
+            ):
+                return True
+        except Exception:
+            time.sleep(0.25)
+    return False
+
+
+def install_native_chat() -> int:
+    """Connect only the native checkpoint to the existing public chat broker."""
+    _check_files("native")
+    if not NATIVE_CHAT.is_file():
+        raise SystemExit(f"missing native chat participant: {NATIVE_CHAT}")
+    for directory in (NATIVE_CHAT_ROOT, NATIVE_CHAT_LOG_ROOT, PLIST_ROOT):
+        directory.mkdir(parents=True, exist_ok=True)
+    previous = _plist(NATIVE_CHAT_LABEL).read_bytes() if _plist(NATIVE_CHAT_LABEL).is_file() else None
+    try:
+        _write_plist(NATIVE_CHAT_LABEL, _native_chat_payload())
+        _bootstrap(NATIVE_CHAT_LABEL)
+        if not _native_chat_healthy():
+            raise RuntimeError(f"native chat failed health check; inspect {NATIVE_CHAT_LOG_ROOT}")
+    except Exception as exc:
+        _restore_plist(NATIVE_CHAT_LABEL, previous)
+        raise SystemExit(f"native chat deployment rolled back: {exc}") from exc
+    return native_chat_status()
+
+
+def native_chat_status() -> int:
+    loaded = _loaded(NATIVE_CHAT_LABEL)
+    healthy = _native_chat_healthy(timeout=1.0)
+    details = json.loads(NATIVE_CHAT_STATUS.read_text()) if NATIVE_CHAT_STATUS.is_file() else {}
+    print(json.dumps({
+        "label": NATIVE_CHAT_LABEL,
+        "loaded": loaded,
+        "healthy": healthy,
+        "backend": details.get("backend"),
+        "checkpoint_step": details.get("checkpoint_step"),
+        "checkpoint_sha256": details.get("checkpoint_sha256"),
+        "claude_fallback": details.get("claude_fallback"),
+        "generated_responses": details.get("generated_responses"),
+        "public_url": "https://chat.dancinlab.org",
+        "raw_dialogue_in_status": False,
+    }, ensure_ascii=False, sort_keys=True))
+    return 0 if loaded and healthy else 1
+
+
 def status(data_root: Path = DATA_ROOT) -> int:
     state_root = data_root.expanduser().resolve().parent
     runtime_loaded = _loaded(RUNTIME_LABEL)
@@ -245,14 +330,20 @@ def status(data_root: Path = DATA_ROOT) -> int:
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", choices=("install", "status"))
+    parser.add_argument(
+        "command",
+        choices=("install", "status", "install-native-chat", "native-chat-status"),
+    )
     parser.add_argument("--dialogue-backend", choices=("claude", "native"), default="claude")
     parser.add_argument("--data-root", type=Path, default=DATA_ROOT)
     args = parser.parse_args(argv)
-    return (
-        install(args.dialogue_backend, args.data_root)
-        if args.command == "install" else status(args.data_root)
-    )
+    if args.command == "install":
+        return install(args.dialogue_backend, args.data_root)
+    if args.command == "status":
+        return status(args.data_root)
+    if args.command == "install-native-chat":
+        return install_native_chat()
+    return native_chat_status()
 
 
 if __name__ == "__main__":

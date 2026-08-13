@@ -141,6 +141,17 @@ def test_native_field_runtime_uses_self_model_and_preserves_selected_data_root(t
     assert "ANIMA_CLAUDE_BIN" not in payload["EnvironmentVariables"]
 
 
+def test_native_public_chat_has_no_claude_fallback():
+    deploy = __import__("scripts.deploy_gate_runtime3", fromlist=["_runtime_payload"])
+    payload = deploy._native_chat_payload()
+    arguments = payload["ProgramArguments"]
+    assert payload["Label"] == deploy.NATIVE_CHAT_LABEL
+    assert arguments[arguments.index("--broker-url") + 1] == deploy.NATIVE_CHAT_BROKER_URL
+    assert arguments[arguments.index("--model-dir") + 1].endswith("models/anima-native")
+    assert "claude" not in " ".join(arguments).casefold()
+    assert payload["EnvironmentVariables"] == {}
+
+
 def test_explicit_data_root_never_imports_global_legacy_memory(tmp_path, monkeypatch):
     legacy_root = tmp_path / "repository"
     legacy_root.mkdir()
