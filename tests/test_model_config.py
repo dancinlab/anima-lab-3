@@ -16,6 +16,14 @@ def test_native_target_keeps_registered_303m_shape():
     assert training["gradient_accumulation"] == (
         training["global_batch"] // training["micro_batch"]
     )
+    assert training["micro_batch_profiles"] == {
+        "rtx_5090_32gb": 16,
+        "h100_80gb": 32,
+    }
+    assert all(
+        training["global_batch"] % micro_batch == 0
+        for micro_batch in training["micro_batch_profiles"].values()
+    )
 
 
 def test_checkpoint_config_builds_registered_ffn_variant():

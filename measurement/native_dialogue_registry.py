@@ -156,6 +156,10 @@ NATIVE_DIALOGUE_SPEC = {
         "global_batch": 64,
         "micro_batch": 16,
         "gradient_accumulation": 4,
+        "micro_batch_profiles": {
+            "rtx_5090_32gb": 16,
+            "h100_80gb": 32,
+        },
         "context_tokens": 1_024,
         "external_pretrained_weights": 0,
         "quality_data_profile": "native_dialogue4",
