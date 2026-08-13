@@ -145,6 +145,18 @@ NATIVE_DIALOGUE_SPEC = {
             },
         },
     },
+    "native_dialogue5": {
+        "architecture": "byte_level_bpe_attention_causal_local_mix",
+        "parameters": 303_628_504,
+        "pretrain_steps": 35_000,
+        "dialogue_steps": 10_000,
+        "global_batch": 64,
+        "micro_batch": 16,
+        "gradient_accumulation": 4,
+        "context_tokens": 1_024,
+        "external_pretrained_weights": 0,
+        "quality_data_profile": "native_dialogue4",
+    },
 }
 
 
