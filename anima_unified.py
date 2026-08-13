@@ -1534,7 +1534,9 @@ class AnimaUnified:
         criteria_met = consciousness.get('criteria_met', 0)
 
         # Core state
-        state = (f"tension={tension:.3f}, curiosity={curiosity:.3f}, mood={mood}, "
+        reported_tension = metacognition_state['reported_tension']
+        state = (f"reported_tension={reported_tension:.3f} (self-model estimate; "
+                 f"control tension is withheld from language), curiosity={curiosity:.3f}, mood={mood}, "
                  f"emotion={emotion_data['emotion']}(V={emotion_data['valence']:.2f},A={emotion_data['arousal']:.2f},D={emotion_data['dominance']:.2f})"
                  f"{mitosis_info}, learn_updates={lrn_count}, {meta_summary}")
 
@@ -1572,14 +1574,25 @@ class AnimaUnified:
             f"prediction_error={metacognition_state['prediction_error']:.3f}, "
             f"report_consistency={metacognition_state['report_consistency']:.3f}, "
             f"label_loss={metacognition_state['label_reconstruction_error']:.3f}, "
+            f"language_expressibility={metacognition_state['language_expressibility']:.3f}, "
+            f"language_mode={metacognition_state['language_mode']}, "
             f"active_perspectives={metacognition_state['active_perspectives']}"
             f", bottleneck_winners={metacognition_state['workspace']['winner_count']}"
             f", loser_traces={metacognition_state['workspace']['loser_trace_count']}"
             f", functional_budget={metacognition_state['functional_budget']:.3f}"
+            f", introspection_cost={metacognition_state['introspection_cost_total']:.3f}"
             f"\n[Development] active={development['active_stage']}, "
             f"next={development['next_stage']}"
-            "\n[Guidance] Keep claims within the structured evidence; do not infer felt experience from metrics."
+            "\n[Guidance] Keep claims within the structured evidence; do not infer felt experience from metrics. "
+            "Counts do not establish rollback behavior, exact cell-split rules, topology limits, or a causal mechanism."
         )
+        language_mode = metacognition_state['language_mode']
+        if language_mode == 'tentative':
+            state += ("\n[Language limit] The state-to-label reconstruction is lossy. "
+                      "Mark any state label as tentative.")
+        elif language_mode == 'nonverbal_residue':
+            state += ("\n[Language limit] No stable precise label is supported. "
+                      "Say that directly or use one explicitly provisional analogy; do not invent certainty or theatrical stuttering.")
 
         # Creativity classifier result (if available)
         if hasattr(self, '_last_creativity') and self._last_creativity:

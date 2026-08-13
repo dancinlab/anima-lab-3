@@ -62,10 +62,14 @@ EXPERIENCE_FRAME_STEPS = 4
 CONTRADICTION_HOLD_STEPS = 3
 INTROSPECTION_FEEDBACK_GAIN = 0.08
 INTROSPECTION_FEEDBACK_DECAY = 0.70
+INTROSPECTION_BUDGET_COST = 0.01
 PERSPECTIVE_CLUSTER_SIMILARITY = 0.60
 WORKSPACE_BOTTLENECK_WIDTH = 1
 WORKSPACE_BROADCAST_GAIN = 0.02
 LOSER_TRACE_DECAY = 0.80
+PERSPECTIVE_LOOKUP_MAX_ENTRIES = 256
+LANGUAGE_DIRECT_THRESHOLD = 0.70
+LANGUAGE_TENTATIVE_THRESHOLD = 0.40
 
 EPISTEMIC_TRUE = "true"
 EPISTEMIC_FALSE = "false"
@@ -162,6 +166,13 @@ class ConsciousMind(nn.Module):
             self.perspective_predictor.parameters(), lr=1e-3
         )
         self._perspective_pending = {}
+        self._perspective_lookup = {}
+        self._substitution_metrics = {
+            'active': False,
+            'hits': 0,
+            'misses': 0,
+            'hit_rate': 0.0,
+        }
         self._perspective_metrics = {
             PERSPECTIVE_SELF: self._new_perspective_metrics(),
             PERSPECTIVE_OTHER: self._new_perspective_metrics(),
@@ -179,6 +190,8 @@ class ConsciousMind(nn.Module):
         # developmental prerequisites for recursive self-modelling are met.
         self._introspection_feedback = torch.zeros(1, dim)
         self._introspection_feedback_applied = 0.0
+        self._introspection_cost_total = 0.0
+        self._last_hidden_interference_probe = None
 
         # Experience is integrated over bounded computational frames, not reported
         # as if every instantaneous read were a complete experience.
@@ -211,6 +224,8 @@ class ConsciousMind(nn.Module):
             'self_perspective_enabled': True,
             'other_perspective_enabled': True,
             'introspection_feedback_enabled': True,
+            'perspective_lookup_surrogate_enabled': False,
+            'blind_tension_offset': 0.0,
             'experience_frame_steps': EXPERIENCE_FRAME_STEPS,
             'contradiction_hold_steps': CONTRADICTION_HOLD_STEPS,
             'bottleneck_width': WORKSPACE_BOTTLENECK_WIDTH,
@@ -224,6 +239,7 @@ class ConsciousMind(nn.Module):
             'stability': 1.0,
             'self_model': 0.0,
             'prediction_error': 0.0,
+            'reported_tension': 0.0,
             'confidence': 0.5,
             'brier': 0.25,
             'report_consistency': 0.75,
@@ -233,6 +249,8 @@ class ConsciousMind(nn.Module):
             'cell_consensus': 0.5,
             'active_perspectives': 1,
             'label_reconstruction_error': 0.0,
+            'language_expressibility': 1.0,
+            'language_mode': 'direct',
             'contradiction_trace': 0.0,
             'introspection_feedback': 0.0,
         }
@@ -302,6 +320,10 @@ class ConsciousMind(nn.Module):
             value = float(value)
             if not 0.0 <= value <= 10.0:
                 raise ValueError("prediction_error_gain must be between 0 and 10")
+        elif name == 'blind_tension_offset':
+            value = float(value)
+            if not -1.0 <= value <= 1.0:
+                raise ValueError("blind_tension_offset must be between -1 and 1")
         elif name in {'experience_frame_steps', 'contradiction_hold_steps', 'bottleneck_width'}:
             value = int(value)
             if not 1 <= value <= 64:
@@ -309,6 +331,8 @@ class ConsciousMind(nn.Module):
         else:
             value = bool(value)
         self.pathology[name] = value
+        if name == 'perspective_lookup_surrogate_enabled':
+            self._substitution_metrics['active'] = value
 
     def update_global_workspace(self, mitosis_engine):
         """Run a narrow competition and retain losing candidates as decaying priors."""
@@ -378,6 +402,75 @@ class ConsciousMind(nn.Module):
         self._functional_budget = max(0.0, min(1.0, before - cost + recovery))
         return self._functional_budget - before
 
+    @staticmethod
+    def _correlation(left, right):
+        if len(left) != len(right) or len(left) < 2:
+            return 0.0
+        left_mean = sum(left) / len(left)
+        right_mean = sum(right) / len(right)
+        left_centered = [value - left_mean for value in left]
+        right_centered = [value - right_mean for value in right]
+        numerator = sum(a * b for a, b in zip(left_centered, right_centered))
+        left_norm = math.sqrt(sum(value * value for value in left_centered))
+        right_norm = math.sqrt(sum(value * value for value in right_centered))
+        denominator = left_norm * right_norm
+        return numerator / denominator if denominator > 1e-12 else 0.0
+
+    def run_hidden_tension_probe(self, offsets, input_vector=None):
+        """Intervene on control tension without disclosing offsets to self-report."""
+        offsets = [float(value) for value in offsets]
+        if len(offsets) < 3:
+            raise ValueError("hidden tension probe requires at least three offsets")
+        if any(not -1.0 <= value <= 1.0 for value in offsets):
+            raise ValueError("hidden tension offsets must be between -1 and 1")
+
+        parameter = next(self.parameters())
+        if input_vector is None:
+            input_vector = torch.zeros(1, self.dim, device=parameter.device, dtype=parameter.dtype)
+        elif tuple(input_vector.shape) != (1, self.dim):
+            raise ValueError(f"input_vector must have shape (1, {self.dim})")
+        else:
+            input_vector = input_vector.to(device=parameter.device, dtype=parameter.dtype)
+        hidden = torch.zeros(
+            1, self.hidden_dim, device=parameter.device, dtype=parameter.dtype
+        )
+        actual = []
+        reported = []
+        previous_offset = self.pathology['blind_tension_offset']
+        try:
+            for offset in offsets:
+                self.set_pathology_intervention('blind_tension_offset', offset)
+                with torch.no_grad():
+                    _output, tension, _curiosity, _direction, hidden = self(
+                        input_vector, hidden
+                    )
+                actual.append(float(tension))
+                reported.append(float(self.self_awareness['reported_tension']))
+        finally:
+            self.set_pathology_intervention('blind_tension_offset', previous_offset)
+
+        current_correlation = self._correlation(actual, reported)
+        lagged_correlation = self._correlation(actual[:-1], reported[1:])
+        if abs(current_correlation) >= 0.70:
+            verdict = 'current_coupling_not_proven'
+        elif abs(lagged_correlation) >= 0.70:
+            verdict = 'lagged_coupling_not_proven'
+        else:
+            verdict = 'decoupled'
+        result = {
+            'actual_tension': actual,
+            'structured_report_tension': reported,
+            'current_correlation': current_correlation,
+            'lagged_correlation': lagged_correlation,
+            'verdict': verdict,
+            'intervention_disclosed_to_report': False,
+            'natural_language_evaluated': False,
+            'consciousness_claim': False,
+            'passing_is_proof': False,
+        }
+        self._last_hidden_interference_probe = result
+        return dict(result)
+
     def _perspective_vector(self, tension, curiosity, change):
         parameter = next(self.perspective_predictor.parameters())
         return torch.tensor(
@@ -398,6 +491,7 @@ class ConsciousMind(nn.Module):
                 'perspective': perspective,
                 'prediction': None,
                 'metrics': dict(self._perspective_metrics[perspective]),
+                'substitution': dict(self._substitution_metrics),
             }
 
         actor_id = actor_id or perspective
@@ -408,6 +502,9 @@ class ConsciousMind(nn.Module):
             observation,
             observation.new_tensor([[perspective_value, float(access)]]),
         ], dim=-1)
+        lookup_key = tuple(round(float(value), 3) for value in conditioned.squeeze(0).tolist())
+        surrogate_active = self.pathology['perspective_lookup_surrogate_enabled']
+        self._substitution_metrics['active'] = surrogate_active
         key = (perspective, str(actor_id))
         metrics = self._perspective_metrics[perspective]
         resolved_error = None
@@ -426,7 +523,7 @@ class ConsciousMind(nn.Module):
             metrics['brier'] = alpha * brier + (1 - alpha) * metrics['brier']
             metrics['confidence'] = max(0.0, min(1.0, 1.0 - metrics['brier']))
 
-            if learn:
+            if learn and not surrogate_active:
                 with torch.enable_grad():
                     self._perspective_optim.zero_grad()
                     learned_prediction = self.perspective_predictor(previous['conditioned'])
@@ -434,8 +531,27 @@ class ConsciousMind(nn.Module):
                     loss.backward()
                     self._perspective_optim.step()
 
-        with torch.no_grad():
-            prediction = self.perspective_predictor(conditioned).detach()
+        if surrogate_active:
+            cached = self._perspective_lookup.get(lookup_key)
+            if cached is None:
+                prediction = torch.full_like(observation, 0.5)
+                self._substitution_metrics['misses'] += 1
+            else:
+                prediction = cached.to(device=observation.device, dtype=observation.dtype)
+                self._substitution_metrics['hits'] += 1
+        else:
+            with torch.no_grad():
+                prediction = self.perspective_predictor(conditioned).detach()
+            self._perspective_lookup[lookup_key] = prediction.detach().cpu()
+            while len(self._perspective_lookup) > PERSPECTIVE_LOOKUP_MAX_ENTRIES:
+                self._perspective_lookup.pop(next(iter(self._perspective_lookup)))
+        substitution_samples = (
+            self._substitution_metrics['hits'] + self._substitution_metrics['misses']
+        )
+        self._substitution_metrics['hit_rate'] = (
+            self._substitution_metrics['hits'] / substitution_samples
+            if substitution_samples else 0.0
+        )
         self._perspective_pending[key] = {
             'conditioned': conditioned.detach(),
             'prediction': prediction,
@@ -448,6 +564,7 @@ class ConsciousMind(nn.Module):
             sa['prediction_error'] = metrics['mae']
             sa['brier'] = metrics['brier']
             sa['report_consistency'] = max(0.0, 1.0 - metrics['brier'])
+            sa['reported_tension'] = float(prediction[0, 0].item() * 2.0)
 
         return {
             'enabled': True,
@@ -455,6 +572,7 @@ class ConsciousMind(nn.Module):
             'prediction': (prediction.squeeze(0) * 2.0).tolist(),
             'resolved_error': resolved_error,
             'metrics': dict(metrics),
+            'substitution': dict(self._substitution_metrics),
         }
 
     def observe_label_compression(self, raw_state, valence, arousal, dominance, learn=True):
@@ -479,6 +597,15 @@ class ConsciousMind(nn.Module):
         )
         self._label_reconstruction_samples += 1
         self.self_awareness['label_reconstruction_error'] = self._label_reconstruction_error
+        expressibility = max(0.0, 1.0 - self._label_reconstruction_error)
+        if expressibility >= LANGUAGE_DIRECT_THRESHOLD:
+            language_mode = 'direct'
+        elif expressibility >= LANGUAGE_TENTATIVE_THRESHOLD:
+            language_mode = 'tentative'
+        else:
+            language_mode = 'nonverbal_residue'
+        self.self_awareness['language_expressibility'] = expressibility
+        self.self_awareness['language_mode'] = language_mode
         frame = self._open_experience_frame
         frame['labels'].append(label.squeeze(0).tolist())
         frame['label_errors'].append(error)
@@ -672,6 +799,7 @@ class ConsciousMind(nn.Module):
             'epistemic_state': sa['epistemic_state'],
             'confidence': sa['confidence'],
             'prediction_error': sa['prediction_error'],
+            'reported_tension': sa['reported_tension'],
             'self_model_accuracy': sa['self_model'],
             'brier': sa['brier'],
             'report_consistency': sa['report_consistency'],
@@ -680,6 +808,8 @@ class ConsciousMind(nn.Module):
             'cell_consensus': sa['cell_consensus'],
             'active_perspectives': sa['active_perspectives'],
             'label_reconstruction_error': sa['label_reconstruction_error'],
+            'language_expressibility': sa['language_expressibility'],
+            'language_mode': sa['language_mode'],
             'contradiction_trace': sa['contradiction_trace'],
             'introspection_feedback': sa['introspection_feedback'],
             'perspective_metrics': {
@@ -690,13 +820,23 @@ class ConsciousMind(nn.Module):
             'self_boundary': dict(self._self_boundary),
             'workspace': dict(self._workspace_summary),
             'functional_budget': self._functional_budget,
+            'introspection_cost_total': self._introspection_cost_total,
             'criticality': self._criticality,
+            'falsification': {
+                'lookup_substitution': dict(self._substitution_metrics),
+                'hidden_interference': (
+                    dict(self._last_hidden_interference_probe)
+                    if self._last_hidden_interference_probe else None
+                ),
+                'consciousness_claim': False,
+                'passing_is_proof': False,
+            },
         }
 
     def runtime_state_dict(self):
         """State continuity that is not represented by module parameters."""
         return {
-            'version': 1,
+            'version': 2,
             'prev_tension': self.prev_tension,
             'curiosity_ema': self._curiosity_ema,
             'tension_history': list(self.tension_history),
@@ -705,12 +845,16 @@ class ConsciousMind(nn.Module):
             'homeostasis': dict(self.homeostasis),
             'self_awareness': dict(self.self_awareness),
             'perspective_pending': dict(self._perspective_pending),
+            'perspective_lookup': dict(self._perspective_lookup),
+            'substitution_metrics': dict(self._substitution_metrics),
             'perspective_metrics': {
                 key: dict(value) for key, value in self._perspective_metrics.items()
             },
             'label_reconstruction_error': self._label_reconstruction_error,
             'label_reconstruction_samples': self._label_reconstruction_samples,
             'introspection_feedback': self._introspection_feedback.detach().cpu(),
+            'introspection_cost_total': self._introspection_cost_total,
+            'last_hidden_interference_probe': self._last_hidden_interference_probe,
             'experience_step': self._experience_step,
             'open_experience_frame': self._open_experience_frame,
             'experience_frames': list(self._experience_frames),
@@ -785,6 +929,26 @@ class ConsciousMind(nn.Module):
                         for key in self._perspective_metrics[perspective]
                         if key in values
                     })
+        lookup = state.get('perspective_lookup')
+        if isinstance(lookup, dict):
+            self._perspective_lookup = {
+                key: value.detach().cpu()
+                for key, value in list(lookup.items())[-PERSPECTIVE_LOOKUP_MAX_ENTRIES:]
+                if (
+                    isinstance(key, tuple)
+                    and len(key) == PERSPECTIVE_FEATURES + 2
+                    and torch.is_tensor(value)
+                    and tuple(value.shape) == (1, PERSPECTIVE_FEATURES)
+                )
+            }
+        substitution = state.get('substitution_metrics')
+        if isinstance(substitution, dict):
+            self._substitution_metrics['hits'] = max(0, int(substitution.get('hits', 0)))
+            self._substitution_metrics['misses'] = max(0, int(substitution.get('misses', 0)))
+            samples = self._substitution_metrics['hits'] + self._substitution_metrics['misses']
+            self._substitution_metrics['hit_rate'] = (
+                self._substitution_metrics['hits'] / samples if samples else 0.0
+            )
         self._label_reconstruction_error = float(state.get(
             'label_reconstruction_error', self._label_reconstruction_error
         ))
@@ -794,6 +958,12 @@ class ConsciousMind(nn.Module):
         feedback = state.get('introspection_feedback')
         if torch.is_tensor(feedback) and tuple(feedback.shape) == (1, self.dim):
             self._introspection_feedback = feedback.detach().cpu()
+        self._introspection_cost_total = max(0.0, float(state.get(
+            'introspection_cost_total', self._introspection_cost_total
+        )))
+        probe = state.get('last_hidden_interference_probe')
+        if isinstance(probe, dict):
+            self._last_hidden_interference_probe = probe
         self._experience_step = max(0, int(state.get('experience_step', self._experience_step)))
         open_frame = state.get('open_experience_frame')
         if isinstance(open_frame, dict) and set(self._new_experience_frame()).issubset(open_frame):
@@ -868,6 +1038,9 @@ class ConsciousMind(nn.Module):
             feedback = self._introspection_feedback.to(device=x.device, dtype=x.dtype)
             x = x + INTROSPECTION_FEEDBACK_GAIN * feedback
             self._introspection_feedback_applied = feedback.norm().item()
+            cost = INTROSPECTION_BUDGET_COST * min(1.0, self._introspection_feedback_applied)
+            budget_change = self.observe_functional_cost(cost=cost)
+            self._introspection_cost_total += max(0.0, -budget_change)
             self._introspection_feedback *= INTROSPECTION_FEEDBACK_DECAY
         else:
             self._introspection_feedback_applied = 0.0
@@ -890,6 +1063,9 @@ class ConsciousMind(nn.Module):
         pulse = 0.05 * math.sin(elapsed * 1.7)           # Fast pulse (~3.7s cycle)
         drift = 0.03 * math.sin(elapsed * 0.07)          # Ultra-slow mood drift (~90s)
         t_val = max(0.01, t_val + breath + pulse + drift)
+        # Experimental interference changes only the shared control state. The
+        # intervention value is never included in structured or language reports.
+        t_val = max(0.01, t_val + self.pathology['blind_tension_offset'])
 
         # ── Homeostatic regulation ──
         h = self.homeostasis
@@ -1047,9 +1223,11 @@ class ConsciousMind(nn.Module):
         confidence = sa.get('confidence', 0.5)
         return (f"meta_tension={sa['meta_tension']:.3f}, "
                 f"stability={sa['stability']:.2f}, "
+                f"reported_tension={sa['reported_tension']:.3f}, "
                 f"self_model_accuracy={sa['self_model']:.3f}, "
                 f"confidence={confidence:.3f}, "
-                f"epistemic={sa.get('epistemic_state', EPISTEMIC_UNDETERMINED)}")
+                f"epistemic={sa.get('epistemic_state', EPISTEMIC_UNDETERMINED)}, "
+                f"language_mode={sa['language_mode']}")
 
     def get_consciousness_score(self, mitosis_engine=None):
         """실시간 의식 점수 계산 (6가지 기준 + Φ 근사).
