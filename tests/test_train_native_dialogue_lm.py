@@ -102,6 +102,17 @@ def test_general_batch_has_causal_targets():
     assert torch.equal(x[:, 1:], y[:, :-1])
 
 
+def test_general_loader_adds_boundaries_without_widening_tokens(tmp_path: Path):
+    path = tmp_path / "general.txt"
+    path.write_text("first line\n둘째 줄", encoding="utf-8")
+    tokenizer = NativeDialogueTokenizer.train([path], vocab_size=512)
+    loaded = load_general_tokens(path, tokenizer)
+    assert loaded.dtype == np.int32
+    assert loaded[0] == tokenizer.ids["<bos>"]
+    assert loaded[-1] == tokenizer.ids["<eos>"]
+    assert loaded[1:-1].tolist() == tokenizer.encode(path.read_text(encoding="utf-8"))
+
+
 def test_parallel_corpus_loading_preserves_serial_order_and_tokens(tmp_path: Path):
     paths = [tmp_path / "a.txt", tmp_path / "b.txt"]
     paths[0].write_text("first line\n둘째 줄", encoding="utf-8")

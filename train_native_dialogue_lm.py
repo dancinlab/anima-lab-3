@@ -11,7 +11,7 @@ import random
 import re
 import shutil
 import time
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -115,10 +115,20 @@ def load_dialogue_examples(path: Path, tokenizer: NativeDialogueTokenizer) -> li
 
 def load_general_tokens(path: Path, tokenizer: NativeDialogueTokenizer) -> np.ndarray:
     text = path.read_text(encoding="utf-8")
-    ids = [tokenizer.ids["<bos>"], *tokenizer.encode(text), tokenizer.ids["<eos>"]]
-    if len(ids) < 3:
+    encoded = tokenizer.encode(text)
+    if not encoded:
         raise ValueError(f"general corpus is empty: {path}")
-    return np.asarray(ids, dtype=np.int32)
+    ids = np.empty(len(encoded) + 2, dtype=np.int32)
+    ids[0] = tokenizer.ids["<bos>"]
+    ids[1:-1] = encoded
+    ids[-1] = tokenizer.ids["<eos>"]
+    return ids
+
+
+def _load_corpus_file(task):
+    path, tokenizer_path, loader = task
+    tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+    return loader(path, tokenizer)
 
 
 def load_corpus_files(
@@ -133,17 +143,12 @@ def load_corpus_files(
     if not paths:
         return []
 
-    def load_one(path: Path):
-        # A backend per worker avoids shared mutable tokenizer state. Keeping
-        # workers in this process also avoids serializing multi-gigabyte token
-        # arrays back from child processes, which can exceed host memory.
-        tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
-        return loader(path, tokenizer)
-
-    # The Rust tokenizer releases Python's lock for encoding. ``map`` keeps the
-    # declared shard order even when workers finish out of order.
-    with ThreadPoolExecutor(max_workers=min(workers, len(paths))) as executor:
-        return list(executor.map(load_one, paths))
+    tasks = [(path, tokenizer_path, loader) for path in paths]
+    # Huge single-document encodes retain Python's interpreter lock, so bounded
+    # processes are required for real parallelism. ``map`` preserves declared
+    # shard order even when workers finish out of order.
+    with ProcessPoolExecutor(max_workers=min(workers, len(paths))) as executor:
+        return list(executor.map(_load_corpus_file, tasks))
 
 
 class BatchSource:
