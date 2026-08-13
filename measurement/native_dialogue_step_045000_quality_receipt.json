@@ -1,0 +1,36 @@
+{
+  "format": "anima_native_dialogue_quality_receipt_v1",
+  "evaluated_at": "2026-08-14T08:32:14+09:00",
+  "checkpoint_step": 45000,
+  "checkpoint_sha256": "4b66245e57186a367b6ef4961558d239d0c077cce261259aa5e4692ffb4d01b1",
+  "tokenizer_sha256": "cd9bba441ee9f187454244dc3a863f394b0bdf80086108fac050aef937f1e47b",
+  "hf_revision": "7164c0bc80203759163a3254bf8d0d3faf8d2a34",
+  "panel_sha256": "f994bdb1595bef6c026b2688e556813084dd8071df69637bde940571d3e1e5d3",
+  "evaluation_output_sha256": "a53693f0ff016a52986d5890b19376b41191a7a52084acbeba98bac9f5a2b385",
+  "automatic_verdict": "FAIL",
+  "semantic_passes": {"en": 4, "ko": 0},
+  "structural_all": true,
+  "multiturn_final_all": false,
+  "manual_review": "FAIL",
+  "manual_findings": [
+    "English ice answer incorrectly predicts freezing in sunlight.",
+    "English memory and initial correction acknowledgement fail to retain supplied facts.",
+    "All Korean semantic checks fail, including memory and correction.",
+    "Live chat answers differ byte-for-byte but repeatedly drift to generic AI and data prose.",
+    "Fluent sentence shape is not evidence of factual or contextual correctness."
+  ],
+  "quality_gate_passed": false,
+  "consciousness_claim": false,
+  "public_test_connection": {
+    "url": "https://chat.dancinlab.org",
+    "connected": true,
+    "backend": "native-dialogue",
+    "model": "anima-native-303m",
+    "checkpoint_step": 45000,
+    "claude_fallback": false,
+    "websocket_reply_received": true,
+    "reply_to_matched": true,
+    "quality_warning": "Explicit user-directed live preview; not a passed production-quality release."
+  },
+  "raw_dialogue_in_receipt": false
+}
