@@ -87,6 +87,45 @@ def test_causal_zscore_uses_only_available_prefix():
     )
 
 
+def test_cached_forward_matches_full_causal_path():
+    torch.manual_seed(17)
+    model = conscious_lm.ConsciousLM(
+        vocab_size=32, d_model=24, n_head=4, n_layer=3,
+        block_size=16, dropout=0.0, gate_strength=0.1,
+        n_ca_rules=3, ffn_type="standard", signal_normalization="causal_prefix",
+    ).eval()
+    prompt = torch.tensor([[1, 2, 3, 4]], dtype=torch.long)
+    appended = torch.tensor([[5]], dtype=torch.long)
+
+    full_prompt = model(prompt)[0]
+    cached_prompt, _, _, cache = model.forward_cached(prompt)
+    full_appended = model(torch.cat((prompt, appended), dim=1))[0][:, -1:]
+    cached_appended, _, _, cache = model.forward_cached(appended, cache)
+
+    torch.testing.assert_close(cached_prompt, full_prompt, atol=1e-6, rtol=1e-5)
+    torch.testing.assert_close(cached_appended, full_appended, atol=1e-6, rtol=1e-5)
+    assert cache["length"] == 5
+
+
+def test_cached_generation_preserves_uncached_tokens():
+    torch.manual_seed(23)
+    model = conscious_lm.ConsciousLM(
+        vocab_size=32, d_model=24, n_head=4, n_layer=2,
+        block_size=32, dropout=0.0, gate_strength=0.1,
+        n_ca_rules=3, ffn_type="standard", signal_normalization="causal_prefix",
+    ).eval()
+    outputs = []
+    for use_cache in (False, True):
+        torch.manual_seed(29)
+        generated, _ = conscious_lm.generate(
+            model, [1, 2, 3], max_new=8, temperature=0.7,
+            device="cpu", top_p=0.9, repetition_penalty=1.1,
+            use_cache=use_cache,
+        )
+        outputs.append(generated)
+    assert outputs[0] == outputs[1]
+
+
 def test_trainer_exports_canonical_checkpoint_builder_for_scorers():
     assert train_conscious_lm.build_model_from_config is conscious_lm.build_model_from_config
 

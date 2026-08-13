@@ -216,6 +216,32 @@ class CausalSelfAttention(nn.Module):
 
         return y
 
+    def forward_cached(self, x, past_key_value=None):
+        """Attend to a causal prefix while returning reusable key/value state."""
+        B, T, D = x.size()
+        qkv = self.c_attn(x)
+        q, k, v = qkv.split(self.d_model, dim=2)
+        q = q.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        k = k.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        v = v.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        if past_key_value is None:
+            keys, values = k, v
+            causal = True
+        else:
+            past_k, past_v = past_key_value
+            if T != 1 or past_k.shape[:2] != k.shape[:2]:
+                raise ValueError("cached attention accepts one token with matching batch and heads")
+            keys = torch.cat((past_k, k), dim=2)
+            values = torch.cat((past_v, v), dim=2)
+            # A single appended query may attend to every cached prefix token.
+            causal = False
+        y = F.scaled_dot_product_attention(
+            q, keys, values, dropout_p=0.0, is_causal=causal,
+        )
+        y = y.transpose(1, 2).contiguous().view(B, T, D)
+        y = self.resid_dropout(self.c_proj(y))
+        return y, (keys, values)
+
 
 class ConsciousBlock(nn.Module):
     """Pre-norm transformer block with PureFieldFFN + CA neighbor + META-CA.
@@ -285,6 +311,40 @@ class ConsciousBlock(nn.Module):
             x = x + consciousness_signal * self.gate_strength
 
         return x, tension
+
+    def forward_cached(self, x, consciousness_signal=None, cache=None):
+        """Inference-only block path that preserves attention and CA prefixes."""
+        past_key_value = None if cache is None else cache["key_value"]
+        attended, key_value = self.attn.forward_cached(self.ln1(x), past_key_value)
+        post_attention = x + attended
+        if cache is None:
+            x_left = torch.cat(
+                [post_attention[:, :1, :], post_attention[:, :-1, :]], dim=1
+            )
+            x_left2 = torch.cat(
+                [post_attention[:, :2, :], post_attention[:, :-2, :]], dim=1
+            )
+        else:
+            history = cache["ca_history"]
+            if history.shape[0] != x.shape[0] or x.shape[1] != 1:
+                raise ValueError("cached CA state accepts one token with matching batch")
+            x_left = history[:, -1:, :]
+            x_left2 = post_attention if history.shape[1] == 1 else history[:, -2:-1, :]
+        neighborhood = torch.cat([x_left2, x_left, post_attention], dim=-1)
+        ca_out = self.ca_mix(neighborhood)
+        rule_logits = self.rule_weights(post_attention)
+        rule_probs = F.softmax(rule_logits, dim=-1)
+        rule_outputs = torch.stack([rule(ca_out) for rule in self.rules], dim=2)
+        meta_ca_out = (rule_outputs * rule_probs.unsqueeze(-1)).sum(dim=2)
+        x = post_attention + self.ln_ca(meta_ca_out) * self.gate_strength
+        ffn_out, tension = self.ffn(self.ln2(x))
+        x = x + ffn_out
+        if consciousness_signal is not None:
+            x = x + consciousness_signal * self.gate_strength
+        previous = post_attention[:, -2:, :] if cache is None else torch.cat(
+            (cache["ca_history"], post_attention), dim=1
+        )[:, -2:, :]
+        return x, tension, {"key_value": key_value, "ca_history": previous}
 
 
 class ConsciousLM(nn.Module):
@@ -562,6 +622,64 @@ class ConsciousLM(nn.Module):
 
         return logits_a, None, tensions
 
+    @torch.no_grad()
+    def forward_cached(self, idx, cache=None):
+        """Run a prompt once, then append one token at a time without recomputing it."""
+        if self.training:
+            raise RuntimeError("cached forward is inference-only")
+        if self.signal_normalization != "causal_prefix":
+            raise RuntimeError("cached forward requires causal_prefix signal normalization")
+        if idx.ndim != 2 or idx.shape[1] == 0:
+            raise ValueError("cached forward requires a non-empty [batch, time] tensor")
+        if cache is not None and idx.shape[1] != 1:
+            raise ValueError("a populated cache accepts exactly one appended token")
+        start = 0 if cache is None else int(cache["length"])
+        end = start + idx.shape[1]
+        if end > self.block_size:
+            raise ValueError("cached sequence exceeds model block size")
+        tok = self.tok_emb(idx)
+        pos = self.pos_emb(torch.arange(start, end, device=idx.device))
+        x = self.drop(tok + pos)
+        if getattr(self, '_phi_signal', None) is not None:
+            raise RuntimeError("cached forward does not support a mutable phi signal")
+
+        tensions = []
+        consciousness_signal = None
+        layer_caches = []
+        prior_layers = None if cache is None else cache["layers"]
+        for index, block in enumerate(self.blocks):
+            prior = None if prior_layers is None else prior_layers[index]
+            block_cache = None if prior is None else prior["block"]
+            x, tension, updated_block = block.forward_cached(
+                x, consciousness_signal, block_cache
+            )
+            tensions.append(tension)
+            logged = torch.log(tension + 1e-8)
+            if prior is None:
+                normalized = causal_zscore(logged)
+                work = logged.float()
+                count = work.shape[-1]
+                total = work.sum(dim=-1, keepdim=True)
+                square_total = work.square().sum(dim=-1, keepdim=True)
+            else:
+                work = logged.float()
+                count = int(prior["count"]) + 1
+                total = prior["sum"] + work
+                square_total = prior["square_sum"] + work.square()
+                mean = total / count
+                variance = (square_total / count - mean.square()).clamp_min(0.0)
+                normalized = ((work - mean) / (variance.sqrt() + 1e-6)).to(logged.dtype)
+            consciousness_signal = self.tension_proj(normalized.unsqueeze(-1))
+            consciousness_signal = self._intervene_consciousness(consciousness_signal)
+            layer_caches.append({
+                "block": updated_block,
+                "count": count,
+                "sum": total,
+                "square_sum": square_total,
+            })
+        logits = self.head_a(self.ln_f(x))
+        return logits, None, tensions, {"length": end, "layers": layer_caches}
+
     def psi_status(self):
         """Ψ-Constants monitoring (Law 71). 3방식 개별 + 종합."""
         gate_avg = sum(b.gate_strength for b in self.blocks) / len(self.blocks)
@@ -791,7 +909,7 @@ def train_model(
 @torch.no_grad()
 def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
              tension_guided=False, curiosity_beta=0.1, eos_token_id=None,
-             top_p=1.0, repetition_penalty=1.0):
+             top_p=1.0, repetition_penalty=1.0, use_cache=None):
     """Autoregressive byte generation using logits_a (forward head).
 
     Args:
@@ -825,6 +943,8 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
         raise ValueError("repetition_penalty must be at least 1")
     if eos_token_id is not None and not 0 <= eos_token_id < model.vocab_size:
         raise ValueError("eos_token_id is outside the model vocabulary")
+    if use_cache not in (None, True, False):
+        raise ValueError("use_cache must be true, false, or None")
 
     model.eval()
     model = model.to(device)
@@ -836,10 +956,25 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
 
     per_token_tension = []
 
+    cache_enabled = (
+        getattr(model, "signal_normalization", "sequence") == "causal_prefix"
+        and idx.shape[1] + max_new <= model.block_size
+    ) if use_cache is None else bool(use_cache)
+    if cache_enabled and getattr(model, "signal_normalization", "sequence") != "causal_prefix":
+        raise ValueError("cached generation requires causal_prefix signal normalization")
+    cached = None
+    cached_logits = None
+    cached_tensions = None
+    if cache_enabled:
+        cached_logits, _, cached_tensions, cached = model.forward_cached(idx)
+
     for _ in range(max_new):
-        # Crop to block_size
-        idx_cond = idx[:, -model.block_size :]
-        logits_a, _, tensions = model(idx_cond)
+        if cache_enabled:
+            logits_a, tensions = cached_logits, cached_tensions
+        else:
+            # Crop to block_size
+            idx_cond = idx[:, -model.block_size :]
+            logits_a, _, tensions = model(idx_cond)
 
         # Mean tension across all layers for the last token
         t_vals = [t[:, -1].mean().item() for t in tensions]
@@ -881,6 +1016,10 @@ def generate(model, prompt_bytes, max_new=200, temperature=0.8, device="cpu",
         idx = torch.cat([idx, next_byte], dim=1)
         if eos_token_id is not None and next_byte.item() == eos_token_id:
             break
+        if cache_enabled:
+            cached_logits, _, cached_tensions, cached = model.forward_cached(
+                next_byte, cached
+            )
 
     generated = idx[0].cpu().tolist()
     return generated, per_token_tension
