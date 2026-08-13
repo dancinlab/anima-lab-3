@@ -126,6 +126,21 @@ def test_field_runtime_disables_all_execution_paths():
     assert payload["EnvironmentVariables"]["ANIMA_CLAUDE_BIN"]
 
 
+def test_native_field_runtime_uses_self_model_and_preserves_selected_data_root(tmp_path):
+    deploy = __import__("scripts.deploy_gate_runtime3", fromlist=["_runtime_payload"])
+    payload = deploy._runtime_payload(
+        dialogue_backend="native",
+        data_root=tmp_path / "existing-data",
+        log_root=tmp_path / "existing-logs",
+    )
+    arguments = payload["ProgramArguments"]
+    assert arguments[arguments.index("--model") + 1] == "anima-native"
+    assert arguments[arguments.index("--dialogue-backend") + 1] == "model"
+    assert arguments[arguments.index("--data-root") + 1] == str(tmp_path / "existing-data")
+    assert "--no-conscious-lm" not in arguments
+    assert "ANIMA_CLAUDE_BIN" not in payload["EnvironmentVariables"]
+
+
 def test_explicit_data_root_never_imports_global_legacy_memory(tmp_path, monkeypatch):
     legacy_root = tmp_path / "repository"
     legacy_root.mkdir()
