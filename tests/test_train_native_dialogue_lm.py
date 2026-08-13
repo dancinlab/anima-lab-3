@@ -8,6 +8,8 @@ from train_native_dialogue_lm import (
     BatchSource,
     dialogue_events,
     load_dialogue_examples,
+    prepare_tokenizer,
+    sha256_file,
     validation_loss,
 )
 
@@ -89,3 +91,41 @@ def test_dialogue_files_are_sampled_before_examples():
         counts[int(sequence[0])] += 1
     assert 400 <= counts[1] <= 600
     assert 400 <= counts[4] <= 600
+
+
+def test_continuation_copies_checkpoint_tokenizer_instead_of_retraining(tmp_path: Path):
+    source = tmp_path / "source"
+    output = tmp_path / "output"
+    corpus = tmp_path / "corpus.txt"
+    source.mkdir()
+    corpus.write_text("기존 vocabulary text", encoding="utf-8")
+    original = NativeDialogueTokenizer.train([corpus], vocab_size=320)
+    original.save(source / "tokenizer.json")
+    checkpoint = source / "final.pt"
+    checkpoint.write_bytes(b"checkpoint placeholder")
+
+    replacement = tmp_path / "replacement.txt"
+    replacement.write_text("completely different training text", encoding="utf-8")
+    _, copied = prepare_tokenizer(output, original.vocab_size, [replacement], checkpoint)
+
+    assert sha256_file(copied) == sha256_file(source / "tokenizer.json")
+
+
+def test_continuation_rejects_different_existing_tokenizer(tmp_path: Path):
+    import pytest
+
+    source = tmp_path / "source"
+    output = tmp_path / "output"
+    source.mkdir()
+    output.mkdir()
+    left = tmp_path / "left.txt"
+    right = tmp_path / "right.txt"
+    left.write_text("가나다라 existing tokens", encoding="utf-8")
+    right.write_text("different replacement vocabulary words", encoding="utf-8")
+    NativeDialogueTokenizer.train([left], vocab_size=320).save(source / "tokenizer.json")
+    NativeDialogueTokenizer.train([right], vocab_size=320).save(output / "tokenizer.json")
+    checkpoint = source / "final.pt"
+    checkpoint.write_bytes(b"checkpoint placeholder")
+
+    with pytest.raises(ValueError, match="output tokenizer differs"):
+        prepare_tokenizer(output, 320, [right], checkpoint)

@@ -9,6 +9,7 @@ import math
 import os
 import random
 import re
+import shutil
 import time
 from pathlib import Path
 
@@ -185,6 +186,42 @@ def atomic_json(payload: dict, path: Path) -> None:
     os.replace(temporary, path)
 
 
+def prepare_tokenizer(
+    output_dir: Path,
+    vocab_size: int,
+    training_files: list[Path],
+    starting_checkpoint: Path | None = None,
+) -> tuple[NativeDialogueTokenizer, Path]:
+    """Create a tokenizer for a new model or preserve it across continuation.
+
+    Token IDs are part of the learned model, even though they do not change a
+    tensor's shape.  A continuation checkpoint therefore owns the tokenizer
+    beside it.  Rebuilding a same-sized vocabulary would silently attach the
+    old embedding rows to different text pieces.
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+    tokenizer_path = output_dir / "tokenizer.json"
+    if starting_checkpoint is not None:
+        source_path = starting_checkpoint.parent / "tokenizer.json"
+        if not source_path.is_file():
+            raise ValueError(f"starting checkpoint tokenizer is missing: {source_path}")
+        source_hash = sha256_file(source_path)
+        if tokenizer_path.is_file():
+            if sha256_file(tokenizer_path) != source_hash:
+                raise ValueError("output tokenizer differs from the starting checkpoint tokenizer")
+        else:
+            temporary = tokenizer_path.with_name(tokenizer_path.name + ".tmp")
+            shutil.copyfile(source_path, temporary)
+            os.replace(temporary, tokenizer_path)
+    elif not tokenizer_path.is_file():
+        tokenizer = NativeDialogueTokenizer.train(training_files, vocab_size=vocab_size)
+        tokenizer.save(tokenizer_path)
+    tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+    if tokenizer.vocab_size != int(vocab_size):
+        raise ValueError("tokenizer vocabulary size differs from the registered model")
+    return tokenizer, tokenizer_path
+
+
 @torch.no_grad()
 def validation_loss(model, source: BatchSource, batches: int, batch_size: int,
                     device: torch.device, source_mode: str = "mixed",
@@ -263,19 +300,19 @@ def main() -> None:
     if not 0.0 <= args.response_only_fraction <= 1.0:
         parser.error("response-only fraction must be between zero and one")
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-    tokenizer_path = args.output_dir / "tokenizer.json"
     config = preset(args.preset)
-    if tokenizer_path.is_file():
-        tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
-    else:
-        tokenizer = NativeDialogueTokenizer.train(
-            [args.data_manifest.parent / path for path in tokenizer_files]
-            if tokenizer_files else args.train_general + args.train_dialogue,
-            vocab_size=config["vocab_size"],
-        )
-        tokenizer.save(tokenizer_path)
+    tokenizer_training_files = (
+        [args.data_manifest.parent / path for path in tokenizer_files]
+        if tokenizer_files else args.train_general + args.train_dialogue
+    )
+    tokenizer, tokenizer_path = prepare_tokenizer(
+        args.output_dir,
+        vocab_size=config["vocab_size"],
+        training_files=tokenizer_training_files,
+        starting_checkpoint=args.resume or args.weights,
+    )
     config["vocab_size"] = tokenizer.vocab_size
+    tokenizer_hash = sha256_file(tokenizer_path)
 
     train_general = [load_general_tokens(path, tokenizer) for path in args.train_general]
     train_dialogue = [load_dialogue_examples(path, tokenizer) for path in args.train_dialogue]
@@ -313,6 +350,8 @@ def main() -> None:
             resume_hash is not None and resume_hash != checkpoint_spec_sha256()
         ):
             raise ValueError("resume checkpoint does not match the registered model")
+        if resumed.get("tokenizer_sha256", tokenizer_hash) != tokenizer_hash:
+            raise ValueError("resume checkpoint tokenizer identity mismatch")
         model.load_state_dict(resumed["model_state"])
         optimizer.load_state_dict(resumed["optimizer_state"])
         start_step = int(resumed["step"])
@@ -324,6 +363,8 @@ def main() -> None:
             weight_hash is not None and weight_hash != checkpoint_spec_sha256()
         ):
             raise ValueError("weight checkpoint does not match the registered model")
+        if weighted.get("tokenizer_sha256", tokenizer_hash) != tokenizer_hash:
+            raise ValueError("weight checkpoint tokenizer identity mismatch")
         model.load_state_dict(weighted["model_state"])
         start_step = int(weighted["step"])
 
@@ -390,6 +431,7 @@ def main() -> None:
                 "format": NATIVE_DIALOGUE_SPEC["checkpoint_format"] + "_resume",
                 "spec_sha256": spec_sha256(),
                 "checkpoint_spec_sha256": checkpoint_spec_sha256(),
+                "tokenizer_sha256": tokenizer_hash,
                 "config": config,
                 "step": step,
                 "model_state": model.state_dict(),
@@ -407,6 +449,7 @@ def main() -> None:
         "format": NATIVE_DIALOGUE_SPEC["checkpoint_format"] + "_resume",
         "spec_sha256": spec_sha256(),
         "checkpoint_spec_sha256": checkpoint_spec_sha256(),
+        "tokenizer_sha256": tokenizer_hash,
         "config": config,
         "step": args.steps,
         "model_state": model.state_dict(),
@@ -421,6 +464,7 @@ def main() -> None:
         "format": NATIVE_DIALOGUE_SPEC["checkpoint_format"],
         "spec_sha256": spec_sha256(),
         "checkpoint_spec_sha256": checkpoint_spec_sha256(),
+        "tokenizer_sha256": tokenizer_hash,
         "config": config,
         "model_state": state,
         "step": args.steps,
@@ -452,6 +496,7 @@ def main() -> None:
             str(path): len(group) for path, group in zip(args.train_dialogue, train_dialogue)
         },
         "data_manifest": manifest,
+        "tokenizer_sha256": tokenizer_hash,
         "history": history,
         "wall_seconds": time.time() - started,
     }
