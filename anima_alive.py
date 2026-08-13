@@ -240,6 +240,8 @@ class ConsciousMind(nn.Module):
             'self_model': 0.0,
             'prediction_error': 0.0,
             'reported_tension': 0.0,
+            'reported_curiosity': 0.0,
+            'reported_change': 0.0,
             'confidence': 0.5,
             'brier': 0.25,
             'report_consistency': 0.75,
@@ -565,6 +567,8 @@ class ConsciousMind(nn.Module):
             sa['brier'] = metrics['brier']
             sa['report_consistency'] = max(0.0, 1.0 - metrics['brier'])
             sa['reported_tension'] = float(prediction[0, 0].item() * 2.0)
+            sa['reported_curiosity'] = float(prediction[0, 1].item() * 2.0)
+            sa['reported_change'] = float(prediction[0, 2].item() * 2.0)
 
         return {
             'enabled': True,
@@ -800,6 +804,8 @@ class ConsciousMind(nn.Module):
             'confidence': sa['confidence'],
             'prediction_error': sa['prediction_error'],
             'reported_tension': sa['reported_tension'],
+            'reported_curiosity': sa['reported_curiosity'],
+            'reported_change': sa['reported_change'],
             'self_model_accuracy': sa['self_model'],
             'brier': sa['brier'],
             'report_consistency': sa['report_consistency'],
@@ -1224,6 +1230,7 @@ class ConsciousMind(nn.Module):
         return (f"meta_tension={sa['meta_tension']:.3f}, "
                 f"stability={sa['stability']:.2f}, "
                 f"reported_tension={sa['reported_tension']:.3f}, "
+                f"reported_curiosity={sa['reported_curiosity']:.3f}, "
                 f"self_model_accuracy={sa['self_model']:.3f}, "
                 f"confidence={confidence:.3f}, "
                 f"epistemic={sa.get('epistemic_state', EPISTEMIC_UNDETERMINED)}, "

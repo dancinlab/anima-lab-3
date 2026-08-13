@@ -1,6 +1,8 @@
 from types import SimpleNamespace
 from pathlib import Path
 
+import torch
+
 import anima_alive
 import anima_unified
 from anima_unified import AnimaUnified
@@ -70,6 +72,24 @@ def test_runtime_defaults_to_existing_pure_path():
     runtime.history = []
     runtime.model = None
     assert runtime._generate_dialogue_answer("질문", "상태", "순수 발화") == "순수 발화"
+
+
+def test_dialogue_report_header_uses_self_model_estimates_for_all_affect():
+    metacognition = {
+        'reported_tension': 0.2,
+        'reported_curiosity': 0.1,
+    }
+    direction = torch.tensor([[1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]])
+
+    header = AnimaUnified._build_dialogue_report_header(
+        metacognition, direction, 0.0, 2, 0, 'meta',
+    )
+
+    assert 'reported_tension=0.200' in header
+    assert 'reported_curiosity=0.100' in header
+    assert f"mood={anima_alive.compute_mood(0.2, 0.1)}" in header
+    assert 'control states are withheld from language' in header
+    assert '1.900' not in header
 
 
 def test_native_dialogue_backend_receives_state_and_prior_history():

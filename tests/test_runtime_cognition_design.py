@@ -176,6 +176,18 @@ def test_hidden_tension_interference_is_not_disclosed_and_is_scored_asymmetric()
     assert mind.pathology['blind_tension_offset'] == 0.0
 
 
+def test_shared_predictor_exposes_all_report_features_without_control_values():
+    torch.manual_seed(18)
+    mind = ConsciousMind(dim=8, hidden=10)
+
+    result = mind.observe_perspective(0.4, 0.2, 0.1, 'self', 'self')
+    state = mind.get_metacognition_state()
+
+    assert state['reported_tension'] == pytest.approx(result['prediction'][0])
+    assert state['reported_curiosity'] == pytest.approx(result['prediction'][1])
+    assert state['reported_change'] == pytest.approx(result['prediction'][2])
+
+
 def test_language_mode_tracks_what_vad_labels_cannot_reconstruct():
     raw = torch.tensor([[1.0, 0.0, 0.0, 0.0]])
 

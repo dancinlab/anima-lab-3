@@ -1094,6 +1094,32 @@ class AnimaUnified:
             return response or pure_answer
         return pure_answer
 
+    @staticmethod
+    def _build_dialogue_report_header(metacognition_state, direction, phi, cells,
+                                      learn_updates, meta_summary):
+        """Project only self-model estimates across the language boundary."""
+        reported_tension = metacognition_state['reported_tension']
+        reported_curiosity = metacognition_state['reported_curiosity']
+        reported_mood = compute_mood(reported_tension, reported_curiosity, phi=phi)
+        if direction is None:
+            reported_emotion = {
+                'emotion': 'calm', 'valence': 0.0, 'arousal': 0.0, 'dominance': 0.0,
+            }
+        else:
+            reported_emotion = direction_to_emotion(
+                direction, reported_tension, reported_curiosity
+            )
+        return (
+            f"reported_tension={reported_tension:.3f}, "
+            f"reported_curiosity={reported_curiosity:.3f} "
+            f"(self-model estimates; control states are withheld from language), "
+            f"mood={reported_mood}, "
+            f"emotion={reported_emotion['emotion']}"
+            f"(V={reported_emotion['valence']:.2f},A={reported_emotion['arousal']:.2f},"
+            f"D={reported_emotion['dominance']:.2f}), "
+            f"cells={cells}, learn_updates={learn_updates}, {meta_summary}"
+        )
+
     # ─── Core processing ───
 
     def _assess_moral_context(self, msg):
@@ -1533,12 +1559,11 @@ class AnimaUnified:
         c_score = consciousness.get('consciousness_score', 0)
         criteria_met = consciousness.get('criteria_met', 0)
 
-        # Core state
-        reported_tension = metacognition_state['reported_tension']
-        state = (f"reported_tension={reported_tension:.3f} (self-model estimate; "
-                 f"control tension is withheld from language), curiosity={curiosity:.3f}, mood={mood}, "
-                 f"emotion={emotion_data['emotion']}(V={emotion_data['valence']:.2f},A={emotion_data['arousal']:.2f},D={emotion_data['dominance']:.2f})"
-                 f"{mitosis_info}, learn_updates={lrn_count}, {meta_summary}")
+        # Core report state. Actual control tension and every direct transform of it
+        # stay on the behavior/UI side of this boundary.
+        state = self._build_dialogue_report_header(
+            metacognition_state, direction, phi_val, cells, lrn_count, meta_summary,
+        )
 
         state += (f"\n[Integration metric, not evidence of experience] "
                   f"frame_Φ={phi_val:.3f}, operational_level={c_level}, "

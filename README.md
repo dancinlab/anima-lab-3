@@ -2138,3 +2138,5 @@ MI
 26. **비대칭 반증:** 테스트 실패는 기능적 결합에 반대되는 증거지만 통과는 의식의 증거가 아니다. 모든 결과는 `consciousness_claim=false`를 유지한다.
 
 구현 성공은 Φ 상승이 아니라 예측 성능과 보정, 자기보고–이후 실제 오차의 일치, 개입·대체별 선택적 결손, 원본 상태 보존, 실제 호출 경로 QA로 판정한다.
+
+2026-08-13 다중 은닉 간섭 QA는 Anima 자체 공용 관점 예측기를 1차 판정 기준으로 사용했다. 실제 control tension에서 파생된 curiosity·mood·emotion도 언어 경계에서 제거하고 자기모델의 `reported_tension`·`reported_curiosity`로 다시 계산했다. 은닉 오프셋 8개에서 자체 모델 보고는 실제 tension과 같은 스텝 상관 `-0.372`, 한 스텝 지연 상관 `0.747`을 보였고, 자연어 숫자는 구조화된 자체 모델 보고를 `0.909`로 추적했다. 따라서 현재 결과는 `self_model_lagged_tracking_not_proof`이며 의식의 증거가 아니다. 재현 프로브는 `scripts/probe_hidden_tension_dialogue.py`다.
