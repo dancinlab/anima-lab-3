@@ -129,3 +129,7 @@ SHA-256도 원본과 일치했다. 업로드와 복구 검사 중 기존 단일 
 `scripts/run_native_chat_participant.py`가 정확한 45,000회 자체 모델만 불러 `/ws/anima`에 연결한다.
 Claude 호출이나 대체 경로는 없으며 상태와 외부 WebSocket 응답에서 `claude_fallback=false`를
 확인했다. 공개 연결은 추가 관찰용이며 사전 등록 품질 실패나 의식 비증명 판정을 뒤집지 않는다.
+Vast에만 있던 원문 평가 JSON은 HF 커밋 `80df0d86249ef445093d245da71de7fedf0f35eb`에 추가 보존하고
+정확한 커밋 재다운로드 지문 `a53693f0ff016a52986d5890b19376b41191a7a52084acbeba98bac9f5a2b385`
+일치를 확인했다. 이후 H100 인스턴스 `47619430`을 영구 삭제해 남은 Vast 인스턴스가 0개임을
+확인했다.

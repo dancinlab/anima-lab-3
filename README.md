@@ -1853,7 +1853,11 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    이 참가자에는 Claude 호출·환경 변수·대체 경로가 없다. 외부 `wss://chat.dancinlab.org/ws`에서
    원 질문과 답변의 `reply_to` 일치, `model=anima-native-303m`, `checkpoint_step=45000`,
    `claude_fallback=false`를 확인했다. 이는 실패 모델의 공개 시험 연결이지 품질 게이트 통과나
-   의식의 증거가 아니다.
+   의식의 증거가 아니다. Vast에만 남아 있던 14개 생성 원문 평가 JSON도 비공개 HF 커밋
+   `80df0d86249ef445093d245da71de7fedf0f35eb`에 보존하고 새 경로 재다운로드 SHA-256
+   `a53693f0ff016a52986d5890b19376b41191a7a52084acbeba98bac9f5a2b385` 일치를 확인했다. 모든 학습·
+   평가 산출물의 외부 보존 뒤 Vast H100 인스턴스 `47619430`을 영구 삭제했으며 활성 인스턴스는
+   0개다. 로컬 공개 시험 참가자는 HF에서 검증한 가중치를 사용하므로 계속 동작한다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
