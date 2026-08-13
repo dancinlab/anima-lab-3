@@ -79,6 +79,29 @@ NATIVE_DIALOGUE_SPEC = {
         "maximum_role_leaks": 0,
         "manual_review_required": True,
     },
+    "native_dialogue2": {
+        "screen_additional_steps": 12000,
+        "target_pretrain_steps": 35000,
+        "target_dialogue_steps": 10000,
+        "global_batch": 64,
+        "sources": {
+            "dialogue": {
+                "repo_id": "lemon-mint/smol-koreantalk",
+                "revision": "04eb12c1f999578d74dd87720bc853cedb7fa156",
+                "license": "Apache-2.0",
+                "files": [f"data/train-{index:05d}-of-00008.parquet" for index in range(8)],
+            },
+            "general": {
+                "repo_id": "seongchaeae/sage-pretrain-corpus",
+                "revision": "6b3da140fbb98a90fcc5b855269c85ded9cde1f1",
+                "license": "ODC-BY-1.0",
+                "en_files": [f"fineweb_edu/fineweb_edu_part_{index:04d}.parquet" for index in range(8)],
+                "ko_files": [f"fineweb2_ko/shard_00_part_{index:03d}.parquet" for index in range(4)],
+            },
+        },
+        "validation_percent": 1,
+        "tokenizer_sample_characters_per_language_and_kind": 32_000_000,
+    },
 }
 
 

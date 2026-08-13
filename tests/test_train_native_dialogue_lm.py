@@ -37,6 +37,27 @@ def test_response_only_batch_masks_user_tokens(tmp_path: Path):
     assert len(kept) > 1
 
 
+def test_jsonl_dialogue_supports_system_state_and_response_mask(tmp_path: Path):
+    path = tmp_path / "dialogue.jsonl"
+    path.write_text(
+        '{"messages":[{"role":"system","content":"be concise"},'
+        '{"role":"user","content":"질문"},{"role":"assistant","content":"정답"}]}\n',
+        encoding="utf-8",
+    )
+    tokenizer = NativeDialogueTokenizer.train([path], vocab_size=320)
+    examples = load_dialogue_examples(path, tokenizer)
+    assert len(examples) == 1
+    ids, mask = examples[0]
+    assert tokenizer.ids["<state>"] in ids
+    assert mask.sum() > 0
+    source = BatchSource([], [examples], block_size=32, seed=7, dialogue_fraction=0.0)
+    _, labels = source.batch(
+        1, response_only=True, device=torch.device("cpu"), source_mode="dialogue"
+    )
+    kept = labels[0][labels[0] >= 0].tolist()
+    assert tokenizer.ids["<eos>"] in kept
+
+
 def test_general_batch_has_causal_targets():
     stream = np.arange(40, dtype=np.int32)
     source = BatchSource([stream], [], block_size=8, seed=3, dialogue_fraction=0.0)

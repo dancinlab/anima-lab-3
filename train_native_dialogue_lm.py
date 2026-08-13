@@ -27,7 +27,7 @@ from native_dialogue_lm import NativeDialogueTokenizer
 
 
 DOCUMENT_SPLIT = re.compile(r"\n\s*\n(?=user:\s)", re.IGNORECASE)
-ROLE_LINE = re.compile(r"^(user|assistant):\s?(.*)$", re.IGNORECASE)
+ROLE_LINE = re.compile(r"^(state|system|user|assistant):\s?(.*)$", re.IGNORECASE)
 
 
 def sha256_file(path: Path) -> str:
@@ -48,6 +48,8 @@ def dialogue_events(document: str) -> list[tuple[str, str]]:
             if role is not None and "\n".join(content).strip():
                 events.append((role, "\n".join(content).strip()))
             role = matched.group(1).lower()
+            if role == "system":
+                role = "state"
             content = [matched.group(2)]
         elif role is not None:
             content.append(line)
@@ -56,12 +58,42 @@ def dialogue_events(document: str) -> list[tuple[str, str]]:
     return events
 
 
+def jsonl_dialogue_events(path: Path):
+    with path.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, 1):
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"invalid dialogue JSON at {path}:{line_number}") from exc
+            messages = row.get("messages")
+            if not isinstance(messages, list):
+                raise ValueError(f"dialogue row lacks messages at {path}:{line_number}")
+            events = []
+            for message in messages:
+                if not isinstance(message, dict):
+                    raise ValueError(f"invalid message at {path}:{line_number}")
+                role = message.get("role")
+                content = message.get("content")
+                if role == "system":
+                    role = "state"
+                if role not in {"state", "user", "assistant"} or not isinstance(content, str):
+                    raise ValueError(f"invalid role or content at {path}:{line_number}")
+                if content.strip():
+                    events.append((role, content.strip()))
+            yield events
+
+
 def load_dialogue_examples(path: Path, tokenizer: NativeDialogueTokenizer) -> list[tuple[np.ndarray, np.ndarray]]:
-    text = path.read_text(encoding="utf-8")
     examples: list[tuple[np.ndarray, np.ndarray]] = []
-    for document in DOCUMENT_SPLIT.split(text):
-        events = dialogue_events(document)
-        if not events or events[0][0] != "user":
+    if path.suffix == ".jsonl":
+        event_stream = jsonl_dialogue_events(path)
+    else:
+        text = path.read_text(encoding="utf-8")
+        event_stream = (dialogue_events(document) for document in DOCUMENT_SPLIT.split(text))
+    for events in event_stream:
+        if not events or not any(role == "user" for role, _ in events):
             continue
         ids = [tokenizer.ids["<bos>"]]
         response_mask = [False]
@@ -114,10 +146,15 @@ class BatchSource:
             seq, mask = seq[start:end], mask[start:end]
         return seq, mask
 
-    def batch(self, size: int, response_only: bool, device: torch.device):
+    def batch(self, size: int, response_only: bool, device: torch.device,
+              source_mode: str = "mixed"):
+        if source_mode not in {"mixed", "dialogue"}:
+            raise ValueError("source_mode must be mixed or dialogue")
+        if source_mode == "dialogue" and not self.dialogue:
+            raise ValueError("dialogue source is required for dialogue-only batches")
         xs, ys = [], []
         for _ in range(size):
-            is_dialogue = bool(self.dialogue) and (
+            is_dialogue = source_mode == "dialogue" or bool(self.dialogue) and (
                 not self.general or self.rng.random() < self.dialogue_fraction
             )
             seq, response_mask = self._dialogue() if is_dialogue else self._general()
@@ -149,12 +186,15 @@ def atomic_json(payload: dict, path: Path) -> None:
 
 
 @torch.no_grad()
-def validation_loss(model, source: BatchSource, batches: int, batch_size: int, device: torch.device) -> float:
+def validation_loss(model, source: BatchSource, batches: int, batch_size: int,
+                    device: torch.device, source_mode: str = "mixed",
+                    response_only: bool = False) -> float:
     model.eval()
     losses = []
     state = source.rng.bit_generator.state
     for _ in range(batches):
-        x, y = source.batch(batch_size, response_only=False, device=device)
+        x, y = source.batch(batch_size, response_only=response_only, device=device,
+                            source_mode=source_mode)
         logits, _, _ = model(x)
         losses.append(F.cross_entropy(logits.reshape(-1, model.vocab_size), y.reshape(-1)).item())
     source.rng.bit_generator.state = state
@@ -189,13 +229,39 @@ def main() -> None:
     parser.add_argument("--validation-batches", type=int, default=8)
     parser.add_argument("--device", default="auto")
     parser.add_argument("--resume", type=Path)
+    parser.add_argument("--weights", type=Path,
+                        help="Start a new optimizer phase from a completed native checkpoint")
+    parser.add_argument("--data-manifest", type=Path)
+    parser.add_argument("--dialogue-only", action="store_true")
+    parser.add_argument("--response-only", action="store_true")
+    parser.add_argument("--response-only-fraction", type=float,
+                        default=NATIVE_DIALOGUE_SPEC["training"]["response_only_fraction"])
+    parser.add_argument("--reset-schedule", action="store_true")
     args = parser.parse_args()
+    if args.resume and args.weights:
+        parser.error("resume and weights are mutually exclusive")
+
+    if args.data_manifest:
+        manifest = json.loads(args.data_manifest.read_text(encoding="utf-8"))
+        if manifest.get("format") != "anima_native_dialogue_data_v2":
+            parser.error("unsupported native dialogue data manifest")
+        root = args.data_manifest.parent
+        splits = manifest["splits"]
+        tokenizer_files = manifest.get("tokenizer_files", [])
+        args.train_general.extend(root / path for path in splits.get("train_general", []))
+        args.train_dialogue.extend(root / path for path in splits.get("train_dialogue", []))
+        args.validation_general.extend(root / path for path in splits.get("validation_general", []))
+        args.validation_dialogue.extend(root / path for path in splits.get("validation_dialogue", []))
+    else:
+        tokenizer_files = []
 
     all_paths = args.train_general + args.train_dialogue + args.validation_general + args.validation_dialogue
     if not args.train_dialogue or not all_paths or any(not path.is_file() for path in all_paths):
         parser.error("training dialogue and every declared corpus file must exist")
     if args.steps <= 0 or args.batch_size <= 0 or args.grad_accum <= 0:
         parser.error("steps, batch size and gradient accumulation must be positive")
+    if not 0.0 <= args.response_only_fraction <= 1.0:
+        parser.error("response-only fraction must be between zero and one")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     tokenizer_path = args.output_dir / "tokenizer.json"
@@ -204,7 +270,8 @@ def main() -> None:
         tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
     else:
         tokenizer = NativeDialogueTokenizer.train(
-            args.train_general + args.train_dialogue,
+            [args.data_manifest.parent / path for path in tokenizer_files]
+            if tokenizer_files else args.train_general + args.train_dialogue,
             vocab_size=config["vocab_size"],
         )
         tokenizer.save(tokenizer_path)
@@ -227,6 +294,7 @@ def main() -> None:
         model.parameters(), lr=args.lr,
         betas=(NATIVE_DIALOGUE_SPEC["training"]["beta1"], NATIVE_DIALOGUE_SPEC["training"]["beta2"]),
         weight_decay=NATIVE_DIALOGUE_SPEC["training"]["weight_decay"],
+        fused=device.type == "cuda",
     )
     start_step = 0
     train_source = BatchSource(
@@ -249,26 +317,51 @@ def main() -> None:
         optimizer.load_state_dict(resumed["optimizer_state"])
         start_step = int(resumed["step"])
         train_source.rng.bit_generator.state = resumed["sampler_state"]
+    elif args.weights:
+        weighted = torch.load(args.weights, map_location=device, weights_only=True)
+        weight_hash = weighted.get("checkpoint_spec_sha256")
+        if weighted["config"] != config or (
+            weight_hash is not None and weight_hash != checkpoint_spec_sha256()
+        ):
+            raise ValueError("weight checkpoint does not match the registered model")
+        model.load_state_dict(weighted["model_state"])
+        start_step = int(weighted["step"])
 
-    warmup = max(1, int(args.steps * NATIVE_DIALOGUE_SPEC["training"]["warmup_fraction"]))
-    response_start = int(args.steps * (1.0 - NATIVE_DIALOGUE_SPEC["training"]["response_only_fraction"]))
-    initial_val = validation_loss(model, validation_source, args.validation_batches, args.batch_size, device)
+    schedule_start = start_step if args.reset_schedule or args.weights else 0
+    schedule_steps = args.steps - schedule_start
+    if schedule_steps <= 0:
+        raise ValueError("steps must exceed the resumed step")
+    warmup = max(1, int(schedule_steps * NATIVE_DIALOGUE_SPEC["training"]["warmup_fraction"]))
+    response_start = (
+        args.steps + 1 if args.response_only_fraction == 0
+        else schedule_start + int(schedule_steps * (1.0 - args.response_only_fraction))
+    )
+    source_mode = "dialogue" if args.dialogue_only else "mixed"
+    initial_response_only = args.response_only or start_step + 1 >= response_start
+    initial_val = validation_loss(
+        model, validation_source, args.validation_batches, args.batch_size, device,
+        source_mode=source_mode,
+        response_only=initial_response_only,
+    )
     history = []
     started = time.time()
     model.train()
     for step in range(start_step + 1, args.steps + 1):
-        if step <= warmup:
-            scale = step / warmup
+        schedule_step = step - schedule_start
+        if schedule_step <= warmup:
+            scale = schedule_step / warmup
         else:
-            progress = (step - warmup) / max(1, args.steps - warmup)
+            progress = (schedule_step - warmup) / max(1, schedule_steps - warmup)
             scale = 0.1 + 0.9 * 0.5 * (1.0 + math.cos(math.pi * progress))
         for group in optimizer.param_groups:
             group["lr"] = args.lr * scale
         optimizer.zero_grad(set_to_none=True)
         accumulated = 0.0
-        response_only = step >= response_start
+        response_only = args.response_only or step >= response_start
         for _ in range(args.grad_accum):
-            x, y = train_source.batch(args.batch_size, response_only, device)
+            x, y = train_source.batch(
+                args.batch_size, response_only, device, source_mode=source_mode
+            )
             context = (
                 torch.autocast(device_type="cuda", dtype=torch.bfloat16)
                 if device.type == "cuda" else torch.autocast(device_type=device.type, enabled=False)
@@ -304,7 +397,22 @@ def main() -> None:
                 "sampler_state": train_source.rng.bit_generator.state,
             }, args.output_dir / "resume.pt")
 
-    final_val = validation_loss(model, validation_source, args.validation_batches, args.batch_size, device)
+    final_response_only = args.response_only or args.steps >= response_start
+    final_val = validation_loss(
+        model, validation_source, args.validation_batches, args.batch_size, device,
+        source_mode=source_mode,
+        response_only=final_response_only,
+    )
+    atomic_torch_save({
+        "format": NATIVE_DIALOGUE_SPEC["checkpoint_format"] + "_resume",
+        "spec_sha256": spec_sha256(),
+        "checkpoint_spec_sha256": checkpoint_spec_sha256(),
+        "config": config,
+        "step": args.steps,
+        "model_state": model.state_dict(),
+        "optimizer_state": optimizer.state_dict(),
+        "sampler_state": train_source.rng.bit_generator.state,
+    }, args.output_dir / "resume.pt")
     state = {
         key: value.detach().cpu().to(torch.float16) if value.is_floating_point() else value.detach().cpu()
         for key, value in model.state_dict().items()
@@ -330,6 +438,12 @@ def main() -> None:
         "parameters": model.count_params(),
         "steps": args.steps,
         "global_batch": args.batch_size * args.grad_accum,
+        "source_mode": source_mode,
+        "response_only": args.response_only,
+        "response_only_fraction": args.response_only_fraction,
+        "validation_response_only": final_response_only,
+        "schedule_reset": args.reset_schedule,
+        "starting_checkpoint": str(args.weights or args.resume) if (args.weights or args.resume) else None,
         "initial_validation_ce": initial_val,
         "final_validation_ce": final_val,
         "validation_descended": final_val < initial_val,
@@ -341,6 +455,7 @@ def main() -> None:
         "history": history,
         "wall_seconds": time.time() - started,
     }
+    atomic_json(summary, args.output_dir / f"train_summary_step_{args.steps}.json")
     atomic_json(summary, args.output_dir / "train_summary.json")
     print(json.dumps(summary, ensure_ascii=False, sort_keys=True), flush=True)
 

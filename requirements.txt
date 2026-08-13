@@ -15,6 +15,9 @@ pyaudio
 transformers
 accelerate
 peft          # LoRA adapters for HFDecoder (v11 --d-engine hf, e.g. Mistral 7B)
+tokenizers    # Native byte-fallback BPE dialogue model
+huggingface_hub
+pyarrow       # Pinned Parquet training-corpus preparation
 
 # Utils
 scipy

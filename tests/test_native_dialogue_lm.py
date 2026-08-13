@@ -18,6 +18,20 @@ def test_native_tokenizer_roundtrip_and_role_stop(tmp_path: Path):
     assert "안녕" in tokenizer.decode(encoded)
     response = tokenizer.encode("반가워요.<eos><user>누출")
     assert tokenizer.trim_response(response) == "반가워요."
+    fallback = tokenizer.encode("처음 보는 글자 🧠 café")
+    assert tokenizer.ids["<unk>"] not in fallback
+    assert tokenizer.decode(fallback) == "처음 보는 글자 🧠 café"
+
+
+def test_tokenizer_trains_on_json_content_without_json_keys(tmp_path: Path):
+    corpus = tmp_path / "dialogue.jsonl"
+    corpus.write_text(
+        '{"messages":[{"role":"user","content":"질문"},'
+        '{"role":"assistant","content":"answer"}]}\n',
+        encoding="utf-8",
+    )
+    tokenizer = NativeDialogueTokenizer.train([corpus], vocab_size=320)
+    assert tokenizer.decode(tokenizer.encode("질문 answer")) == "질문 answer"
 
 
 def test_native_prompt_keeps_current_turn_and_drops_old_prefix(tmp_path: Path):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from pathlib import Path
 from typing import Iterable
 
@@ -24,8 +25,8 @@ class NativeDialogueTokenizer:
     def train(cls, files: Iterable[Path | str], vocab_size: int):
         from tokenizers import Tokenizer, decoders, models, normalizers, pre_tokenizers, trainers
 
-        paths = [str(Path(path)) for path in files]
-        if not paths or any(not Path(path).is_file() for path in paths):
+        paths = [Path(path) for path in files]
+        if not paths or any(not path.is_file() for path in paths):
             raise ValueError("all tokenizer training files must exist")
         tokenizer = Tokenizer(models.BPE(unk_token="<unk>"))
         tokenizer.normalizer = normalizers.NFKC()
@@ -38,8 +39,31 @@ class NativeDialogueTokenizer:
             initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
             show_progress=False,
         )
-        tokenizer.train(paths, trainer)
+        tokenizer.train_from_iterator(cls._training_texts(paths), trainer)
         return cls(tokenizer)
+
+    @staticmethod
+    def _training_texts(paths: Iterable[Path]):
+        """Yield text only, never JSON field names, from registered corpora."""
+        for path in paths:
+            if path.suffix == ".jsonl":
+                with path.open(encoding="utf-8") as handle:
+                    for line_number, line in enumerate(handle, 1):
+                        if not line.strip():
+                            continue
+                        try:
+                            row = json.loads(line)
+                        except json.JSONDecodeError as exc:
+                            raise ValueError(f"invalid dialogue JSON at {path}:{line_number}") from exc
+                        for message in row.get("messages", []):
+                            content = message.get("content") if isinstance(message, dict) else None
+                            if isinstance(content, str) and content.strip():
+                                yield content
+            else:
+                with path.open(encoding="utf-8") as handle:
+                    for line in handle:
+                        if line.strip():
+                            yield line
 
     @classmethod
     def load(cls, path: Path | str):

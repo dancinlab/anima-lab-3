@@ -176,16 +176,15 @@ class CausalSelfAttention(nn.Module):
         k = k.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
         v = v.view(B, T, self.n_head, self.head_dim).transpose(1, 2)
 
-        # Scaled dot-product attention
-        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(self.head_dim))
-
-        # Apply causal mask
-        att = att.masked_fill(self.bias[:, :, :T, :T] == 0, float("-inf"))
-        att = F.softmax(att, dim=-1)
-        att = self.attn_dropout(att)
-
-        # Weighted sum
-        y = att @ v  # (B, n_head, T, head_dim)
+        # Canonical PyTorch fused attention selects Flash Attention on supported
+        # CUDA devices and the native math kernel elsewhere. The historical
+        # ``bias`` buffer stays registered so old checkpoints remain strict-load
+        # compatible.
+        y = F.scaled_dot_product_attention(
+            q, k, v,
+            dropout_p=self.attn_dropout.p if self.training else 0.0,
+            is_causal=True,
+        )  # (B, n_head, T, head_dim)
 
         # Reassemble heads
         y = y.transpose(1, 2).contiguous().view(B, T, D)
