@@ -121,6 +121,30 @@ NATIVE_DIALOGUE_SPEC = {
             },
         },
     },
+    "native_dialogue4": {
+        "screen_additional_steps": 12000,
+        "global_batch": 32,
+        "examples_per_language": 100_000,
+        "candidate_multiplier": 2,
+        "conversation_shards_per_language": 4,
+        "memory_examples_per_language": 20_000,
+        "validation_percent": 1,
+        "maximum_screen_tokens": 513,
+        "sources": {
+            "en": {
+                "repo_id": "HuggingFaceTB/smol-smoltalk",
+                "revision": "f73fe857d519ff6ac5af2ea67c4d3834da7b8bcc",
+                "license": "Apache-2.0",
+                "files": [f"data/train-{index:05d}-of-00004.parquet" for index in range(4)],
+            },
+            "ko": {
+                "repo_id": "IkJun1/korean-qa-dataset",
+                "revision": "e1f177a7497cf4e55e54d86101c6c522345441d2",
+                "license": "MIT",
+                "files": ["QA_dataset.jsonl"],
+            },
+        },
+    },
 }
 
 
