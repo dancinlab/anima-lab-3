@@ -3,6 +3,19 @@ import torch
 
 import conscious_lm
 import train_conscious_lm
+from measurement.native_dialogue_registry import NATIVE_DIALOGUE_SPEC, preset
+
+
+def test_native_target_keeps_registered_303m_shape():
+    target = preset("target")
+    assert (target["dim"], target["heads"], target["layers"]) == (896, 14, 11)
+    assert target["dim"] // target["heads"] == 64
+    training = NATIVE_DIALOGUE_SPEC["native_dialogue5"]
+    assert training["parameters"] == 303_628_504
+    assert training["global_batch"] % training["micro_batch"] == 0
+    assert training["gradient_accumulation"] == (
+        training["global_batch"] // training["micro_batch"]
+    )
 
 
 def test_checkpoint_config_builds_registered_ffn_variant():

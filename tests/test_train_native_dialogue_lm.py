@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 import torch
 
 from native_dialogue_lm import NativeDialogueTokenizer
@@ -112,8 +113,6 @@ def test_continuation_copies_checkpoint_tokenizer_instead_of_retraining(tmp_path
 
 
 def test_continuation_rejects_different_existing_tokenizer(tmp_path: Path):
-    import pytest
-
     source = tmp_path / "source"
     output = tmp_path / "output"
     source.mkdir()
@@ -129,3 +128,24 @@ def test_continuation_rejects_different_existing_tokenizer(tmp_path: Path):
 
     with pytest.raises(ValueError, match="output tokenizer differs"):
         prepare_tokenizer(output, 320, [right], checkpoint)
+
+
+def test_continuation_rejects_manifest_tokenizer_drift(tmp_path: Path):
+    source = tmp_path / "source"
+    output = tmp_path / "output"
+    source.mkdir()
+    corpus = tmp_path / "corpus.txt"
+    corpus.write_text("manifest tokenizer identity " * 50, encoding="utf-8")
+    tokenizer = NativeDialogueTokenizer.train([corpus], vocab_size=320)
+    tokenizer.save(source / "tokenizer.json")
+    checkpoint = source / "final.pt"
+    checkpoint.write_bytes(b"checkpoint placeholder")
+
+    with pytest.raises(ValueError, match="differs from the data manifest"):
+        prepare_tokenizer(
+            output,
+            tokenizer.vocab_size,
+            [corpus],
+            checkpoint,
+            expected_sha256="0" * 64,
+        )

@@ -191,6 +191,7 @@ def prepare_tokenizer(
     vocab_size: int,
     training_files: list[Path],
     starting_checkpoint: Path | None = None,
+    expected_sha256: str | None = None,
 ) -> tuple[NativeDialogueTokenizer, Path]:
     """Create a tokenizer for a new model or preserve it across continuation.
 
@@ -206,6 +207,8 @@ def prepare_tokenizer(
         if not source_path.is_file():
             raise ValueError(f"starting checkpoint tokenizer is missing: {source_path}")
         source_hash = sha256_file(source_path)
+        if expected_sha256 and source_hash != expected_sha256:
+            raise ValueError("starting checkpoint tokenizer differs from the data manifest")
         if tokenizer_path.is_file():
             if sha256_file(tokenizer_path) != source_hash:
                 raise ValueError("output tokenizer differs from the starting checkpoint tokenizer")
@@ -217,6 +220,8 @@ def prepare_tokenizer(
         tokenizer = NativeDialogueTokenizer.train(training_files, vocab_size=vocab_size)
         tokenizer.save(tokenizer_path)
     tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+    if expected_sha256 and sha256_file(tokenizer_path) != expected_sha256:
+        raise ValueError("output tokenizer differs from the data manifest")
     if tokenizer.vocab_size != int(vocab_size):
         raise ValueError("tokenizer vocabulary size differs from the registered model")
     return tokenizer, tokenizer_path
@@ -278,6 +283,7 @@ def main() -> None:
     if args.resume and args.weights:
         parser.error("resume and weights are mutually exclusive")
 
+    manifest = None
     if args.data_manifest:
         manifest = json.loads(args.data_manifest.read_text(encoding="utf-8"))
         if manifest.get("format") != "anima_native_dialogue_data_v2":
@@ -299,6 +305,10 @@ def main() -> None:
         parser.error("steps, batch size and gradient accumulation must be positive")
     if not 0.0 <= args.response_only_fraction <= 1.0:
         parser.error("response-only fraction must be between zero and one")
+    if not args.resume and not args.weights and any(
+        (args.output_dir / name).exists() for name in ("resume.pt", "final.pt")
+    ):
+        parser.error("refusing to overwrite an existing checkpoint without --resume or --weights")
 
     config = preset(args.preset)
     tokenizer_training_files = (
@@ -310,8 +320,8 @@ def main() -> None:
         vocab_size=config["vocab_size"],
         training_files=tokenizer_training_files,
         starting_checkpoint=args.resume or args.weights,
+        expected_sha256=manifest.get("base_tokenizer_sha256") if manifest else None,
     )
-    config["vocab_size"] = tokenizer.vocab_size
     tokenizer_hash = sha256_file(tokenizer_path)
 
     train_general = [load_general_tokens(path, tokenizer) for path in args.train_general]

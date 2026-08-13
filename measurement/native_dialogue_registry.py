@@ -45,9 +45,9 @@ NATIVE_DIALOGUE_SPEC = {
         },
         "target": {
             "vocab_size": 32000,
-            "dim": 832,
-            "heads": 13,
-            "layers": 13,
+            "dim": 896,
+            "heads": 14,
+            "layers": 11,
             "block_size": 1024,
             "dropout": 0.1,
             "ffn_type": "standard",
