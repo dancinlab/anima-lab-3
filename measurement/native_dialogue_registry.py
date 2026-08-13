@@ -102,6 +102,25 @@ NATIVE_DIALOGUE_SPEC = {
         "validation_percent": 1,
         "tokenizer_sample_characters_per_language_and_kind": 32_000_000,
     },
+    "native_dialogue3": {
+        "screen_additional_steps": 12000,
+        "global_batch": 32,
+        "instruction_examples_per_language": 100_000,
+        "instruction_candidate_multiplier": 4,
+        "instruction_shards_per_language": 4,
+        "memory_examples_per_language": 20_000,
+        "validation_percent": 1,
+        "maximum_screen_tokens": 513,
+        "source": {
+            "repo_id": "CohereLabs/aya_collection_language_split",
+            "revision": "a3af2fde4b4cb5b2775830b11244a1a20b5f004f",
+            "license": "Apache-2.0",
+            "files": {
+                "en": "english/train-00000-of-00007.parquet",
+                "ko": "korean/train-00000-of-00002.parquet",
+            },
+        },
+    },
 }
 
 

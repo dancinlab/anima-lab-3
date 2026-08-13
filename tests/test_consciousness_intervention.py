@@ -1,6 +1,7 @@
 import torch
+import torch.nn.functional as F
 
-from conscious_lm import ConsciousLM
+from conscious_lm import CausalSelfAttention, ConsciousLM
 
 
 def tiny_model():
@@ -43,3 +44,19 @@ def test_unknown_intervention_fails_closed():
         assert "unknown consciousness intervention" in str(exc)
     else:
         raise AssertionError("unknown intervention was accepted")
+
+
+def test_native_scaled_attention_matches_explicit_causal_attention():
+    torch.manual_seed(13)
+    attention = CausalSelfAttention(24, 4, 8, dropout=0.0).eval()
+    x = torch.randn(2, 7, 24)
+    actual = attention(x)
+    q, k, v = attention.c_attn(x).split(attention.d_model, dim=2)
+    q = q.view(2, 7, 4, 6).transpose(1, 2)
+    k = k.view(2, 7, 4, 6).transpose(1, 2)
+    v = v.view(2, 7, 4, 6).transpose(1, 2)
+    scores = q @ k.transpose(-2, -1) / 6**0.5
+    scores = scores.masked_fill(attention.bias[:, :, :7, :7] == 0, float("-inf"))
+    expected = F.softmax(scores, dim=-1) @ v
+    expected = attention.c_proj(expected.transpose(1, 2).contiguous().view(2, 7, 24))
+    assert torch.allclose(actual, expected, atol=1e-6)
