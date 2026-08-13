@@ -11,7 +11,7 @@ import random
 import re
 import shutil
 import time
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -121,12 +121,6 @@ def load_general_tokens(path: Path, tokenizer: NativeDialogueTokenizer) -> np.nd
     return np.asarray(ids, dtype=np.int32)
 
 
-def _load_corpus_file(task):
-    path, tokenizer_path, loader = task
-    tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
-    return loader(path, tokenizer)
-
-
 def load_corpus_files(
     paths: list[Path],
     tokenizer_path: Path,
@@ -139,11 +133,17 @@ def load_corpus_files(
     if not paths:
         return []
 
-    tasks = [(path, tokenizer_path, loader) for path in paths]
-    # Separate processes bypass Python's interpreter lock. ``map`` preserves
+    def load_one(path: Path):
+        # A backend per worker avoids shared mutable tokenizer state. Keeping
+        # workers in this process also avoids serializing multi-gigabyte token
+        # arrays back from child processes, which can exceed host memory.
+        tokenizer = NativeDialogueTokenizer.load(tokenizer_path)
+        return loader(path, tokenizer)
+
+    # The Rust tokenizer releases Python's lock for encoding. ``map`` keeps the
     # declared shard order even when workers finish out of order.
-    with ProcessPoolExecutor(max_workers=min(workers, len(paths))) as executor:
-        return list(executor.map(_load_corpus_file, tasks))
+    with ThreadPoolExecutor(max_workers=min(workers, len(paths))) as executor:
+        return list(executor.map(load_one, paths))
 
 
 class BatchSource:
