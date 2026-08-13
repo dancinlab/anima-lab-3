@@ -94,9 +94,19 @@ def select_conversations(paths: list[Path], lang: str, tokenizer: NativeDialogue
     candidate_count = count * multiplier
     rows = _smol_rows(paths) if lang == "en" else _korean_rows(paths)
     scanned = 0
+    removed_panel = removed_length = 0
     for identity, messages in rows:
         scanned += 1
         if not messages:
+            continue
+        # Validity filters must run before hash ranking. Ranking first made long
+        # SmolTalk rows occupy most of the bounded candidate heap, so a valid
+        # 100k sample could not be produced even though enough short rows exist.
+        if any(is_panel_near_duplicate(row["content"], panel_rows) for row in messages):
+            removed_panel += 1
+            continue
+        if dialogue_token_count(tokenizer, messages) > maximum_tokens:
+            removed_length += 1
             continue
         score = int.from_bytes(hashlib.sha256(f"{lang}:{identity}".encode()).digest()[:8], "big")
         item = (-score, identity, messages)
@@ -104,18 +114,10 @@ def select_conversations(paths: list[Path], lang: str, tokenizer: NativeDialogue
             heapq.heappush(candidates, item)
         elif score < -candidates[0][0]:
             heapq.heapreplace(candidates, item)
-    selected = []
-    removed_panel = removed_length = 0
-    for negative_score, identity, messages in sorted(candidates, key=lambda item: -item[0]):
-        if any(is_panel_near_duplicate(row["content"], panel_rows) for row in messages):
-            removed_panel += 1
-            continue
-        if dialogue_token_count(tokenizer, messages) > maximum_tokens:
-            removed_length += 1
-            continue
-        selected.append((identity, messages))
-        if len(selected) == count:
-            break
+    selected = [
+        (identity, messages)
+        for _, identity, messages in sorted(candidates, key=lambda item: -item[0])[:count]
+    ]
     if len(selected) != count:
         raise RuntimeError(f"only {len(selected)} valid {lang} conversations after scanning {scanned}")
     return selected, {
