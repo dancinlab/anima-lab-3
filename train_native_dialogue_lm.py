@@ -254,6 +254,29 @@ def select_device(requested: str) -> torch.device:
     return torch.device("cpu")
 
 
+@torch.inference_mode()
+def assert_registered_model_is_causal() -> None:
+    """Fail before corpus loading if the shared model can read future tokens."""
+    state = torch.random.get_rng_state()
+    try:
+        torch.manual_seed(NATIVE_DIALOGUE_SPEC["training"]["seed"])
+        config = preset("micro")
+        config["block_size"] = 8
+        model = build_model_from_config(config, dropout=0.0).eval()
+        left = torch.tensor([[1, 2, 3, 4, 5, 6, 7, 8]], dtype=torch.long)
+        right = torch.tensor([[1, 2, 3, 4, 101, 102, 103, 104]], dtype=torch.long)
+        left_logits = model(left)[0][:, :4]
+        right_logits = model(right)[0][:, :4]
+        maximum_delta = (left_logits - right_logits).abs().max().item()
+        if maximum_delta > 1e-7:
+            raise RuntimeError(
+                "registered model is non-causal: future tokens changed prefix logits "
+                f"by {maximum_delta:.9g}"
+            )
+    finally:
+        torch.random.set_rng_state(state)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-general", type=Path, action="append", default=[])
@@ -282,6 +305,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.resume and args.weights:
         parser.error("resume and weights are mutually exclusive")
+
+    assert_registered_model_is_causal()
 
     manifest = None
     if args.data_manifest:

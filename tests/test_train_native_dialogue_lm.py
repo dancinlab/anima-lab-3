@@ -5,7 +5,9 @@ import pytest
 import torch
 
 from native_dialogue_lm import NativeDialogueTokenizer
+import train_native_dialogue_lm
 from train_native_dialogue_lm import (
+    assert_registered_model_is_causal,
     BatchSource,
     dialogue_events,
     load_dialogue_examples,
@@ -13,6 +15,26 @@ from train_native_dialogue_lm import (
     sha256_file,
     validation_loss,
 )
+
+
+def test_registered_model_startup_guard_accepts_causal_engine():
+    assert_registered_model_is_causal()
+
+
+def test_registered_model_startup_guard_rejects_future_signal(monkeypatch):
+    class NonCausalModel(torch.nn.Module):
+        def forward(self, tokens):
+            shared_future = tokens.float().mean(dim=1, keepdim=True)
+            logits = shared_future.unsqueeze(-1).expand(-1, tokens.shape[1], 2)
+            return logits, None, []
+
+    monkeypatch.setattr(
+        train_native_dialogue_lm,
+        "build_model_from_config",
+        lambda *_args, **_kwargs: NonCausalModel(),
+    )
+    with pytest.raises(RuntimeError, match="future tokens changed prefix logits"):
+        assert_registered_model_is_causal()
 
 
 def test_dialogue_parser_preserves_multiline_and_turn_order():

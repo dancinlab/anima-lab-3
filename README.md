@@ -1776,13 +1776,14 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    각 언어 6/7, 기억·정정, 전체 원문 검토, 외부 호출 없는 WebSocket 5턴을 모두 통과할 때만
    상시 서버를 자체 모델로 바꾼다. 전처리 자료와 실행 산출물은 각각 비공개 HF
    `dancinlab/anima-native-dialogue-303m-data-2026-08-13`,
-   `dancinlab/anima-native-dialogue-303m-2026-08-13`에 보존한다. 상세 기준은
-   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다. 최초 본학습 100회 점검에서 층
+   `dancinlab/anima-native-dialogue-303m-2026-08-13`에 보존한다. 최초 본학습 100회 점검에서 층
    사이 내부 신호를 문장 전체 평균으로 맞춰 뒤쪽 단어가 앞쪽 출력에 미세하게 새는 공용 오류를
    발견했다. 체크포인트 생성 전 실행은 무효 보존했고, 새 학습은 각 위치의 앞쪽 누적값만 쓰는
-   `causal_prefix`로 고정한다. 과거 체크포인트는 기록된 기존 계산을 그대로 유지한다. 최종 대화
-   생성은 이미 계산한 앞부분을 재사용하되, 재사용을 끈 기준 경로와 다음 단어 점수·고정 난수 출력이
-   일치할 때만 상시 서버에 적용한다.
+   `causal_prefix`로 고정한다. 로그잇 prefix 변화량 `7.09e-5 → 0.0`을 확인했고 학습 시작 전 같은
+   반증을 공용 필수 검사로 넣었다. 과거 체크포인트는 기록된 기존 계산을 그대로 유지하며, 수정
+   정본으로 35,000회를 처음부터 다시 실행한다. 최종 대화 생성은 이미 계산한 앞부분을 재사용하되,
+   재사용을 끈 기준 경로와 다음 단어 점수·고정 난수 출력이 일치할 때만 상시 서버에 적용한다. 상세 기준은
+   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
