@@ -61,6 +61,32 @@ def test_checkpoint_config_supports_native_vocabulary_and_signal_settings():
     assert logits.shape == (1, 4, 512)
 
 
+def test_internal_signal_cannot_leak_suffix_tokens_into_prefix_logits():
+    torch.manual_seed(7)
+    model = conscious_lm.ConsciousLM(
+        vocab_size=32, d_model=24, n_head=4, n_layer=3,
+        block_size=16, dropout=0.0, gate_strength=0.1,
+        n_ca_rules=3, ffn_type="standard", signal_normalization="causal_prefix",
+    ).eval()
+    prefix = torch.tensor([[1, 2, 3, 4]], dtype=torch.long)
+    first = torch.cat((prefix, torch.tensor([[5, 6]], dtype=torch.long)), dim=1)
+    second = torch.cat((prefix, torch.tensor([[7, 8]], dtype=torch.long)), dim=1)
+
+    first_logits, _, _ = model(first)
+    second_logits, _, _ = model(second)
+
+    torch.testing.assert_close(first_logits[:, :4], second_logits[:, :4])
+
+
+def test_causal_zscore_uses_only_available_prefix():
+    prefix = torch.tensor([[2.0, 4.0, 8.0]])
+    extended = torch.tensor([[2.0, 4.0, 8.0, 1000.0]])
+    torch.testing.assert_close(
+        conscious_lm.causal_zscore(prefix),
+        conscious_lm.causal_zscore(extended)[:, :3],
+    )
+
+
 def test_trainer_exports_canonical_checkpoint_builder_for_scorers():
     assert train_conscious_lm.build_model_from_config is conscious_lm.build_model_from_config
 

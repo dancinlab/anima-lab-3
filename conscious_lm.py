@@ -36,7 +36,29 @@ import time
 CONSCIOUSNESS_INTERVENTIONS = ("normal", "off", "shuffle", "noise")
 DEFAULT_INTERVENTION_SEED = 20260809
 FFN_TYPES = ("pure_field", "standard")
+SIGNAL_NORMALIZATIONS = ("sequence", "causal_prefix")
 STANDARD_FFN_EXPANSION = 8
+
+
+def causal_zscore(values, eps=1e-6):
+    """Standardize each position using only its causal prefix.
+
+    A sequence-wide mean lets a later token alter an earlier hidden state when
+    the normalized signal is injected into the next layer.  Prefix moments
+    preserve the intended scale-free signal without opening that future path.
+    Statistics stay in float32 under mixed precision for numerical stability.
+    """
+    if values.ndim < 1 or values.shape[-1] == 0:
+        raise ValueError("causal_zscore requires a non-empty final dimension")
+    work = values.float()
+    count = torch.arange(
+        1, work.shape[-1] + 1, dtype=work.dtype, device=work.device
+    )
+    mean = work.cumsum(dim=-1) / count
+    second_moment = work.square().cumsum(dim=-1) / count
+    variance = (second_moment - mean.square()).clamp_min(0.0)
+    standardized = (work - mean) / (variance.sqrt() + float(eps))
+    return standardized.to(values.dtype)
 
 
 class PureFieldFFN(nn.Module):
@@ -300,17 +322,24 @@ class ConsciousLM(nn.Module):
         gate_strength=0.001,
         n_ca_rules=8,
         ffn_type="pure_field",
+        signal_normalization="sequence",
     ):
         super().__init__()
 
         if ffn_type not in FFN_TYPES:
             raise ValueError(f"unknown ffn_type {ffn_type!r}; expected one of {FFN_TYPES}")
+        if signal_normalization not in SIGNAL_NORMALIZATIONS:
+            raise ValueError(
+                f"unknown signal normalization {signal_normalization!r}; "
+                f"expected one of {SIGNAL_NORMALIZATIONS}"
+            )
 
         self.block_size = block_size
         self.vocab_size = vocab_size
         self.n_layer = n_layer
         self.d_model = d_model
         self.ffn_type = ffn_type
+        self.signal_normalization = signal_normalization
 
         # Token and position embeddings
         self.tok_emb = nn.Embedding(vocab_size, d_model)
@@ -465,7 +494,14 @@ class ConsciousLM(nn.Module):
             # terms. Nothing is clamped and no setpoint is imposed: the field
             # still decides its own magnitude, it just cannot shout over language.
             t = torch.log(tension + 1e-8)
-            t = (t - t.mean(dim=-1, keepdim=True)) / (t.std(dim=-1, keepdim=True) + 1e-6)
+            if self.signal_normalization == "causal_prefix":
+                t = causal_zscore(t)
+            else:
+                # Legacy checkpoints record no normalization field and retain
+                # their historical inference behavior when loaded for audits.
+                t = (t - t.mean(dim=-1, keepdim=True)) / (
+                    t.std(dim=-1, keepdim=True) + 1e-6
+                )
             consciousness_signal = self.tension_proj(t.unsqueeze(-1))  # [B,T,1] → [B,T,D]
             consciousness_signal = self._intervene_consciousness(consciousness_signal)
 
@@ -563,6 +599,7 @@ def model_kwargs_from_config(config, *, dropout=None):
         "ffn_type": config.get("ffn_type", "pure_field"),
         "gate_strength": float(config.get("gate_strength", 0.001)),
         "n_ca_rules": int(config.get("n_ca_rules", 8)),
+        "signal_normalization": config.get("signal_normalization", "sequence"),
     }
     return values
 

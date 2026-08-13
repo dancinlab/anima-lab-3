@@ -31,6 +31,7 @@ NATIVE_DIALOGUE_SPEC = {
             "ffn_type": "standard",
             "gate_strength": 0.001,
             "n_ca_rules": 8,
+            "signal_normalization": "causal_prefix",
         },
         "screen": {
             "vocab_size": 16000,
@@ -42,6 +43,7 @@ NATIVE_DIALOGUE_SPEC = {
             "ffn_type": "standard",
             "gate_strength": 0.001,
             "n_ca_rules": 8,
+            "signal_normalization": "causal_prefix",
         },
         "target": {
             "vocab_size": 32000,
@@ -53,6 +55,7 @@ NATIVE_DIALOGUE_SPEC = {
             "ffn_type": "standard",
             "gate_strength": 0.001,
             "n_ca_rules": 8,
+            "signal_normalization": "causal_prefix",
         },
     },
     "training": {

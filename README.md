@@ -1774,10 +1774,13 @@ scipy, matplotlib (pip)            -- EEG analysis/topomaps
    35,000회 학습한 뒤 검증된 자연 양언어 대화·동적 기억의 답변 위치를 10,000회 학습한다. RTX
    5090 무작위 입력 검사에서 한 번에 16개가 `22.11 GiB`로 통과해 `16 × 4` 누적으로 고정했다.
    각 언어 6/7, 기억·정정, 전체 원문 검토, 외부 호출 없는 WebSocket 5턴을 모두 통과할 때만
-   상시 서버를 자체 모델로 바꾼다. 2026-08-13 Vast.ai RTX 5090에서 35,000회 1단계를 시작했고,
-   전처리 자료와 실행 산출물은 각각 비공개 HF `dancinlab/anima-native-dialogue-303m-data-2026-08-13`,
+   상시 서버를 자체 모델로 바꾼다. 전처리 자료와 실행 산출물은 각각 비공개 HF
+   `dancinlab/anima-native-dialogue-303m-data-2026-08-13`,
    `dancinlab/anima-native-dialogue-303m-2026-08-13`에 보존한다. 상세 기준은
-   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다.
+   `docs/hypotheses/NATIVE-DIALOGUE-5-scale-recovery.md`가 정본이다. 최초 본학습 100회 점검에서 층
+   사이 내부 신호를 문장 전체 평균으로 맞춰 뒤쪽 단어가 앞쪽 출력에 미세하게 새는 공용 오류를
+   발견했다. 체크포인트 생성 전 실행은 무효 보존했고, 새 학습은 각 위치의 앞쪽 누적값만 쓰는
+   `causal_prefix`로 고정한다. 과거 체크포인트는 기록된 기존 계산을 그대로 유지한다.
 48. **CONTROL-1 — 동적 관계 기억 양성 비교 (완료, `P2_TRAINING_PATH_INVALID`):** `VALIDITY-1`에서 양성 비교인 표준
    `GRU`조차 실패했으므로, 큰 언어 모델·연결 다리·`QuantumC`를 모두 제외하고 기억층 자체를
    먼저 검사한다. 매 회차 서로 다른 두 `열쇠→값` 관계를 보여준 뒤 한 열쇠를 물으며, 관계는
