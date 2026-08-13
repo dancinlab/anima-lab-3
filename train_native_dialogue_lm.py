@@ -147,7 +147,10 @@ def load_corpus_files(
     # Huge single-document encodes retain Python's interpreter lock, so bounded
     # processes are required for real parallelism. ``map`` preserves declared
     # shard order even when workers finish out of order.
-    with ProcessPoolExecutor(max_workers=min(workers, len(paths))) as executor:
+    with ProcessPoolExecutor(
+        max_workers=min(workers, len(paths)),
+        max_tasks_per_child=1,
+    ) as executor:
         return list(executor.map(_load_corpus_file, tasks))
 
 
